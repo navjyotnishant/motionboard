@@ -55,9 +55,9 @@ description: "Task list for Music Video Pipeline (Motionboard v1)"
 - [ ] T025 [MOT-41] [US1] Implement lyric line alignment with mlx-whisper word timestamps, beat grid fallback and `verified_vocal_alignment` flag in `engine/src/motionboard/audio/align.py`
 - [ ] T026 [MOT-42] [US1] Add `mb analyze` writing `song_analysis` in `engine/src/motionboard/cli.py`
 - [ ] T027 [MOT-43] [US1] Implement timing grid (one shot per line or beat group, min frames merge, frame rule rounding, tiling validation) in `engine/src/motionboard/storyboard/timing.py`
-- [ ] T028 [MOT-44] [P] [US1] Write five builtin templates (Object World, Performance, Lyric Story, Two Lovers, Mood Loop) with rhythm rules, camera language, style and no figure lines in `templates/*.yaml`
-- [ ] T029 [MOT-45] [US1] Implement template loader and validation in `engine/src/motionboard/storyboard/templates.py`
-- [ ] T030 [MOT-46] [US1] Implement draft from chosen concept or template (fills visual, action, camera, has_figure, plate and motion prompts; one clear action per shot) in `engine/src/motionboard/storyboard/draft.py`
+- [ ] T028 [MOT-44] [P] [US1] Write five modes (Studio Session, Travel, Two Lovers, Lyric Story, Mood Loop) as `modes/<mode>/mode.yaml` (rhythm rules, camera language, figure rules, animation pack name) and five looks (Origami, Exotic, Vintage Film, Neon Night, Cosmic) as `looks/*.yaml` (style lines, no figure lines, plate prompt language)
+- [ ] T029 [MOT-45] [US1] Implement mode and look loader, validation and combination in `engine/src/motionboard/storyboard/templates.py`
+- [ ] T030 [MOT-46] [US1] Implement draft from chosen concept or mode plus look (fills visual, action, camera, has_figure, plate and motion prompts; one clear action per shot) in `engine/src/motionboard/storyboard/draft.py`
 - [ ] T031 [MOT-47] [US1] Add `mb concepts add`, `mb draft`, `mb shot set` (dirty and state rules) in `engine/src/motionboard/cli.py`
 - [ ] T032 [MOT-48] [P] [US1] Implement contact sheet (aspect aware tiles, shot number, timecode, lyric) in `engine/src/motionboard/storyboard/contact_sheet.py` and `mb sheet`
 - [ ] T033 [MOT-49] [P] [US1] Implement JSON export and import per `contracts/storyboard.schema.json` in `engine/src/motionboard/storyboard/io_json.py` and `mb export` / `mb import`
@@ -99,8 +99,8 @@ description: "Task list for Music Video Pipeline (Motionboard v1)"
 **Independent Test**: One MP4 matching segment duration, frame count, size and audio, plus cover and metadata.
 
 - [ ] T053 [MOT-69] [US3] Port assemble (trim to cut points, optional piecewise retime, lanczos upscale to 1080x1920 or 1920x1080, mux original audio, tail) in `engine/src/motionboard/finish/assemble.py`
-- [ ] T054 [MOT-70] [P] [US3] Port the dust overlay and matte into a themeable HyperFrames template (lyric rows from `song_analysis.lines`, thread, motes, end card from theme, no follow ask by default) in `themes/dust/`
-- [ ] T055 [MOT-71] [US3] Implement overlay config writer and foreground HyperFrames render in `engine/src/motionboard/finish/overlay.py`
+- [ ] T054 [MOT-70] [P] [US3] Port the Almost Yours dust overlay and matte as the Two Lovers animation pack (lyric rows from `song_analysis.lines`, ruby thread, motes, dusting end card from theme, no follow ask by default) in `modes/two-lovers/animation/`
+- [ ] T055 [MOT-71] [US3] Implement animation pack contract (pack.json: inputs, theme keys, fonts, duration rules), overlay config writer and foreground HyperFrames render in `engine/src/motionboard/finish/overlay.py`
 - [ ] T056 [MOT-72] [US3] Add grade, multiply matte, screen overlay, noise alls=3, CRF 19, faststart to assemble in `engine/src/motionboard/finish/assemble.py`
 - [ ] T057 [MOT-73] [P] [US3] Implement cover from a chosen frame with title block in `engine/src/motionboard/finish/cover.py`
 - [ ] T058 [MOT-74] [P] [US3] Implement metadata file (title, description, tags, hashtags, post time, platforms, synthetic content flag) in `engine/src/motionboard/finish/metadata.py`
@@ -131,7 +131,7 @@ description: "Task list for Music Video Pipeline (Motionboard v1)"
 - [ ] T069 [MOT-85] [US5] Pass character reference images to adapters that support them and append style lines in `engine/src/motionboard/plates/adapter.py`
 - [ ] T070 [MOT-86] [US5] Route `lip_sync` shots to a2v with the vocal stem in `engine/src/motionboard/jobs/worker.py`
 - [ ] T071 [MOT-87] [US5] Set `synthetic_people` for realistic look with figures and write it to metadata in `engine/src/motionboard/finish/metadata.py`
-- [ ] T072 [MOT-88] [P] [US5] Add Performance template lip-sync defaults in `templates/performance.yaml`
+- [ ] T072 [MOT-88] [P] [US5] Add Studio Session lip-sync defaults in `modes/studio-session/mode.yaml`
 
 ## Phase 8: Polish
 
@@ -139,9 +139,22 @@ description: "Task list for Music Video Pipeline (Motionboard v1)"
 - [ ] T074 [MOT-90] [P] Add GitHub Actions CI (ruff, pytest with stub backend, no GPU) in `.github/workflows/ci.yml`
 - [ ] T075 [MOT-91] Run quickstart.md steps 1 to 6 on the reference Mac and record results in `specs/001-music-video-pipeline/checklists/quickstart-run.md`
 
+## Phase 9: Mode animation packs (Motionboard IP)
+
+**Goal**: every v1 mode has its own signature animation, licensed PolyForm Noncommercial 1.0.0.
+
+**Independent Test**: each pack renders over the fixture song with stub clips; lyrics follow `song_analysis.lines`; end card shows theme texts; no follow or subscribe ask.
+
+- [ ] T076 [MOT-143] Add `modes/LICENSE` (full PolyForm Noncommercial 1.0.0 text, required notice), dual licence section in `README.md`, and a licence check in `engine/tests/unit/test_licences.py` that every `modes/*/animation/` folder carries the notice
+- [ ] T077 [MOT-144] [P] Build the Studio Session pack (VU meter and waveform pulses on beats, lyrics on a lyric sheet, REC light, tape counter, cassette label end card) in `modes/studio-session/animation/`
+- [ ] T078 [MOT-145] [P] Build the Travel pack (route line drawn between cuts, lyric words as ink stamps without place names, boarding pass end card) in `modes/travel/animation/`
+- [ ] T079 [MOT-146] [P] Port the A Letter Never Sent kinetic typography as the Lyric Story pack (one big word per beat, hard cuts, handwriting contrast) in `modes/lyric-story/animation/`
+- [ ] T080 [MOT-147] [P] Build the Mood Loop pack (light leaks, drifting particles, breathing lyric fades) in `modes/mood-loop/animation/`
+- [ ] T081 [MOT-148] Render a contact sheet and 10 s preview per pack with the fixture song and record results in `specs/001-music-video-pipeline/checklists/packs-run.md`
+
 ## Dependencies
 
-- Setup, then Foundational, then stories.
+- Setup, then Foundational, then stories. Phase 9 packs need T055 (pack contract); T079 reuses the promo film project at `~/Movies/NAVAAN-reels/letter-never-sent/film`.
 - US1 before US2 (clips need approved storyboard). US3 needs US2 output. US4 can run in parallel with US1. US5 after US2.
 - Within stories: protocols and models before services, services before CLI, CLI before skills.
 

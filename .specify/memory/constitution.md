@@ -41,6 +41,7 @@ The chat commands and the Storyboard Studio web app read and write the same stat
 - Output formats: 9:16 reels and 16:9 full videos, H.264 plus AAC.
 - Secrets (API keys, tokens) are read from files or environment, never printed or committed.
 - Commits carry no AI attribution lines.
+- Licensing: engine, Studio and plugin glue are MIT. Mode animation packs (`modes/*/animation/`) are Motionboard's IP and ship under PolyForm Noncommercial 1.0.0. Videos made with them belong to their creators.
 
 ## Development Workflow
 
@@ -50,4 +51,4 @@ Spec Kit drives the work: constitution, specify, clarify, plan, tasks, implement
 
 This constitution overrides other practice in the repo. Amendments are a pull request that updates this file, bumps the version (major for removed or redefined principles, minor for new ones, patch for wording) and notes the change in the Sync Impact Report.
 
-**Version**: 1.1.0 | **Ratified**: 2026-11-24 | **Last Amended**: 2026-11-24
+**Version**: 1.2.0 | **Ratified**: 2026-11-24 | **Last Amended**: 2026-11-24

@@ -120,7 +120,14 @@ The creator can choose a realistic look instead of a stylized one, keep the same
 - **FR-014**: System MUST report at the end of each stage what was verified and what was not.
 - **FR-015**: System MUST support a stylized look and a realistic look, and set a synthetic content flag for realistic people.
 - **FR-016**: Plate generation MUST be loosely coupled: any image source the creator has access to (a local model, an MCP tool, or an HTTP API) plugs in through a small adapter, and creator supplied plates are always accepted. No single image provider is required.
-- **FR-017**: v1 MUST ship one finishing style (dust lyrics, continuous thread, end card, as in Almost Yours) whose colors, fonts and texts are themeable per project. More styles are out of scope for v1.
+- **FR-017**: Storyboards MUST be built from a **mode** (story structure) combined with a **look** (visual world). Each mode MUST carry its own signature animation pack for the finishing pass (lyric typography, transitions, overlay elements, end card). These packs are Motionboard's IP. Colors, fonts and texts are themeable per project. v1 modes and packs:
+  - **Studio Session**: singer in a recording booth, lip-sync on chorus; animation: VU meter and waveform pulses, lyrics written on a lyric sheet, REC light, tape counter, end card as a cassette label.
+  - **Travel**: a journey, one place per section; animation: a route line drawn between cuts, lyric words as ink stamps (no place names), end card as a boarding pass.
+  - **Two Lovers**: a couple across scenes; animation: continuous ruby thread, fairy dust lyrics, sparkle twinkles, dusting end card (the Almost Yours pack).
+  - **Lyric Story**: one scene per line; animation: kinetic typography, one big word per beat with hard cuts (the A Letter Never Sent pack).
+  - **Mood Loop**: slow ambient shots; animation: light leaks, drifting particles, breathing lyric fades.
+  v1 looks (style lines and plate prompt language, no animation of their own): Origami / Paper World, Exotic, Vintage Film, Neon Night City, Cosmic. Any project can be saved as a new mode or look.
+- **FR-018**: Mode animation packs MUST be distributed under a source available, non commercial licence (PolyForm Noncommercial 1.0.0), separate from the MIT licence of the engine and Studio. Videos a creator makes with the packs belong to the creator; the restriction covers reuse or resale of the packs themselves.
 
 ### Key Entities
 

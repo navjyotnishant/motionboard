@@ -40,10 +40,11 @@ skills/           plugin commands
 engine/           Python engine, `mb` CLI
 studio/           local Next.js Storyboard Studio
 templates/        storyboard templates
-themes/           finishing themes
 specs/            Spec Kit specs, plans and tasks
 ```
 
 ## Licence
 
-MIT. Model weights you download keep their own licences.
+- Engine, Studio and plugin glue: MIT ([LICENSE](LICENSE)).
+- Mode animation packs (`modes/*/animation/`): PolyForm Noncommercial 1.0.0. Free to use for your own videos and to study or change; not for commercial reuse or resale of the packs themselves. Videos you make with them are yours.
+- Model weights you download keep their own licences.

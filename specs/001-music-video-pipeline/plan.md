@@ -130,10 +130,15 @@ engine/
     ├── unit/
     ├── integration/
     └── fixtures/                # 10 s test song, lyrics, tiny plates
-themes/
-└── dust/                        # HyperFrames overlay + matte template (Almost Yours)
-templates/
-└── *.yaml                       # storyboard templates (shared with 002)
+modes/                           # story modes; animation packs are Motionboard IP
+├── LICENSE                      # PolyForm Noncommercial 1.0.0 (packs only)
+├── studio-session/ (mode.yaml, animation/)
+├── travel/ (mode.yaml, animation/)
+├── two-lovers/ (mode.yaml, animation/)   # Almost Yours dust + ruby thread
+├── lyric-story/ (mode.yaml, animation/)  # A Letter Never Sent kinetic type
+└── mood-loop/ (mode.yaml, animation/)
+looks/
+└── *.yaml                       # origami, exotic, vintage-film, neon-night, cosmic (MIT)
 studio/                          # feature 002
 docs/
 ```
