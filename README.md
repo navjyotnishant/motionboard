@@ -4,7 +4,7 @@ Storyboard first music videos, made on your own machine.
 
 Motionboard is an open source Claude plugin. Give it a song, lyrics and an idea. It helps you build a storyboard timed to the music, makes an image plate per shot from whatever image source you use, animates each shot locally with an open video model (LTX-2.3 by default), and finishes the cut with lyrics, grade and an end card. A local Storyboard Studio web app shows the whole board, the render queue and your memory use.
 
-> Status: early development. Not usable yet.
+> Status: early development. The engine, skills and five mode packs work end to end with the stub backend and on the reference Mac. The Storyboard Studio web app is next.
 
 ## Principles
 
@@ -16,15 +16,32 @@ Motionboard is an open source Claude plugin. Give it a song, lyrics and an idea.
 
 Full rules: [.specify/memory/constitution.md](.specify/memory/constitution.md).
 
-## Commands (planned)
+## Skills
 
-| Command | What it does |
+| Skill | What it does |
 |---|---|
-| Setup check | Checks your machine, tools and models; prints exact steps for anything missing |
-| Storyboard | Brainstorm or template, timed shot list, contact sheet, approval |
-| Plates and clips | Image plates per shot, local video clips under the memory guard |
-| Finish and deliver | Lyrics, grade, end card, cover, metadata, delivery folder |
-| Studio | Opens the local Storyboard Studio |
+| `mb-setup` | Checks your machine, tools and models; prints exact steps for anything missing |
+| `mb-storyboard` | Brainstorm or mode plus look, timed shot list, characters, contact sheet, approval |
+| `mb-clips` | Image plates per shot from any source, local video clips under the memory guard |
+| `mb-finish` | Animation pack, lyrics, grade, end card, cover, metadata, delivery folder |
+
+Each skill drives the `mb` CLI. Every command takes `--json` and prints one report.
+
+## Modes
+
+| Mode | Story | Signature animation |
+|---|---|---|
+| Two Lovers | a couple across scenes | ruby thread, fairy dust lyrics |
+| Studio Session | the singer in a recording booth, chorus lip-sync | REC light, VU meters, typed lyric sheet, cassette card |
+| Travel | a journey, one place per section | route line, ink stamp lyrics, boarding pass |
+| Lyric Story | one scene per sung line | one big word per beat, handwriting |
+| Mood Loop | slow ambient shots | light leaks, drifting motes, breathing lyrics |
+
+Looks: origami, exotic, vintage film, neon night, cosmic.
+
+## Docs
+
+[Install](docs/install.md) · [First video](docs/first-video.md) · [Plate adapters](docs/adapters.md) · [Memory guard](docs/guard.md) · [Licences](docs/licenses.md)
 
 ## Requirements
 
