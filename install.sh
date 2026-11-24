@@ -112,20 +112,25 @@ if [ "$MAC" = 1 ]; then
   if [ "$MODELS" = 1 ]; then
     step "6. Model weights (downloaded by you, under their own licences)"
     HUB="${HF_HOME:-$HOME/.cache/huggingface}/hub"
-    model() { # repo, size, licence, url, optional
+    model() { # repo, size, licence, url, optional, what it is for
       local dir="$HUB/models--${1//\//--}"
-      if [ -d "$dir/snapshots" ] && [ -n "$(ls -A "$dir/snapshots" 2>/dev/null)" ]; then ok "$1 present"; return; fi
-      echo "  $1: about $2. Licence: $3 ($4)"
+      if [ -d "$dir/snapshots" ] && [ -n "$(ls -A "$dir/snapshots" 2>/dev/null)" ]; then ok "$1 present ($6)"; return; fi
+      echo "  $1"
+      echo "    What it does: $6"
+      echo "    Size: about $2. Licence: $3 ($4)"
       if ask "Download $1 now$([ "$5" = 1 ] && echo ' (optional)')?"; then
         HF_HUB_DISABLE_XET=1 uv run --project "$ENGINE" --with "huggingface_hub[cli]" hf download "$1" && ok "$1 downloaded"
       else
         note "skipped $1. Later: HF_HUB_DISABLE_XET=1 hf download $1"
       fi
     }
-    model "dgrauet/ltx-2.3-mlx-q8" "29 GB" "LTX-2 Community License, free under USD 10M annual revenue" "https://huggingface.co/Lightricks/LTX-2.3/blob/main/LICENSE" 0
-    model "mlx-community/gemma-3-12b-it-4bit" "7.5 GB" "Gemma Terms of Use" "https://ai.google.dev/gemma/terms" 0
-    model "mlx-community/whisper-large-v3-turbo" "1.6 GB" "MIT" "https://huggingface.co/openai/whisper-large-v3-turbo" 1
-    note "demucs downloads its own small model (about 0.3 GB) the first time a lip-sync shot needs it"
+    model "dgrauet/ltx-2.3-mlx-q8" "29 GB" "LTX-2 Community License, free under USD 10M annual revenue" "https://huggingface.co/Lightricks/LTX-2.3/blob/main/LICENSE" 0 \
+      "the video model. It turns each approved still image (plate) into a moving clip, and makes lip-sync shots from the vocal. Needed for clips."
+    model "mlx-community/gemma-3-12b-it-4bit" "7.5 GB" "Gemma Terms of Use" "https://ai.google.dev/gemma/terms" 0 \
+      "the text encoder LTX-2.3 uses to read each shot's motion prompt. Needed for clips."
+    model "mlx-community/whisper-large-v3-turbo" "1.6 GB" "MIT" "https://huggingface.co/openai/whisper-large-v3-turbo" 1 \
+      "listens to the song and finds when each lyric line is sung, so shots cut and lyrics appear on the right words. Without it, line timing is estimated from the beats."
+    note "demucs (vocal isolation) downloads its own small model (about 0.3 GB) the first time a lip-sync shot needs it. It pulls the voice out of the mix so lip-sync follows the singer, not the drums."
   fi
 fi
 
