@@ -36,6 +36,14 @@ def shot_by_ord(conn: sqlite3.Connection, project_id: str, ord_: int) -> dict:
     return dict(row)
 
 
+def cast_lines(conn: sqlite3.Connection, shot_id: str) -> list[str]:
+    """Style lines of the characters linked to a shot, in name order."""
+    rows = conn.execute(
+        "SELECT c.style_line FROM shot_character sc JOIN character c ON c.id = sc.character_id "
+        "WHERE sc.shot_id = ? ORDER BY c.name", (shot_id,)).fetchall()
+    return [r["style_line"] for r in rows]
+
+
 def _coerce(field: str, value):
     if field in BOOL_FIELDS:
         if isinstance(value, bool):
@@ -63,8 +71,7 @@ def set_field(conn: sqlite3.Connection, shot_id: str, field: str, value, actor: 
     if look is not None:  # keep prompts in step unless the prompt itself is being edited
         visual = v if field == "visual" else s["visual"]
         if field in {"visual", "has_figure"}:
-            chars = [c["style_line"] for c in repo.find(conn, "character", project_id=s["project_id"])]
-            fields["plate_prompt"] = plate_prompt(visual, has_figure, look, chars)
+            fields["plate_prompt"] = plate_prompt(visual, has_figure, look, cast_lines(conn, shot_id))
         if field in {"action", "camera", "has_figure"}:
             fields["motion_prompt"] = motion_prompt(
                 v if field == "action" else s["action"], v if field == "camera" else s["camera"], has_figure, look)

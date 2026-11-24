@@ -127,11 +127,11 @@ description: "Task list for Music Video Pipeline (Motionboard v1)"
 
 **Independent Test**: 3 shot board with one sung line gives a lip-synced clip and metadata with synthetic content Yes.
 
-- [ ] T068 [MOT-84] [US5] Add character commands (`mb character add|set`, reference image, style line, link to shots) in `engine/src/motionboard/cli.py`
-- [ ] T069 [MOT-85] [US5] Pass character reference images to adapters that support them and append style lines in `engine/src/motionboard/plates/adapter.py`
-- [ ] T070 [MOT-86] [US5] Route `lip_sync` shots to a2v with the vocal stem in `engine/src/motionboard/jobs/worker.py`
-- [ ] T071 [MOT-87] [US5] Set `synthetic_people` for realistic look with figures and write it to metadata in `engine/src/motionboard/finish/metadata.py`
-- [ ] T072 [MOT-88] [P] [US5] Add Studio Session lip-sync defaults in `modes/studio-session/mode.yaml`
+- [x] T068 [MOT-84] [US5] Add character commands (`mb character add|set`, reference image, style line, link to shots) in `engine/src/motionboard/cli.py`
+- [x] T069 [MOT-85] [US5] Pass character reference images to adapters that support them and append style lines in `engine/src/motionboard/plates/adapter.py`
+- [x] T070 [MOT-86] [US5] Route `lip_sync` shots to a2v with the vocal stem in `engine/src/motionboard/jobs/worker.py`
+- [x] T071 [MOT-87] [US5] Set `synthetic_people` for realistic look with figures and write it to metadata in `engine/src/motionboard/finish/metadata.py`
+- [x] T072 [MOT-88] [P] [US5] Add Studio Session lip-sync defaults in `modes/studio-session/mode.yaml`
 
 ## Phase 8: Polish
 

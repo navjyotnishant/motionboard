@@ -61,6 +61,17 @@ With a chosen concept, write `shots.json` first: one entry per timed shot, each 
 uv run mb draft --project <id> --mode two-lovers --look origami --shots-file shots.json --replace --json
 ```
 
+## 4b. Characters
+
+The draft creates the mode's cast (HER and HIM, SINGER) and links each to the shots whose visual names them in capitals.
+
+- `mb character list -p <id> --json` shows each character and its shots.
+- Ask the creator how each one looks. Save it with `mb character set -p <id> --name HER --field style_line --value "..."`. Only linked shots get the line in their plate prompt.
+- A reference image keeps a face consistent: `mb character add|set ... --ref <image>` or `--field reference_image`. Plate adapters receive it with each request.
+- `mb character link|unlink -p <id> --name HER --shots 2,5` changes who is in a shot. A shot needs a figure first.
+- Changing a style line or reference marks finished plates for redo. Say which shots changed.
+- Realistic looks with people set the synthetic flag; delivery metadata says so. Never clear it.
+
 ## 5. Review
 
 ```bash
