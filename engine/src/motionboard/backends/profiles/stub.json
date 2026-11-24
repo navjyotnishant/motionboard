@@ -1,0 +1,8 @@
+{
+  "backend": "stub",
+  "note": "ffmpeg colour clip; tiny and constant",
+  "base_gb": 0.2,
+  "points": [
+    {"mode": "i2v", "width": 576, "height": 1024, "frames": 97, "peak_gb": 0.25, "sec_per_frame": 0.01}
+  ]
+}

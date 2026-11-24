@@ -24,22 +24,22 @@ description: "Task list for Music Video Pipeline (Motionboard v1)"
 
 ## Phase 2: Foundational (blocks all stories)
 
-- [ ] T006 [MOT-22] Implement config and paths (`~/.motionboard/`, projects root, `MB_DB` override) in `engine/src/motionboard/config.py`
-- [ ] T007 [MOT-23] Write initial schema with every table in data-model.md, indexes, `schema_version` in `engine/src/motionboard/db/migrations/0001_init.sql`
-- [ ] T008 [MOT-24] Implement connection (WAL, foreign keys, busy_timeout 5000) and migration runner in `engine/src/motionboard/db/connection.py`
-- [ ] T009 [MOT-25] Implement change events writer used by every write in `engine/src/motionboard/db/events.py`
-- [ ] T010 [MOT-26] Implement typed repository (projects, shots, assets, jobs, approvals, adapters, guard profiles) with secret pattern rejection in `engine/src/motionboard/db/repo.py`
-- [ ] T011 [MOT-27] Implement report object (`ok`, `data`, `verified`, `not_verified`, `next`, error codes) and redactor in `engine/src/motionboard/report.py`
-- [ ] T012 [MOT-28] Create typer app with `--json` handling and `mb db migrate` in `engine/src/motionboard/cli.py`
-- [ ] T013 [MOT-29] [P] Implement memory monitor (memory_pressure free percent, `sysctl vm.swapusage`, psutil fallback, process group RSS) in `engine/src/motionboard/guard/monitor.py`
-- [ ] T014 [MOT-30] [P] Seed builtin guard presets safe, balanced, max in `engine/src/motionboard/guard/presets.py`
-- [ ] T015 [MOT-31] Implement `run_guarded` (wait for start floor, process group, 2 s samples to `memory_sample`, SIGTERM then SIGKILL, stop reason and suggestion, `fit_sample` on success) in `engine/src/motionboard/guard/run.py`
-- [ ] T016 [MOT-32] Implement fit check from backend profile plus local `fit_sample` rows in `engine/src/motionboard/guard/fitcheck.py`
-- [ ] T017 [MOT-33] [P] Define `VideoBackend` protocol and registry in `engine/src/motionboard/backends/base.py` and `registry.py`
-- [ ] T018 [MOT-34] [P] Implement stub backend (ffmpeg colour clip of exact frames) in `engine/src/motionboard/backends/stub.py`
-- [ ] T019 [MOT-35] Add `mb guard` and `mb fit` commands in `engine/src/motionboard/cli.py`
-- [ ] T020 [MOT-36] [P] Tests: guard stops a memory hog subprocess under a tight preset and records reason in `engine/tests/integration/test_guard.py`
-- [ ] T021 [MOT-37] [P] Tests: repo rejects key like strings and reports redact secrets in `engine/tests/unit/test_secrets.py`
+- [x] T006 [MOT-22] Implement config and paths (`~/.motionboard/`, projects root, `MB_DB` override) in `engine/src/motionboard/config.py`
+- [x] T007 [MOT-23] Write initial schema with every table in data-model.md, indexes, `schema_version` in `engine/src/motionboard/db/migrations/0001_init.sql`
+- [x] T008 [MOT-24] Implement connection (WAL, foreign keys, busy_timeout 5000) and migration runner in `engine/src/motionboard/db/connection.py`
+- [x] T009 [MOT-25] Implement change events writer used by every write in `engine/src/motionboard/db/events.py`
+- [x] T010 [MOT-26] Implement typed repository (projects, shots, assets, jobs, approvals, adapters, guard profiles) with secret pattern rejection in `engine/src/motionboard/db/repo.py`
+- [x] T011 [MOT-27] Implement report object (`ok`, `data`, `verified`, `not_verified`, `next`, error codes) and redactor in `engine/src/motionboard/report.py`
+- [x] T012 [MOT-28] Create typer app with `--json` handling and `mb db migrate` in `engine/src/motionboard/cli.py`
+- [x] T013 [MOT-29] [P] Implement memory monitor (memory_pressure free percent, `sysctl vm.swapusage`, psutil fallback, process group RSS) in `engine/src/motionboard/guard/monitor.py`
+- [x] T014 [MOT-30] [P] Seed builtin guard presets safe, balanced, max in `engine/src/motionboard/guard/presets.py`
+- [x] T015 [MOT-31] Implement `run_guarded` (wait for start floor, process group, 2 s samples to `memory_sample`, SIGTERM then SIGKILL, stop reason and suggestion, `fit_sample` on success) in `engine/src/motionboard/guard/run.py`
+- [x] T016 [MOT-32] Implement fit check from backend profile plus local `fit_sample` rows in `engine/src/motionboard/guard/fitcheck.py`
+- [x] T017 [MOT-33] [P] Define `VideoBackend` protocol and registry in `engine/src/motionboard/backends/base.py` and `registry.py`
+- [x] T018 [MOT-34] [P] Implement stub backend (ffmpeg colour clip of exact frames) in `engine/src/motionboard/backends/stub.py`
+- [x] T019 [MOT-35] Add `mb guard` and `mb fit` commands in `engine/src/motionboard/cli.py`
+- [x] T020 [MOT-36] [P] Tests: guard stops a memory hog subprocess under a tight preset and records reason in `engine/tests/integration/test_guard.py`
+- [x] T021 [MOT-37] [P] Tests: repo rejects key like strings and reports redact secrets in `engine/tests/unit/test_secrets.py`
 
 **Checkpoint**: DB, reports, guard and fit check work; stories can start.
 

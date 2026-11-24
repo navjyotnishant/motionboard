@@ -12,7 +12,7 @@ Behaviour:
 1. Wait (up to 10 min, reporting) until free percent >= `start_free_pct`.
 2. Start the command in a new process group.
 3. Every `poll_seconds`: read free percent, swap used, group RSS; write a `memory_sample` row.
-4. If free < `kill_free_pct` or swap > `swap_ceiling_mb`: SIGTERM the group, SIGKILL after 5 s, set `stop_reason` and a `suggestion` (smaller size or fewer frames, from the fit profile).
+4. If free < `kill_free_pct` or swap growth since job start > `swap_ceiling_mb` (growth, not total: macOS often carries several GB of swap from other apps before a job starts; 9 GB was in use on the reference Mac when this was built): SIGTERM the group, SIGKILL after 5 s, set `stop_reason` and a `suggestion` (smaller size or fewer frames, from the fit profile).
 5. On success append a `fit_sample` row with measured peak.
 
 Builtin presets:
