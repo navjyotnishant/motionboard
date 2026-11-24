@@ -12,7 +12,6 @@
 - Noncommercial use is free: personal projects, study, research, hobby videos. Changing the packs for that use is fine.
 - Commercial use (selling the packs, shipping them in a paid product or service, or work done for money) needs a separate licence from the author.
 - Keep the `NOTICE` file with any copy.
-- Whether a monetised channel counts as commercial use is decided by the PolyForm terms, not by this page. Read [modes/LICENSE](../modes/LICENSE) or ask the author.
 
 ## Model licences
 
