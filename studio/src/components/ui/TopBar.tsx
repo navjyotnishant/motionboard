@@ -8,7 +8,10 @@ export function TopBar({ title, children }: { title?: React.ReactNode; children?
         <span className="text-[13px] font-semibold tracking-wide">MOTIONBOARD</span>
       </Link>
       {title && <div className="min-w-0 truncate text-[13px] text-fg2">{title}</div>}
-      <div className="ml-auto flex items-center gap-2">{children}</div>
+      <div className="ml-auto flex items-center gap-2">
+        {children}
+        <Link href="/settings" className="rounded px-2 py-1 text-[12px] text-fg3 hover:bg-s3 hover:text-fg" title="Settings">Settings</Link>
+      </div>
     </header>
   );
 }

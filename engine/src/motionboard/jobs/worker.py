@@ -55,7 +55,7 @@ def detach(watch: bool = False) -> int:
     if (pid := running_pid()) is not None:
         return pid
     log = config.home() / "worker.log"
-    cmd = [sys.executable, "-m", "motionboard.cli", "worker"] + (["--watch"] if watch else [])
+    cmd = [sys.executable, "-m", "motionboard", "worker"] + (["--watch"] if watch else [])
     with open(log, "a") as f:
         proc = subprocess.Popen(cmd, stdout=f, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
                                 start_new_session=True, env=os.environ.copy())

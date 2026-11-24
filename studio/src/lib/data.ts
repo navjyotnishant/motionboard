@@ -111,5 +111,8 @@ export function queue() {
     ? db.prepare("SELECT at, free_pct, swap_mb, rss_mb FROM memory_sample WHERE job_id = ? ORDER BY at DESC LIMIT 90")
       .all(running.id as string).reverse()
     : [];
-  return { jobs: jobs.map((j) => ({ ...j, settings: parseJson(j.settings as string, {}) })), guard, samples };
+  const pausedRow = db.prepare("SELECT value FROM workspace_setting WHERE key = 'queue_paused'").get() as
+    { value: string } | undefined;
+  const paused = parseJson<boolean>(pausedRow?.value, false);
+  return { jobs: jobs.map((j) => ({ ...j, settings: parseJson(j.settings as string, {}) })), guard, samples, paused };
 }

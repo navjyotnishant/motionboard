@@ -24,7 +24,13 @@ const file = z.string().min(1).max(1000);
 const shots = z.string().regex(/^[0-9, ]{1,200}$/).optional();
 
 const ACTIONS = {
-  draft: z.object({ project: id, mode: word, look: word, replace: z.boolean().optional() }),
+  draft: z.object({ project: id, mode: word, look: word, replace: z.boolean().optional(), shots_file: file.optional() }),
+  project_new: z.object({ title: z.string().min(1).max(200), song: file, lyrics_file: file.optional(),
+    idea: z.string().max(4000).optional(), aspect: z.enum(["9:16", "16:9"]), look: z.enum(["stylized", "realistic"]) }),
+  analyze: z.object({ project: id }),
+  modes: z.object({}),
+  concepts_add: z.object({ project: id, file }),
+  concepts_choose: z.object({ project: id, concept: id }),
   approve: z.object({ project: id, stage: z.enum(["storyboard", "plates", "clips", "final"]) }),
   revoke: z.object({ project: id, stage: z.enum(["storyboard", "plates", "clips", "final"]) }),
   review: z.object({ project: id, shot: ord, kind: z.enum(["plate", "clip"]), decision: z.enum(["approve", "reject"]),
@@ -62,7 +68,14 @@ export const ACTION_NAMES = Object.keys(ACTIONS) as Action[];
 function argv(action: Action, a: any): string[] {
   const p = a.project ? ["-p", a.project] : [];
   switch (action) {
-    case "draft": return ["draft", ...p, "--mode", a.mode, "--look", a.look, ...(a.replace ? ["--replace"] : [])];
+    case "draft": return ["draft", ...p, "--mode", a.mode, "--look", a.look, ...(a.replace ? ["--replace"] : []),
+      ...(a.shots_file ? ["--shots-file", a.shots_file] : [])];
+    case "project_new": return ["project", "new", "--title", a.title, "--song", a.song, "--aspect", a.aspect,
+      "--look", a.look, ...(a.lyrics_file ? ["--lyrics-file", a.lyrics_file] : []), ...(a.idea ? ["--idea", a.idea] : [])];
+    case "analyze": return ["analyze", ...p];
+    case "modes": return ["modes"];
+    case "concepts_add": return ["concepts", "add", ...p, "--file", a.file];
+    case "concepts_choose": return ["concepts", "choose", ...p, "--concept", a.concept];
     case "approve": return ["approve", ...p, "--stage", a.stage, "--via", "studio"];
     case "revoke": return ["approve", ...p, "--stage", a.stage, "--revoke", "--via", "studio"];
     case "review": return ["review", ...p, "--shot", String(a.shot), "--kind", a.kind, "--decision", a.decision,

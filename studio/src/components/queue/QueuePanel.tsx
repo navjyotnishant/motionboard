@@ -9,7 +9,7 @@ type QJob = { id: string; state: string; progress: number; sec_per_frame: number
   suggestion: string | null; ord: number | null; title: string | null; started_at: string | null;
   settings: { frames?: number; mode?: string } };
 type Q = { jobs: QJob[]; guard: { name: string; start_free_pct: number; kill_free_pct: number; swap_ceiling_mb: number } | null;
-  samples: { free_pct: number; swap_mb: number }[]; now: { free_pct: number | null; swap_mb: number | null; total_gb: number } };
+  samples: { free_pct: number; swap_mb: number }[]; paused: boolean; now: { free_pct: number | null; swap_mb: number | null; total_gb: number } };
 
 function left(j: QJob): string {
   const frames = j.settings.frames ?? 0;
@@ -29,7 +29,7 @@ export function QueuePanel({ onClose, tick }: { onClose: () => void; tick: numbe
   const act = async (action: string, args: Record<string, unknown> = {}) => { toast(await mb(action, args)); load(); };
   const queued = q?.jobs.filter((j) => j.state === "queued") ?? [];
   const running = q?.jobs.some((j) => j.state === "running");
-  const paused = q?.jobs.some((j) => j.state === "paused");
+  const paused = !!q?.paused || q?.jobs.some((j) => j.state === "paused");
 
   return (
     <div className="flex h-[300px] shrink-0 border-t border-line bg-s1">
