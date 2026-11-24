@@ -35,6 +35,9 @@ class FitResult:
         )
 
 
+OTHER_MODE_EXTRA = 0.25  # a2v conditions on audio too; until measured, assume a larger peak
+
+
 def _mpf(w: int, h: int, frames: int) -> float:
     return w * h * frames / 1e6
 
@@ -53,7 +56,14 @@ def _points(backend: VideoBackend, mode: str, conn: sqlite3.Connection | None) -
             ], f"{len(rows)} local measurement(s)"
     prof = backend.profile()
     pts = [p for p in prof.get("points", []) if p.get("mode", "i2v") == mode]
-    return pts, f"{len(pts)} shipped profile point(s)"
+    if pts or mode == "i2v":
+        return pts, f"{len(pts)} shipped profile point(s)"
+    # No measurement for this mode yet: borrow the i2v points with extra headroom, and say so.
+    base, basis = _points(backend, "i2v", conn)
+    if not base:
+        return [], basis
+    bumped = [dict(p, peak_gb=p["peak_gb"] * (1 + OTHER_MODE_EXTRA)) for p in base]
+    return bumped, f"{basis} for i2v plus {int(OTHER_MODE_EXTRA * 100)}% (no {mode} measurement yet)"
 
 
 def _model(points: list[dict], base_gb: float) -> tuple[float, float]:

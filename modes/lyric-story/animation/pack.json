@@ -1,0 +1,46 @@
+{
+  "name": "lyric-story",
+  "title": "Lyric Story: one big word per beat, handwriting underneath",
+  "version": "1.0.0",
+  "licence": "PolyForm-Noncommercial-1.0.0",
+  "origin": "NAVAAN, A Letter Never Sent promo, Nov 2026",
+  "aspects": [
+    "9:16",
+    "16:9"
+  ],
+  "layers": {
+    "matte": {
+      "file": "matte.html",
+      "blend": "multiply"
+    },
+    "overlay": {
+      "file": "overlay.html",
+      "blend": "screen"
+    }
+  },
+  "cover": "cover.html",
+  "tail_seconds": 1.5,
+  "theme_keys": {
+    "artist": "end card handwriting line",
+    "song": "end card title",
+    "album_line": "optional small line",
+    "release_note": "optional, e.g. OUT NOW",
+    "highlight_words": "words shown in the accent colour",
+    "colors": "optional overrides: ivory, accent, gold as [r,g,b]"
+  },
+  "inputs": [
+    "duration",
+    "width",
+    "height",
+    "lines",
+    "cuts",
+    "beats",
+    "downbeats",
+    "theme"
+  ],
+  "fonts": [
+    "Inter Tight (OFL 1.1)",
+    "La Belle Aurore (OFL 1.1)"
+  ],
+  "notes": "Words land on the nearest beat. Hard cuts, a one frame black hit on each shot cut. No follow or subscribe ask."
+}

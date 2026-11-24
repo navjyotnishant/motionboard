@@ -1,0 +1,43 @@
+{
+  "name": "mood-loop",
+  "title": "Mood Loop: light leaks, drifting motes, breathing lyrics",
+  "version": "1.0.0",
+  "licence": "PolyForm-Noncommercial-1.0.0",
+  "origin": "Motionboard original, Nov 2026",
+  "aspects": [
+    "9:16",
+    "16:9"
+  ],
+  "layers": {
+    "matte": {
+      "file": "matte.html",
+      "blend": "multiply"
+    },
+    "overlay": {
+      "file": "overlay.html",
+      "blend": "screen"
+    }
+  },
+  "cover": "cover.html",
+  "tail_seconds": 1.5,
+  "theme_keys": {
+    "artist": "end card top line",
+    "song": "song title",
+    "release_note": "optional, e.g. OUT NOW",
+    "colors": "optional overrides: ivory, warm, rose, gold as [r,g,b]"
+  },
+  "inputs": [
+    "duration",
+    "width",
+    "height",
+    "lines",
+    "cuts",
+    "beats",
+    "downbeats",
+    "theme"
+  ],
+  "fonts": [
+    "Cormorant Garamond (OFL 1.1)"
+  ],
+  "notes": "Leaks and motes are periodic in the video length so the ends meet for a loop. No follow or subscribe ask."
+}

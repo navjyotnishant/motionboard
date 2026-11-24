@@ -57,3 +57,13 @@ def test_setup_reports_without_downloading(mb_home, monkeypatch):
     assert out["ok"]
     assert {"machine", "tools", "models", "gaps", "fix_plan"} <= set(out["data"])
     assert not any("download" in " ".join(map(str, c)) for c in calls)
+
+
+def test_a2v_borrows_i2v_points_with_headroom():
+    s = Sample(free_pct=80, swap_used_mb=0, total_gb=128)
+    from motionboard.backends.stub import StubBackend
+
+    i2v = fitcheck.fit(StubBackend(), "i2v", 576, 1024, 97, BALANCED, sample=s)
+    a2v = fitcheck.fit(StubBackend(), "a2v", 576, 1024, 97, BALANCED, sample=s)
+    assert a2v.fits and a2v.est_peak_gb > i2v.est_peak_gb
+    assert "no a2v measurement yet" in a2v.basis

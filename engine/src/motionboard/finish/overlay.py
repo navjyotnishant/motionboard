@@ -49,6 +49,7 @@ def make_config(project: dict, analysis: dict, shots: list[dict], tail: float) -
         "music_end": music, "duration": round(music + tail, 3),
         "lines": [{"start": ln["start"], "end": ln["end"], "text": ln["text"]} for ln in analysis.get("lines", [])],
         "cuts": [round(s["start"], 3) for s in shots[1:]],
+        "beats": [round(b, 3) for b in analysis.get("beats", [])],
         "downbeats": downbeats(analysis.get("beats", [])),
         "chorus": theme.get("chorus"),
         "theme": theme,

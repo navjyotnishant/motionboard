@@ -1,0 +1,24 @@
+{
+  "name": "studio-session",
+  "title": "Studio Session: REC light, VU meters, typed lyric sheet",
+  "version": "1.0.0",
+  "licence": "PolyForm-Noncommercial-1.0.0",
+  "origin": "Motionboard original, Nov 2026",
+  "aspects": ["9:16", "16:9"],
+  "layers": {
+    "matte": {"file": "matte.html", "blend": "multiply"},
+    "overlay": {"file": "overlay.html", "blend": "screen"}
+  },
+  "cover": "cover.html",
+  "tail_seconds": 1.5,
+  "theme_keys": {
+    "artist": "cassette label top line",
+    "song": "song title",
+    "album_line": "small text on the label, right side (optional)",
+    "release_note": "e.g. OUT NOW, under the cassette (optional)",
+    "colors": "optional overrides: ivory, amber, red, brass as [r,g,b]"
+  },
+  "inputs": ["duration", "width", "height", "lines", "cuts", "beats", "downbeats", "theme"],
+  "fonts": ["JetBrains Mono (OFL 1.1)", "Cormorant Garamond (OFL 1.1)"],
+  "notes": "Every frame is a pure function of time. Meters kick on beats. No follow or subscribe ask on the end card."
+}

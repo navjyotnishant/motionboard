@@ -1,0 +1,41 @@
+<!doctype html>
+<!-- Motionboard · Lyric Story pack · overlay. one big word per beat with hard cuts, handwritten line underneath.
+     Required Notice: Copyright (c) 2026 Navjyot Nishant. PolyForm Noncommercial 1.0.0. -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=__W__, height=__H__" />
+    <title>Lyric Story · overlay</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "IT"; font-weight: 800; font-style: normal; src: url(fonts/inter-tight-latin-800-normal.woff2) format("woff2"); }
+      @font-face { font-family: "IT"; font-weight: 500; font-style: normal; src: url(fonts/inter-tight-latin-500-normal.woff2) format("woff2"); }
+      @font-face { font-family: "LBA"; font-weight: 400; font-style: normal; src: url(fonts/la-belle-aurore-latin-400-normal.woff2) format("woff2"); }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: __W__px; height: __H__px; overflow: hidden; background: #000; }
+      #root { position: relative; width: __W__px; height: __H__px; overflow: hidden; background: #000; }
+      .layer { position: absolute; inset: 0; pointer-events: none; }
+      #fx { position: absolute; inset: 0; width: __W__px; height: __H__px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="__DURATION__" data-width="__W__" data-height="__H__">
+      <div id="stage" class="clip layer" data-start="0" data-duration="__DURATION__" data-track-index="1">
+        <canvas id="fx" width="__W__" height="__H__"></canvas>
+      </div>
+    </div>
+    <script src="js/config.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/overlay.js"></script>
+    <script>
+      (function () {
+        var root = document.getElementById("root"), duration = parseFloat(root.dataset.duration), clock = { t: 0 };
+        window.__hf = window.__hf || {}; window.__hf.buildReady = window.__hf.buildReady || {};
+        window.__hf.buildReady["main"] = document.fonts.ready.then(function () { return Promise.all([document.fonts.load('800 60px "IT"'), document.fonts.load('500 60px "IT"'), document.fonts.load('400 60px "LBA"')]); }).then(function () { window.OVERLAY.init(); window.OVERLAY.render(0); });
+        var tl = gsap.timeline({ paused: true });
+        tl.to(clock, { t: duration, duration: duration, ease: "none", onUpdate: function () { window.OVERLAY.render(clock.t); } });
+        window.__timelines = window.__timelines || {}; window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>

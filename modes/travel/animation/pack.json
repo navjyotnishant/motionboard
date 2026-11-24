@@ -1,0 +1,45 @@
+{
+  "name": "travel",
+  "title": "Travel: route line, lyric ink stamps, boarding pass",
+  "version": "1.0.0",
+  "licence": "PolyForm-Noncommercial-1.0.0",
+  "origin": "Motionboard original, Nov 2026",
+  "aspects": [
+    "9:16",
+    "16:9"
+  ],
+  "layers": {
+    "matte": {
+      "file": "matte.html",
+      "blend": "multiply"
+    },
+    "overlay": {
+      "file": "overlay.html",
+      "blend": "screen"
+    }
+  },
+  "cover": "cover.html",
+  "tail_seconds": 1.5,
+  "theme_keys": {
+    "artist": "boarding pass name line",
+    "song": "song title",
+    "album_line": "small line at the bottom of the pass (optional)",
+    "release_note": "GATE field, e.g. OUT NOW (default NOW)",
+    "colors": "optional overrides: ivory, ink, stamp, gold as [r,g,b]"
+  },
+  "inputs": [
+    "duration",
+    "width",
+    "height",
+    "lines",
+    "cuts",
+    "beats",
+    "downbeats",
+    "theme"
+  ],
+  "fonts": [
+    "JetBrains Mono (OFL 1.1)",
+    "Cormorant Garamond (OFL 1.1)"
+  ],
+  "notes": "Every frame is a pure function of time. One route stop per cut. No place names. No follow or subscribe ask."
+}

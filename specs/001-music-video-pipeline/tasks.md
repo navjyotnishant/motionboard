@@ -146,11 +146,11 @@ description: "Task list for Music Video Pipeline (Motionboard v1)"
 **Independent Test**: each pack renders over the fixture song with stub clips; lyrics follow `song_analysis.lines`; end card shows theme texts; no follow or subscribe ask.
 
 - [x] T076 [MOT-143] Add `modes/LICENSE` (full PolyForm Noncommercial 1.0.0 text, required notice), dual licence section in `README.md`, and a licence check in `engine/tests/unit/test_licences.py` that every `modes/*/animation/` folder carries the notice
-- [ ] T077 [MOT-144] [P] Build the Studio Session pack (VU meter and waveform pulses on beats, lyrics on a lyric sheet, REC light, tape counter, cassette label end card) in `modes/studio-session/animation/`
-- [ ] T078 [MOT-145] [P] Build the Travel pack (route line drawn between cuts, lyric words as ink stamps without place names, boarding pass end card) in `modes/travel/animation/`
-- [ ] T079 [MOT-146] [P] Port the A Letter Never Sent kinetic typography as the Lyric Story pack (one big word per beat, hard cuts, handwriting contrast) in `modes/lyric-story/animation/`
-- [ ] T080 [MOT-147] [P] Build the Mood Loop pack (light leaks, drifting particles, breathing lyric fades) in `modes/mood-loop/animation/`
-- [ ] T081 [MOT-148] Render a contact sheet and 10 s preview per pack with the fixture song and record results in `specs/001-music-video-pipeline/checklists/packs-run.md`
+- [x] T077 [MOT-144] [P] Build the Studio Session pack (VU meter and waveform pulses on beats, lyrics on a lyric sheet, REC light, tape counter, cassette label end card) in `modes/studio-session/animation/`
+- [x] T078 [MOT-145] [P] Build the Travel pack (route line drawn between cuts, lyric words as ink stamps without place names, boarding pass end card) in `modes/travel/animation/`
+- [x] T079 [MOT-146] [P] Port the A Letter Never Sent kinetic typography as the Lyric Story pack (one big word per beat, hard cuts, handwriting contrast) in `modes/lyric-story/animation/`
+- [x] T080 [MOT-147] [P] Build the Mood Loop pack (light leaks, drifting particles, breathing lyric fades) in `modes/mood-loop/animation/`
+- [x] T081 [MOT-148] Render a contact sheet and 10 s preview per pack with the fixture song and record results in `specs/001-music-video-pipeline/checklists/packs-run.md`
 
 ## Dependencies
 
