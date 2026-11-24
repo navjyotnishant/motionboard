@@ -21,6 +21,7 @@ from motionboard.backends import registry
 from motionboard.backends.base import ClipJob
 from motionboard.db import repo
 from motionboard.db.connection import open_db
+from motionboard.finish import proxy
 from motionboard.guard import fitcheck, monitor, presets
 from motionboard.guard.run import db_sampler, record_fit_sample, run_guarded
 from motionboard.jobs import queue
@@ -144,6 +145,7 @@ def run_job(conn: sqlite3.Connection, job: dict, sampler=monitor.sample, start_t
         problems.append(f"expected {s['width']}x{s['height']}, got {info['width']}x{info['height']}")
     record_fit_sample(conn, backend.name, s["mode"], s["width"], s["height"], s["frames"], outcome,
                       monitor.total_gb())
+    previews = proxy.make(out)
     if shot:
         assets.add(conn, shot["id"], "clip", out, backend.name, ACTOR)
         repo.update(conn, "shot", shot["id"], {"state": "clip_ready", "dirty": False, "updated_at": repo.now()},
@@ -153,7 +155,7 @@ def run_job(conn: sqlite3.Connection, job: dict, sampler=monitor.sample, start_t
         "stop_reason": "; ".join(problems) or None}, ACTOR)
     return {"job": job["id"], "ok": True, "shot": shot["ord"] if shot else None, "out": str(out),
             "seconds": round(outcome.seconds, 1), "sec_per_frame": spf, "probe": info, "problems": problems,
-            "vocal_isolated": isolated}
+            "vocal_isolated": isolated, "previews": previews}
 
 
 def run(watch: bool = False, sampler=monitor.sample, idle_poll: float = 3.0, max_jobs: int | None = None) -> list[dict]:

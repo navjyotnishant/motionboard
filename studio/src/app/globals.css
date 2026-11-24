@@ -1,0 +1,48 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-s1: var(--surface-1);
+  --color-s2: var(--surface-2);
+  --color-s3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--text);
+  --color-fg2: var(--text-2);
+  --color-fg3: var(--text-3);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-info: var(--info);
+  --color-idle: var(--idle);
+  --font-sans: var(--font);
+  --font-mono: var(--mono);
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--t-md);
+  -webkit-font-smoothing: antialiased;
+}
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.45; }
+:focus-visible { outline: 1px solid var(--accent); outline-offset: 1px; }
+::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+input, textarea, select {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r1);
+  color: var(--text);
+  padding: 6px 8px;
+  font: inherit;
+  width: 100%;
+}
+textarea { resize: vertical; min-height: 56px; line-height: 1.45; }
+input:focus, textarea:focus, select:focus { border-color: var(--line-strong); outline: none; }
+.scroll-thin { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }

@@ -1,0 +1,43 @@
+/* Motionboard Studio design tokens. Dark by default; frames are the content, controls recede.
+   One accent colour, 1 px lines, no shadows, 8 px grid, tabular numbers for timecodes. */
+:root {
+  --bg: #0b0b0d;
+  --surface-1: #121216;
+  --surface-2: #18181d;
+  --surface-3: #202027;
+  --line: #2a2a33;
+  --line-strong: #3a3a46;
+  --text: #ecebe8;
+  --text-2: #a9a8b0;
+  --text-3: #6f6e78;
+  --accent: #e8b061;
+  --accent-ink: #1a1206;
+  --ok: #5fcf8a;
+  --warn: #e8c35f;
+  --bad: #ef6a5b;
+  --info: #6fa8ef;
+  --idle: #5b5a63;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s8: 48px;
+  --r1: 4px; --r2: 6px; --r3: 10px;
+  --t-xs: 11px; --t-sm: 12px; --t-md: 13px; --t-lg: 15px; --t-xl: 20px; --t-2xl: 28px;
+  --font: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #f6f5f2;
+  --surface-1: #ffffff;
+  --surface-2: #f0efeb;
+  --surface-3: #e6e4df;
+  --line: #dddad3;
+  --line-strong: #c8c4bb;
+  --text: #17161a;
+  --text-2: #55535c;
+  --text-3: #8b8992;
+  --accent: #b97a1e;
+  --accent-ink: #ffffff;
+  color-scheme: light;
+}
+
+.tnum { font-variant-numeric: tabular-nums; }
