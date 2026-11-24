@@ -18,7 +18,7 @@ export class DbError extends Error {
 export function raw(): DB {
   if (g.__mbdb) return g.__mbdb;
   if (!fs.existsSync(DB_PATH)) {
-    throw new DbError("DB_MISSING", `no Motionboard database at ${DB_PATH}; run: uv run mb db migrate`);
+    throw new DbError("DB_MISSING", `no Motionboard database at ${DB_PATH}; run: mb db migrate`);
   }
   const db = new Database(DB_PATH);
   db.pragma("journal_mode = WAL");
@@ -27,7 +27,7 @@ export function raw(): DB {
   const v = (db.prepare("SELECT MAX(version) AS v FROM schema_version").get() as { v: number | null })?.v ?? 0;
   if (v < MIN_SCHEMA) {
     db.close();
-    throw new DbError("SCHEMA_OLD", `database schema ${v} is older than ${MIN_SCHEMA}; run: uv run mb db migrate`);
+    throw new DbError("SCHEMA_OLD", `database schema ${v} is older than ${MIN_SCHEMA}; run: mb db migrate`);
   }
   g.__mbdb = db;
   return db;

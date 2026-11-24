@@ -69,34 +69,59 @@ def transcribe_words(audio: Path) -> list[tuple[str, float, float]] | None:
     return [w for w in words if w[0]]
 
 
+def _window(lines: list[str], heard: list[str]) -> tuple[int, int]:
+    """The run of lyric lines the segment most likely covers. A song repeats its chorus, so matching the
+    segment against the whole sheet scatters the hits; slide a window of about the heard length instead."""
+    words_per_line = [len([w for w in ln.split() if _norm(w)]) for ln in lines]
+    best, best_range = -1.0, (0, len(lines) - 1)
+    for i in range(len(lines)):
+        n, j = 0, i
+        while j < len(lines) and n < len(heard) * 1.25:
+            n += words_per_line[j]
+            j += 1
+        cand = [_norm(w) for ln in lines[i:j] for w in ln.split() if _norm(w)]
+        score = difflib.SequenceMatcher(a=cand, b=heard, autojunk=False).ratio()
+        if score > best:
+            best, best_range = score, (i, j - 1)
+    return best_range
+
+
 def match_lines(lines: list[str], words: list[tuple[str, float, float]], duration: float) -> list[Line] | None:
-    """Map each lyric line to a run of transcribed words. Needs most lines to match."""
+    """Map the lyric lines sung in this segment to runs of transcribed words. Lines outside the segment
+    are left out. Needs most lines in the sung run to match."""
+    heard = [w[0] for w in words]
+    lo, hi = _window(lines, heard)
     lyric_words, owner = [], []
-    for i, line in enumerate(lines):
-        for w in line.split():
+    for i in range(lo, hi + 1):
+        for w in lines[i].split():
             if _norm(w):
                 lyric_words.append(_norm(w))
                 owner.append(i)
-    sm = difflib.SequenceMatcher(a=lyric_words, b=[w[0] for w in words], autojunk=False)
+    sm = difflib.SequenceMatcher(a=lyric_words, b=heard, autojunk=False)
     hits: dict[int, list[int]] = {}
     for a, b, size in sm.get_matching_blocks():
         for k in range(size):
             hits.setdefault(owner[a + k], []).append(b + k)
-    if len(hits) < max(1, int(0.6 * len(lines))):
+    if not hits:
         return None
-    starts: list[float | None] = [words[min(hits[i])][1] if i in hits else None for i in range(len(lines))]
-    # fill gaps by interpolation between known starts
-    for i, s in enumerate(starts):
-        if s is None:
-            prev = next((starts[j] for j in range(i - 1, -1, -1) if starts[j] is not None), 0.0)
-            nxt = next((starts[j] for j in range(i + 1, len(starts)) if starts[j] is not None), duration)
+    first, last = min(hits), max(hits)
+    run = list(range(first, last + 1))
+    if len(run) < 2 or sum(1 for i in run if i in hits) < max(2, int(0.6 * len(run))):
+        return None
+    starts: dict[int, float] = {i: words[min(hits[i])][1] for i in run if i in hits}
+    for i in run:  # fill gaps by interpolation between known starts
+        if i not in starts:
+            prev = next((starts[j] for j in range(i - 1, first - 1, -1) if j in starts), 0.0)
+            nxt = next((starts[j] for j in range(i + 1, last + 1) if j in starts), duration)
             starts[i] = (prev + nxt) / 2
-    starts[0] = 0.0
     out = []
-    for i, line in enumerate(lines):
-        end = starts[i + 1] if i + 1 < len(lines) else duration
-        out.append(Line(round(starts[i], 3), round(max(end, starts[i] + 0.1), 3), line,
+    for k, i in enumerate(run):
+        end = starts[run[k + 1]] if k + 1 < len(run) else words[max(hits[last])][2] + 0.4
+        end = min(end, duration)
+        out.append(Line(round(starts[i], 3), round(max(end, starts[i] + 0.1), 3), lines[i],
                         "aligned" if i in hits else "beat"))
+    while len(out) > 2 and out[-1].end - out[-1].start < 0.5:  # a line cut off by the segment end
+        out.pop()
     return out
 
 

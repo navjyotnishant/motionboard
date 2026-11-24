@@ -72,17 +72,19 @@ if [ "$EXTRAS" = 1 ]; then
   note "with optional extras: demucs (vocal isolation for lip-sync)$([ "$MAC" = 1 ] && echo ', mlx-whisper (sung line timing)')"
 fi
 run uv sync --project "$ENGINE" "${EXTRA_ARGS[@]}" --quiet && [ "$CHECK" = 0 ] && ok "engine installed"
-run env MB_HOME="$MB_HOME" uv run --project "$ENGINE" mb db migrate --json >/dev/null && [ "$CHECK" = 0 ] && ok "database ready at $MB_HOME/motionboard.db"
+run env MB_HOME="$MB_HOME" "$ENGINE/.venv/bin/mb" db migrate --json >/dev/null && [ "$CHECK" = 0 ] && ok "database ready at $MB_HOME/motionboard.db"
 
 step "4. The mb command"
 SHIM="$BIN_DIR/mb"
 if [ "$CHECK" = 1 ]; then
-  note "would write $SHIM (runs: uv run --project $ENGINE mb ...)"
+  note "would write $SHIM (runs $ENGINE/.venv/bin/mb)"
 else
   mkdir -p "$BIN_DIR"
   cat > "$SHIM" <<EOF
 #!/usr/bin/env bash
 # Motionboard engine launcher, written by install.sh. Repo: $REPO
+# Run the engine's own environment directly: "uv run" would re-sync it and drop the optional extras.
+if [ -x "$ENGINE/.venv/bin/mb" ]; then exec "$ENGINE/.venv/bin/mb" "\$@"; fi
 exec uv run --quiet --project "$ENGINE" mb "\$@"
 EOF
   chmod +x "$SHIM"
@@ -119,7 +121,7 @@ if [ "$MAC" = 1 ]; then
       echo "    What it does: $6"
       echo "    Size: about $2. Licence: $3 ($4)"
       if ask "Download $1 now$([ "$5" = 1 ] && echo ' (optional)')?"; then
-        HF_HUB_DISABLE_XET=1 uv run --project "$ENGINE" --with "huggingface_hub[cli]" hf download "$1" && ok "$1 downloaded"
+        HF_HUB_DISABLE_XET=1 uvx --from "huggingface_hub[cli]" hf download "$1" && ok "$1 downloaded"
       else
         note "skipped $1. Later: HF_HUB_DISABLE_XET=1 hf download $1"
       fi
@@ -158,7 +160,7 @@ step "9. Check"
 if [ "$CHECK" = 1 ]; then
   note "would run: mb setup"
 else
-  env MB_HOME="$MB_HOME" uv run --quiet --project "$ENGINE" mb setup --quick | sed -n '1,12p'
+  env MB_HOME="$MB_HOME" "$ENGINE/.venv/bin/mb" setup --quick | sed -n '1,12p'
 fi
 echo
 echo "Done. In Claude Code, say: make a music video for <song>. Or open the Studio: mb studio start"

@@ -3,7 +3,15 @@
 import "server-only";
 import { execFile } from "node:child_process";
 import { z } from "zod";
+import fs from "node:fs";
+import path from "node:path";
 import { ENGINE_ROOT } from "./config";
+
+// The engine's own environment, run directly: "uv run" would re-sync it and drop the optional extras
+// (demucs, mlx-whisper) that install.sh added.
+const VENV_MB = path.join(ENGINE_ROOT, ".venv", "bin", "mb");
+const mbCommand = (args: string[]): [string, string[]] =>
+  fs.existsSync(VENV_MB) ? [VENV_MB, args] : ["uv", ["run", "--project", ENGINE_ROOT, "mb", ...args]];
 
 export type Report = {
   ok: boolean;
@@ -127,9 +135,10 @@ export function build(action: string, args: unknown): string[] {
 
 export function runMb(args: string[], timeoutMs = 600_000): Promise<Report> {
   return new Promise((resolve) => {
+    const [cmd, argv] = mbCommand([...args, "--json"]);
     execFile(
-      "uv",
-      ["run", "--project", ENGINE_ROOT, "mb", ...args, "--json"],
+      cmd,
+      argv,
       { cwd: ENGINE_ROOT, env: { ...process.env, MB_ACTOR: "studio" }, timeout: timeoutMs, maxBuffer: 16 << 20 },
       (err, stdout, stderr) => {
         const line = stdout.trim().split("\n").filter(Boolean).pop() || "";
