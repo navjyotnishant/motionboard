@@ -5,6 +5,12 @@ description: Build a music video storyboard timed to a song with Motionboard. Us
 
 # Motionboard: Storyboard
 
+**Where `mb` runs.** On the creator's Mac, never in a cloud workspace.
+- Claude Code: the terminal.
+- Claude app (desktop or mobile, with the Mac linked): the Mac's shell tool (device bash or Desktop Commander). If `mb` is not on that shell's PATH, use `~/.local/bin/mb`. If no Mac tool is available, say the Mac must be linked through the Claude desktop app, and stop.
+- Long jobs (clips, finish) run detached (`mb worker --detach`); check them with `mb queue --json` instead of waiting on one call.
+- Images and videos it makes live on the Mac; stage or open them to show the creator.
+
 Storyboard first is the rule: nothing renders until the creator approves this board.
 
 All engine calls run from the plugin's `engine/` folder as `mb <command> --json`. Every call prints one JSON report. Relay its `verified` and `not_verified` lists honestly; never claim something the report lists as not verified.

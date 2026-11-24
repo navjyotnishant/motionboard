@@ -5,6 +5,12 @@ description: Open the Motionboard Storyboard Studio, the local web app that show
 
 # Motionboard: Studio
 
+**Where `mb` runs.** On the creator's Mac, never in a cloud workspace.
+- Claude Code: the terminal.
+- Claude app (desktop or mobile, with the Mac linked): the Mac's shell tool (device bash or Desktop Commander). If `mb` is not on that shell's PATH, use `~/.local/bin/mb`. If no Mac tool is available, say the Mac must be linked through the Claude desktop app, and stop.
+- Long jobs (clips, finish) run detached (`mb worker --detach`); check them with `mb queue --json` instead of waiting on one call.
+- Images and videos it makes live on the Mac; stage or open them to show the creator.
+
 The Studio is a local web app on 127.0.0.1. It reads and writes the same database as the chat, so changes made here or in the Studio show up in both within a second or two.
 
 ## Start

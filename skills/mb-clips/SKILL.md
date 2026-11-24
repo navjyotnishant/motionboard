@@ -5,6 +5,12 @@ description: Make image plates and local video clips for an approved Motionboard
 
 # Motionboard: Plates and clips
 
+**Where `mb` runs.** On the creator's Mac, never in a cloud workspace.
+- Claude Code: the terminal.
+- Claude app (desktop or mobile, with the Mac linked): the Mac's shell tool (device bash or Desktop Commander). If `mb` is not on that shell's PATH, use `~/.local/bin/mb`. If no Mac tool is available, say the Mac must be linked through the Claude desktop app, and stop.
+- Long jobs (clips, finish) run detached (`mb worker --detach`); check them with `mb queue --json` instead of waiting on one call.
+- Images and videos it makes live on the Mac; stage or open them to show the creator.
+
 Run engine commands as `mb <command> --json` (the `mb` command comes from `./install.sh`). Relay each report's `verified` and `not_verified` lists honestly.
 
 ## Rules
