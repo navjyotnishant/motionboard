@@ -17,7 +17,7 @@ export function mbChat(...args: string[]) {
 }
 
 export async function login(page: Page) {
-  await page.goto("/?token=e2e-token");
+  await page.goto("/?session=e2e-token");
 }
 
 export async function openBoard(page: Page) {

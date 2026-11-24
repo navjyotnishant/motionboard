@@ -8,5 +8,5 @@ mb studio start    # installs and builds on first run, prints the URL with a ses
 mb studio stop
 ```
 
-Development: `npm run dev` with `MB_STUDIO_TOKEN` set, then open `http://127.0.0.1:3000/?token=...`.
+Development: `npm run dev` with `MB_STUDIO_TOKEN` set, then open `http://127.0.0.1:3000/?session=...`.
 Tests: `npm test` (unit), `npm run typecheck`.

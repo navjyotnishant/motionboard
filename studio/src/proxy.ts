@@ -8,9 +8,11 @@ const ORIGINS = [`http://127.0.0.1:${PORT}`, `http://localhost:${PORT}`];
 
 export function proxy(req: NextRequest) {
   const url = req.nextUrl;
-  const given = url.searchParams.get("token");
+  // ?session= is what mb studio start prints (the engine's report scrubber hides anything called "token").
+  const given = url.searchParams.get("session") ?? url.searchParams.get("token");
   const expected = expectedToken();
   if (given && expected && safeEqual(given, expected)) {
+    url.searchParams.delete("session");
     url.searchParams.delete("token");
     const res = NextResponse.redirect(url);
     res.cookies.set(COOKIE, given, { httpOnly: true, sameSite: "strict", path: "/" });

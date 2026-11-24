@@ -92,6 +92,7 @@ def _wait_up(port: int, seconds: float = 40) -> bool:
 
 @studio_app.command("start")
 def studio_start(port: int = typer.Option(4317, "--port"), rebuild: bool = typer.Option(False, "--rebuild"),
+                 no_open: bool = typer.Option(False, "--no-open", help="Do not open the browser"),
                  as_json: bool = JsonOpt) -> None:
     """Start the Studio and print its URL (with the session token)."""
 
@@ -99,7 +100,9 @@ def studio_start(port: int = typer.Option(4317, "--port"), rebuild: bool = typer
         if _running():
             pid, p = _running()
             tok = _token_file().read_text().strip() if _token_file().exists() else ""
-            r.data = {"url": f"http://{HOST}:{p}/?token={tok}", "pid": pid, "already_running": True}
+            r.data = {"url": f"http://{HOST}:{p}/?session={tok}", "pid": pid, "already_running": True}
+            if not no_open and shutil.which("open"):
+                subprocess.run(["open", r.data["url"]], check=False)
             return
         if not shutil.which("node") or not shutil.which("npm"):
             raise MbError("MISSING_TOOL", "Node 20 or later is needed for the Studio", hint="brew install node")
@@ -126,10 +129,30 @@ def studio_start(port: int = typer.Option(4317, "--port"), rebuild: bool = typer
         if not _wait_up(port):
             raise MbError("INTERNAL", f"the Studio did not answer on port {port}; see {log}")
         r.verified.append(f"Studio answers on http://{HOST}:{port} (localhost only)")
-        r.data = {"url": f"http://{HOST}:{port}/?token={token}", "pid": proc.pid, "log": str(log)}
-        r.next = "open the URL; mb studio stop when done"
+        r.data = {"url": f"http://{HOST}:{port}/?session={token}", "pid": proc.pid, "log": str(log)}
+        if not no_open:
+            subprocess.run(["open", r.data["url"]], check=False) if shutil.which("open") else None
+            r.verified.append("opened the Studio in your browser")
+        r.next = "mb studio open to open it again; mb studio stop when done"
 
     run("mb studio start", as_json, go)
+
+
+@studio_app.command("open")
+def studio_open(as_json: bool = JsonOpt) -> None:
+    """Open the running Studio in the browser (with its session link)."""
+
+    def go(conn, r):
+        cur = _running()
+        if not cur or not _token_file().exists():
+            raise MbError("NOT_FOUND", "the Studio is not running", hint="mb studio start")
+        url = f"http://{HOST}:{cur[1]}/?session={_token_file().read_text().strip()}"
+        if shutil.which("open"):
+            subprocess.run(["open", url], check=False)
+            r.verified.append("opened the Studio in your browser")
+        r.data = {"url": url}
+
+    run("mb studio open", as_json, go)
 
 
 @studio_app.command("stop")

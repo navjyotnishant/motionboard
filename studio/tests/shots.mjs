@@ -17,7 +17,7 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
-await page.goto(`${base}/?token=${token}`);
+await page.goto(`${base}/?session=${token}`);
 await page.waitForTimeout(1200);
 await page.screenshot({ path: `${out}/bin.png` });
 if (pid) {

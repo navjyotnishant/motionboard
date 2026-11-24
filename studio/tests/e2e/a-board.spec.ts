@@ -5,7 +5,7 @@ import { mbChat, openBoard, project } from "./helpers";
 test("refuses requests without the session token or from another origin", async ({ request, page }) => {
   expect((await request.get("/api/projects")).status()).toBe(403);
   expect((await request.get("/")).status()).toBe(403);
-  await page.goto("/?token=e2e-token");
+  await page.goto("/?session=e2e-token");
   const cookies = await page.context().cookies();
   const header = { cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; ") };
   expect((await request.get("/api/projects", { headers: header })).status()).toBe(200);
