@@ -74,21 +74,21 @@ description: "Task list for Music Video Pipeline (Motionboard v1)"
 
 **Independent Test**: Approved 5 shot storyboard renders 5 clips of exact length and size with no out of memory; rerun does no work.
 
-- [ ] T038 [MOT-54] [P] [US2] Define `PlateAdapter` protocol and registry in `engine/src/motionboard/plates/adapter.py`
-- [ ] T039 [MOT-55] [P] [US2] Implement manual adapter (watch folder naming `shot-NN.png`, upload) in `engine/src/motionboard/plates/manual.py`
-- [ ] T040 [MOT-56] [P] [US2] Implement command adapter with placeholders run under the guard in `engine/src/motionboard/plates/command.py`
-- [ ] T041 [MOT-57] [P] [US2] Implement http adapter (templated body, key from file or env at call time, image extraction, declared cost) in `engine/src/motionboard/plates/http_api.py`
-- [ ] T042 [MOT-58] [P] [US2] Implement handoff adapter (pending `plate_request` rows, `mb plate fulfil`) in `engine/src/motionboard/plates/handoff.py`
-- [ ] T043 [MOT-59] [US2] Add `mb adapter` and `mb plates` with cost estimate and `COST_NOT_CONFIRMED` in `engine/src/motionboard/cli.py`
-- [ ] T044 [MOT-60] [US2] Implement LTX-2.3 backend (i2v and a2v command build, snapshot path, style or no figure line, progress parse) in `engine/src/motionboard/backends/ltx23.py`
-- [ ] T045 [MOT-61] [P] [US2] Add measured profile points from the Almost Yours runs in `engine/src/motionboard/backends/profiles/ltx23.json`
-- [ ] T046 [MOT-62] [US2] Implement job queue ops (enqueue, priority, pause, resume, stop, move) in `engine/src/motionboard/jobs/queue.py`
-- [ ] T047 [MOT-63] [US2] Implement worker (one job at a time, fit check, `run_guarded`, progress and sec per frame, skip shots with valid active clip unless redo, detach mode, logs) in `engine/src/motionboard/jobs/worker.py`
-- [ ] T048 [MOT-64] [US2] Add `mb clips` (gate check, fit per setting, enqueue), `mb worker`, `mb queue` in `engine/src/motionboard/cli.py`
-- [ ] T049 [MOT-65] [P] [US2] Implement vocal stem per lip-sync shot with demucs under the guard in `engine/src/motionboard/audio/vocals.py`
-- [ ] T050 [MOT-66] [US2] Write skill `skills/mb-clips/SKILL.md`: pick adapter, confirm cost, fulfil handoff requests with the creator's MCP image tool, show plate sheet, stop for approval, queue clips, start worker, report progress and guard stops
-- [ ] T051 [MOT-67] [P] [US2] Tests: clips refused before gates; paid adapter refused without confirm in `engine/tests/unit/test_gates_cost.py`
-- [ ] T052 [MOT-68] [P] [US2] Tests: stub backend run, stop mid queue, resume renders no finished shot in `engine/tests/integration/test_resume.py`
+- [x] T038 [MOT-54] [P] [US2] Define `PlateAdapter` protocol and registry in `engine/src/motionboard/plates/adapter.py`
+- [x] T039 [MOT-55] [P] [US2] Implement manual adapter (watch folder naming `shot-NN.png`, upload) in `engine/src/motionboard/plates/manual.py`
+- [x] T040 [MOT-56] [P] [US2] Implement command adapter with placeholders run under the guard in `engine/src/motionboard/plates/command.py`
+- [x] T041 [MOT-57] [P] [US2] Implement http adapter (templated body, key from file or env at call time, image extraction, declared cost) in `engine/src/motionboard/plates/http_api.py`
+- [x] T042 [MOT-58] [P] [US2] Implement handoff adapter (pending `plate_request` rows, `mb plate fulfil`) in `engine/src/motionboard/plates/handoff.py`
+- [x] T043 [MOT-59] [US2] Add `mb adapter` and `mb plates` with cost estimate and `COST_NOT_CONFIRMED` in `engine/src/motionboard/cli.py`
+- [x] T044 [MOT-60] [US2] Implement LTX-2.3 backend (i2v and a2v command build, snapshot path, style or no figure line, progress parse) in `engine/src/motionboard/backends/ltx23.py`
+- [x] T045 [MOT-61] [P] [US2] Add measured profile points from the Almost Yours runs in `engine/src/motionboard/backends/profiles/ltx23.json`
+- [x] T046 [MOT-62] [US2] Implement job queue ops (enqueue, priority, pause, resume, stop, move) in `engine/src/motionboard/jobs/queue.py`
+- [x] T047 [MOT-63] [US2] Implement worker (one job at a time, fit check, `run_guarded`, progress and sec per frame, skip shots with valid active clip unless redo, detach mode, logs) in `engine/src/motionboard/jobs/worker.py`
+- [x] T048 [MOT-64] [US2] Add `mb clips` (gate check, fit per setting, enqueue), `mb worker`, `mb queue` in `engine/src/motionboard/cli.py`
+- [x] T049 [MOT-65] [P] [US2] Implement vocal stem per lip-sync shot with demucs under the guard in `engine/src/motionboard/audio/vocals.py`
+- [x] T050 [MOT-66] [US2] Write skill `skills/mb-clips/SKILL.md`: pick adapter, confirm cost, fulfil handoff requests with the creator's MCP image tool, show plate sheet, stop for approval, queue clips, start worker, report progress and guard stops
+- [x] T051 [MOT-67] [P] [US2] Tests: clips refused before gates; paid adapter refused without confirm in `engine/tests/unit/test_gates_cost.py`
+- [x] T052 [MOT-68] [P] [US2] Tests: stub backend run, stop mid queue, resume renders no finished shot in `engine/tests/integration/test_resume.py`
 
 **Checkpoint**: P1 complete: song to approved clips.
 
