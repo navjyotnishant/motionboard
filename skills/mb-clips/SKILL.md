@@ -5,7 +5,7 @@ description: Make image plates and local video clips for an approved Motionboard
 
 # Motionboard: Plates and clips
 
-Run engine commands from the plugin's `engine/` folder as `uv run mb <command> --json`. Relay each report's `verified` and `not_verified` lists honestly.
+Run engine commands as `mb <command> --json` (the `mb` command comes from `./install.sh`). Relay each report's `verified` and `not_verified` lists honestly.
 
 ## Rules
 
@@ -17,12 +17,12 @@ Run engine commands from the plugin's `engine/` folder as `uv run mb <command> -
 ## 1. Pick the image source
 
 ```bash
-uv run mb adapter --list --json
+mb adapter --list --json
 ```
 
 Ask which source to use if it is not obvious:
 
-- **Own images**: `uv run mb plate upload --project <id> --shot 3 --file <img> --json`, or drop `shot-03.png` style files into `<project>/plates/inbox/` and run `mb plates --adapter manual`.
+- **Own images**: `mb plate upload --project <id> --shot 3 --file <img> --json`, or drop `shot-03.png` style files into `<project>/plates/inbox/` and run `mb plates --adapter manual`.
 - **MCP image tool (handoff)**: add once with `mb adapter --add muse --kind handoff --cost 0.01 --config '{"hint":"Muse"}'`. Then `mb plates --adapter muse --confirm-cost` (after the yes) creates pending requests; for each, `mb plate requests` gives the prompt, size and any character reference image. Generate the image with the creator's MCP tool (pass the reference image for character shots so faces stay consistent), save it, then `mb plate fulfil --request <id> --file <img>`.
 - **Local model**: `--kind command` with a `cmd` list using `{prompt} {out} {w} {h} {ref} {seed}`.
 - **HTTP API**: `--kind http` with `url`, `body`, `image_field`, and `key_file` or `key_env`.
@@ -30,7 +30,7 @@ Ask which source to use if it is not obvious:
 ## 2. Review plates
 
 ```bash
-uv run mb sheet --project <id> --kind plates --json
+mb sheet --project <id> --kind plates --json
 ```
 
 Show the sheet. For each shot the creator dislikes: `mb review --shot N --kind plate --decision reject --note "<why>"`, edit the shot if needed (`mb shot set`), and request again with `--shots N`. Approve the rest with `mb review --decision approve --all --shot 0` once the creator says so, then `mb approve --stage plates`.
@@ -38,9 +38,9 @@ Show the sheet. For each shot the creator dislikes: `mb review --shot N --kind p
 ## 3. Render clips
 
 ```bash
-uv run mb guard --json                     # show the active guard preset
-uv run mb clips --project <id> --json      # fit check, then queue; refuses with suggestions if it will not fit
-uv run mb worker --detach --json           # renders in the background, one shot at a time
+mb guard --json                     # show the active guard preset
+mb clips --project <id> --json      # fit check, then queue; refuses with suggestions if it will not fit
+mb worker --detach --json           # renders in the background, one shot at a time
 ```
 
 Tell the creator the estimated time from the report. LTX-2.3 takes about 4 to 5 seconds per frame at 576x1024 on an M3 Max.
@@ -48,11 +48,11 @@ Tell the creator the estimated time from the report. LTX-2.3 takes about 4 to 5 
 ## 4. Watch, pause, stop, redo
 
 ```bash
-uv run mb queue --json                     # progress, memory, guard
-uv run mb queue --pause --json             # pause after the current shot
-uv run mb queue --resume --json && uv run mb worker --detach --json
-uv run mb queue --stop --json              # stop now
-uv run mb clips --project <id> --shots 7 --redo --json
+mb queue --json                     # progress, memory, guard
+mb queue --pause --json             # pause after the current shot
+mb queue --resume --json && mb worker --detach --json
+mb queue --stop --json              # stop now
+mb clips --project <id> --shots 7 --redo --json
 ```
 
 If the guard or fit check stopped a shot, read its `stop_reason` and `suggestion` and offer them; do not retry the same settings blindly.

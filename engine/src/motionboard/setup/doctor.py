@@ -99,9 +99,9 @@ def fix_plan(report: dict) -> list[str]:
     if not t["node"]:
         steps.append("brew install node")
     if not t["ltx-2-mlx"]:
-        steps += ["git clone https://github.com/dgrauet/ltx-2-mlx ~/dev/ltx-2-mlx",
-                  "cd ~/dev/ltx-2-mlx && uv venv --python 3.12 && uv pip install -e .",
-                  "export MB_LTX_BIN=~/dev/ltx-2-mlx/.venv/bin/ltx-2-mlx"]
+        steps += ["# ltx-2-mlx: run ./install.sh from the Motionboard repo (it asks before installing), or by hand:",
+                  "git clone https://github.com/dgrauet/ltx-2-mlx ~/.motionboard/ltx-2-mlx",
+                  "cd ~/.motionboard/ltx-2-mlx && uv venv --python 3.12 && uv pip install -e ."]
     for m in CATALOG:
         row = next(r for r in report["models"] if r["key"] == m.key)
         if row["status"] == "present" or m.backlog:

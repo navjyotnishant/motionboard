@@ -11,6 +11,7 @@ import re
 import shutil
 from pathlib import Path
 
+from motionboard import config
 from motionboard.backends.base import ClipJob, InstallStatus, load_profile, round_8k1
 
 HF_REPO = "dgrauet/ltx-2.3-mlx-q8"
@@ -42,7 +43,10 @@ class LTX23Backend:
 
     @property
     def bin(self) -> str:
-        return self._bin or os.environ.get("MB_LTX_BIN") or shutil.which("ltx-2-mlx") or str(DEFAULT_BIN)
+        if self._bin or os.environ.get("MB_LTX_BIN"):
+            return self._bin or os.environ["MB_LTX_BIN"]
+        installed = config.home() / "ltx-2-mlx" / ".venv" / "bin" / "ltx-2-mlx"  # where install.sh puts it
+        return shutil.which("ltx-2-mlx") or str(installed if installed.exists() else DEFAULT_BIN)
 
     @property
     def snapshot(self) -> str | None:

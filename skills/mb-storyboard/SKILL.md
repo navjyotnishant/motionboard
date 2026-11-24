@@ -7,7 +7,7 @@ description: Build a music video storyboard timed to a song with Motionboard. Us
 
 Storyboard first is the rule: nothing renders until the creator approves this board.
 
-All engine calls run from the plugin's `engine/` folder as `uv run mb <command> --json`. Every call prints one JSON report. Relay its `verified` and `not_verified` lists honestly; never claim something the report lists as not verified.
+All engine calls run from the plugin's `engine/` folder as `mb <command> --json`. Every call prints one JSON report. Relay its `verified` and `not_verified` lists honestly; never claim something the report lists as not verified.
 
 ## 1. Gather (ask only what is missing, in one message)
 
@@ -21,21 +21,21 @@ Write pasted lyrics to `<project folder>/lyrics.txt` only after the project exis
 ## 2. Create and analyse
 
 ```bash
-uv run mb project new --title "<title>" --song <path> --lyrics-file <file> --idea "<idea>" --aspect 9:16 --look stylized --json
-uv run mb analyze --project <id> --json            # auto segment (65 s, loudest sustained window)
-uv run mb analyze --project <id> --start 134 --end 199 --json   # or a segment the creator names
+mb project new --title "<title>" --song <path> --lyrics-file <file> --idea "<idea>" --aspect 9:16 --look stylized --json
+mb analyze --project <id> --json            # auto segment (65 s, loudest sustained window)
+mb analyze --project <id> --start 134 --end 199 --json   # or a segment the creator names
 ```
 
 Tell the creator the segment picked, the tempo, the number of sung lines, and whether lines were matched to the voice or only spread on the beat grid.
 
 ## 3. Choose a start: brainstorm or mode
 
-Run `uv run mb modes --json` and show modes and looks briefly (name and one line each). Offer two paths:
+Run `mb modes --json` and show modes and looks briefly (name and one line each). Offer two paths:
 
 **Brainstorm.** Write exactly three distinct concepts from the lyrics, idea and analysis. Each concept: `title`, `premise` (one line), `hero_image_idea`, `sample_shots` (three short shots), plus the mode and look it uses. Save them as JSON, then:
 
 ```bash
-uv run mb concepts add --project <id> --file concepts.json --json
+mb concepts add --project <id> --file concepts.json --json
 ```
 
 Show the three side by side. When the creator picks one (or mixes), `mb concepts choose`, then write one shot idea per sung line (see step 4).
@@ -47,7 +47,7 @@ Show the three side by side. When the creator picks one (or mixes), `mb concepts
 Without shot ideas the engine fills shots from the mode's pattern:
 
 ```bash
-uv run mb draft --project <id> --mode two-lovers --look origami --json
+mb draft --project <id> --mode two-lovers --look origami --json
 ```
 
 With a chosen concept, write `shots.json` first: one entry per timed shot, each with `visual`, `action`, `camera`, `has_figure`, and `lip_sync` only for singing shots. Rules for every shot:
@@ -58,7 +58,7 @@ With a chosen concept, write `shots.json` first: one entry per timed shot, each 
 - No on screen text, place names or exhibit labels in the visual.
 
 ```bash
-uv run mb draft --project <id> --mode two-lovers --look origami --shots-file shots.json --replace --json
+mb draft --project <id> --mode two-lovers --look origami --shots-file shots.json --replace --json
 ```
 
 ## 4b. Characters
@@ -75,14 +75,14 @@ The draft creates the mode's cast (HER and HIM, SINGER) and links each to the sh
 ## 5. Review
 
 ```bash
-uv run mb sheet --project <id> --kind storyboard --json
+mb sheet --project <id> --kind storyboard --json
 ```
 
 Show the contact sheet image. List shots as `NN  0:04.2–0:07.9  lyric  |  action`. Take edits:
 
 ```bash
-uv run mb shot set --project <id> --shot 3 --field action --value "<new action>" --json
-uv run mb shot move --project <id> --shot 3 --end 7.9 --json     # cut snaps to a beat within 0.12 s
+mb shot set --project <id> --shot 3 --field action --value "<new action>" --json
+mb shot move --project <id> --shot 3 --end 7.9 --json     # cut snaps to a beat within 0.12 s
 ```
 
 Fields: lyric, visual, action, camera, plate_prompt, motion_prompt, has_figure, lip_sync. Prompts follow the look automatically when visual, action or camera change.
@@ -92,7 +92,7 @@ Fields: lyric, visual, action, camera, plate_prompt, motion_prompt, has_figure, 
 Ask the creator to approve the storyboard. Only on a clear yes:
 
 ```bash
-uv run mb approve --project <id> --stage storyboard --json
+mb approve --project <id> --stage storyboard --json
 ```
 
 Then point to the next stage: plates and clips (`mb-clips`). Also mention the Storyboard Studio can show the same board (`mb-studio`).

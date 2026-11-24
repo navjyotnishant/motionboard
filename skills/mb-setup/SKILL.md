@@ -5,13 +5,21 @@ description: Check that this Mac is ready for Motionboard and explain what is mi
 
 # Motionboard: Setup check
 
-From the plugin's `engine/` folder:
+First check that the `mb` command exists (`command -v mb`).
 
-```bash
-uv sync                                   # first time only: installs the engine's Python packages
-uv run mb db migrate --json
-uv run mb setup --json
-```
+- If it does not, Motionboard is not installed yet. Tell the creator the one defined way to install it, which they run themselves:
+
+  ```bash
+  git clone https://github.com/navjyotnishant/motionboard ~/motionboard
+  cd ~/motionboard && ./install.sh
+  ```
+
+  `./install.sh --check` reports what is missing without changing anything. Full guide: `docs/install.md`.
+- If it does, run:
+
+  ```bash
+  mb setup --json
+  ```
 
 Summarise for the creator in plain words:
 
@@ -22,7 +30,7 @@ Summarise for the creator in plain words:
 
 ## When something is missing
 
-Run `uv run mb setup --fix-plan --json` and show the steps. Then:
+Run `mb setup --fix-plan --json` and show the steps. Running `./install.sh` again from the repo fixes most gaps; it asks before anything large. Then:
 
 - Never run a download or install without the creator's go ahead. Model weights are large (LTX-2.3 about 29 GB, its text encoder about 7.5 GB).
 - The creator accepts each model's licence on Hugging Face and logs in (`hf auth login`) themselves. Never ask for or handle their token.
@@ -30,7 +38,7 @@ Run `uv run mb setup --fix-plan --json` and show the steps. Then:
 
 ## Memory guard
 
-Show the presets with `uv run mb guard --json` and explain in one line each:
+Show the presets with `mb guard --json` and explain in one line each:
 
 - safe: waits for 45% free memory, stops below 12% or after 2 GB of new swap.
 - balanced (default): 35%, 8%, 4 GB.

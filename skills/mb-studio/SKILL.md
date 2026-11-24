@@ -9,7 +9,7 @@ The Studio is a local web app on 127.0.0.1. It reads and writes the same databas
 
 ## Start
 
-1. Run `uv run --project <repo>/engine mb studio start --json`.
+1. Run `mb studio start --json`.
    - First start runs `npm ci` and `next build`; tell the creator it takes a minute or two.
    - The report's `data.url` carries a session token. Give the creator the URL exactly. Do not paste it anywhere else.
 2. If the report says `MISSING_TOOL`, Node is not installed. Give the hint from the report.

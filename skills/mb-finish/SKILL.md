@@ -5,20 +5,20 @@ description: Finish and deliver a Motionboard music video after every clip is ap
 
 # Motionboard: Finish and deliver
 
-Engine commands run from the plugin's `engine/` folder as `uv run mb <command> --json`. Relay `verified` and `not_verified` honestly.
+Engine commands run from the plugin's `engine/` folder as `mb <command> --json`. Relay `verified` and `not_verified` honestly.
 
 ## 1. Theme
 
 The mode's animation pack needs a few texts. Show what is set and what the pack accepts:
 
 ```bash
-uv run mb theme --project <id> --json
+mb theme --project <id> --json
 ```
 
 Ask only for what is missing, then set it:
 
 ```bash
-uv run mb theme --project <id> --set artist=NAVAAN --set "song=Almost Yours" \
+mb theme --project <id> --set artist=NAVAAN --set "song=Almost Yours" \
   --set "album_line=FROM THE ALBUM  AFTER DARK" --set "release_note=COMING SOON" \
   --set highlight_words=almost,love --json
 ```
@@ -30,7 +30,7 @@ Two Lovers also takes `snap_at` (second where the ruby thread snaps) and `chorus
 ## 2. Finish
 
 ```bash
-uv run mb finish --project <id> --json
+mb finish --project <id> --json
 ```
 
 This renders the pack's matte and overlay with HyperFrames (in the foreground, under the memory guard), assembles the cut with ffmpeg (shots trimmed to their exact frames, grade, matte, overlay, fine grain, original audio, 1.5 s tail), makes the cover from a clean clip frame with the pack's title block, and writes the metadata file. About half a minute for a short reel, a few minutes for a full song.
@@ -44,8 +44,8 @@ The report says lyric timing on screen follows the analysed line times and was n
 Only after the creator approves the final video:
 
 ```bash
-uv run mb approve --project <id> --stage final --json
-uv run mb deliver --project <id> --to "<folder>" --post-time "2026-11-24T08:00-06:00" \
+mb approve --project <id> --stage final --json
+mb deliver --project <id> --to "<folder>" --post-time "2026-11-24T08:00-06:00" \
   --platforms "YouTube Shorts,Instagram Reels" --json
 ```
 

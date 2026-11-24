@@ -1,0 +1,15 @@
+{
+  "name": "motionboard",
+  "description": "Motionboard: storyboard first music videos made on your own Mac.",
+  "owner": {
+    "name": "Navjyot Nishant",
+    "url": "https://github.com/navjyotnishant"
+  },
+  "plugins": [
+    {
+      "name": "motionboard",
+      "source": "./",
+      "description": "Storyboard first music videos on your own machine: timed storyboard, image plates from any source, local LTX-2.3 clips under a memory guard, finishing, and a local Storyboard Studio."
+    }
+  ]
+}

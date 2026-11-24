@@ -6,6 +6,16 @@ Motionboard is an open source Claude plugin. Give it a song, lyrics and an idea.
 
 > Status: early development. The engine, skills and five mode packs work end to end with the stub backend and on the reference Mac. The Storyboard Studio web app is next.
 
+## Install
+
+```bash
+git clone https://github.com/navjyotnishant/motionboard ~/motionboard
+cd ~/motionboard && ./install.sh
+```
+
+The installer checks your Mac, installs the engine, the `mb` command, the Studio and the Claude Code plugin, and
+asks before downloading anything large. Full guide, update and uninstall: [docs/install.md](docs/install.md).
+
 ## Principles
 
 - **Storyboard first.** Nothing renders until you approve the board.
