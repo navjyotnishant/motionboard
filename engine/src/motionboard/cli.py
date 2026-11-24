@@ -8,6 +8,7 @@ import typer
 
 from motionboard import __version__
 from motionboard.backends import registry
+from motionboard.config import ACTOR
 from motionboard.db.connection import latest_version, open_db
 from motionboard.guard import fitcheck, presets
 from motionboard.report import MbError, Report
@@ -81,10 +82,10 @@ def guard(
         if create:
             if None in (start, kill, swap):
                 raise MbError("INVALID_INPUT", "--create needs --start, --kill and --swap")
-            p = presets.create(conn, presets.GuardProfile(create, start, kill, swap, poll), actor="chat")
+            p = presets.create(conn, presets.GuardProfile(create, start, kill, swap, poll), actor=ACTOR())
             r.verified.append(f"created preset '{p.name}'")
         if set_name:
-            p = presets.set_active(conn, set_name, actor="chat")
+            p = presets.set_active(conn, set_name, actor=ACTOR())
             r.verified.append(f"active preset is now '{p.name}'")
         act = presets.active(conn)
         r.data = {

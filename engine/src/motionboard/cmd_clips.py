@@ -9,6 +9,7 @@ import typer
 from motionboard import projects
 from motionboard.backends import registry
 from motionboard.cli import JsonOpt, app, run
+from motionboard.config import ACTOR
 from motionboard.db import repo
 from motionboard.guard import fitcheck, monitor, presets
 from motionboard.jobs import queue, worker
@@ -54,7 +55,7 @@ def adapter(
                 raise MbError("INVALID_INPUT", f"--config is not valid JSON: {e}") from e
             if not kind:
                 raise MbError("INVALID_INPUT", "--add needs --kind")
-            adapters.add(conn, add, kind, cfg, cost, "chat")
+            adapters.add(conn, add, kind, cfg, cost, ACTOR())
             r.verified.append(f"adapter '{add}' added")
         r.data = {"adapters": [{"name": a["name"], "kind": a["kind"], "cost_per_image_usd": a["cost_per_image_usd"],
                                 "config": json.loads(a["config"])} for a in repo.find(conn, "plate_adapter",
@@ -76,7 +77,7 @@ def plates_cmd(
     def go(conn, r):
         p = projects.get(conn, project)
         r.project = p["id"]
-        res = plates.request_plates(conn, p, adapter_name, _ords(shots), confirm_cost, "chat")
+        res = plates.request_plates(conn, p, adapter_name, _ords(shots), confirm_cost, ACTOR())
         r.data = res
         if res["done"]:
             r.verified.append(f"{len(res['done'])} plates stored and set active")
@@ -111,7 +112,7 @@ def plate_fulfil(project: str = ProjectOpt, request: str = typer.Option(..., "--
     def go(conn, r):
         p = projects.get(conn, project)
         r.project = p["id"]
-        a = plates.fulfil(conn, p, request, file, "chat")
+        a = plates.fulfil(conn, p, request, file, ACTOR())
         r.data = {"plate": a["path"]}
 
     run("mb plate fulfil", as_json, go)
@@ -125,7 +126,7 @@ def plate_upload(project: str = ProjectOpt, shot: int = typer.Option(..., "--sho
     def go(conn, r):
         p = projects.get(conn, project)
         r.project = p["id"]
-        a = plates.upload(conn, p, shot, file, "chat")
+        a = plates.upload(conn, p, shot, file, ACTOR())
         r.data = {"plate": a["path"]}
 
     run("mb plate upload", as_json, go)
@@ -154,12 +155,12 @@ def review(
             for s in conn.execute("SELECT * FROM shot WHERE project_id = ? ORDER BY ord", (p["id"],)).fetchall():
                 ready = "plate_ready" if kind == "plate" else "clip_ready"
                 if s["state"] == ready:
-                    assets.review(conn, dict(s), kind, "approve", note, "chat")
+                    assets.review(conn, dict(s), kind, "approve", note, ACTOR())
                     done.append(s["ord"])
             r.data = {"approved": done}
             return
         s = board.shot_by_ord(conn, p["id"], shot)
-        s = assets.review(conn, s, kind, decision, note, "chat")
+        s = assets.review(conn, s, kind, decision, note, ACTOR())
         r.data = {"shot": shot, "state": s["state"]}
 
     run("mb review", as_json, go)
@@ -180,7 +181,7 @@ def clips(
         r.project = p["id"]
         board.require_gates(conn, p["id"], "storyboard", "plates")
         if preset:
-            presets.set_active(conn, preset, "chat")
+            presets.set_active(conn, preset, ACTOR())
         profile = presets.active(conn)
         b = registry.get(p["video_backend"])
         inst = b.check_installed()
@@ -194,7 +195,7 @@ def clips(
         fit = fitcheck.fit(b, "a2v" if worst[1] else "i2v", w, h, b.frame_rule(worst[0]), profile, conn, eff)
         if not fit.fits:
             raise MbError("FIT_REFUSED", fit.summary(), hint="; ".join(fit.suggestions))
-        res = queue.enqueue_clips(conn, p, b, _ords(shots), redo, "chat")
+        res = queue.enqueue_clips(conn, p, b, _ords(shots), redo, ACTOR())
         r.data = {**res, "guard": profile.describe(), "fit_longest_shot": fit.summary(),
                   "est_minutes": round(sum((fit.est_seconds or 0) / max(1, worst[0]) * q["frames"]
                                            for q in res["queued"]) / 60, 1)}
@@ -248,14 +249,14 @@ def queue_cmd(
     def go(conn, r):
         pid = projects.get(conn, project)["id"] if project else None
         if pause:
-            queue.pause(conn, "chat")
+            queue.pause(conn, ACTOR())
         if resume:
-            queue.resume(conn, "chat")
+            queue.resume(conn, ACTOR())
         if stop:
-            r.data["stopped"] = queue.stop(conn, pid, "chat")
+            r.data["stopped"] = queue.stop(conn, pid, ACTOR())
         if move:
             jid, pos = move.rsplit(":", 1)
-            queue.move(conn, jid, int(pos), "chat")
+            queue.move(conn, jid, int(pos), ACTOR())
         js = queue.jobs(conn, pid)
         last = {}
         for j in js:

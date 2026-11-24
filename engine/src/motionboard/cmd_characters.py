@@ -6,6 +6,7 @@ import typer
 
 from motionboard import projects
 from motionboard.cli import JsonOpt, app, run
+from motionboard.config import ACTOR
 from motionboard.storyboard import characters, templates
 
 character_app = typer.Typer(no_args_is_help=True, help="Characters: name, reference image, style line")
@@ -51,7 +52,7 @@ def character_add(
     def go(conn, r):
         p = projects.get(conn, project)
         r.project = p["id"]
-        c = characters.add(conn, p, name, style, ref, "chat")
+        c = characters.add(conn, p, name, style, ref, ACTOR())
         r.data = {"character": c}
         if c["reference_image"]:
             r.verified.append(f"reference copied to {c['reference_image']}")
@@ -73,7 +74,7 @@ def character_set(
     def go(conn, r):
         p = projects.get(conn, project)
         r.project = p["id"]
-        c, changed = characters.set_field(conn, p, name, field, value, _look(conn, p), "chat")
+        c, changed = characters.set_field(conn, p, name, field, value, _look(conn, p), ACTOR())
         r.data = {"character": c, "shots_changed": changed}
 
     run("mb character set", as_json, go)
@@ -88,7 +89,7 @@ def character_link(project: str = ProjectOpt, name: str = NameOpt,
     def go(conn, r):
         p = projects.get(conn, project)
         r.project = p["id"]
-        r.data = {"shots_changed": characters.link(conn, p, name, _ords(shots), True, _look(conn, p), "chat")}
+        r.data = {"shots_changed": characters.link(conn, p, name, _ords(shots), True, _look(conn, p), ACTOR())}
 
     run("mb character link", as_json, go)
 
@@ -101,6 +102,6 @@ def character_unlink(project: str = ProjectOpt, name: str = NameOpt,
     def go(conn, r):
         p = projects.get(conn, project)
         r.project = p["id"]
-        r.data = {"shots_changed": characters.link(conn, p, name, _ords(shots), False, _look(conn, p), "chat")}
+        r.data = {"shots_changed": characters.link(conn, p, name, _ords(shots), False, _look(conn, p), ACTOR())}
 
     run("mb character unlink", as_json, go)

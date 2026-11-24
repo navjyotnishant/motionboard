@@ -77,3 +77,14 @@ def test_studio_session_lip_syncs_sung_shots(mb_home, fixtures_dir, monkeypatch)
     lip = [s["ord"] for s in shots if s["lip_sync"]]
     assert lip, "studio session should lip-sync sung lines"
     assert all(s["has_figure"] for s in shots if s["lip_sync"])
+
+
+def test_vocal_slice_covers_every_frame(tmp_path, fixtures_dir):
+    import subprocess
+
+    from motionboard.audio.vocals import AUDIO_MARGIN_S, slice_audio
+
+    out = slice_audio(fixtures_dir / "song10s.wav", 8.5, 10.0, tmp_path / "v.wav", 65 / 24 + AUDIO_MARGIN_S)
+    dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+                                str(out)], capture_output=True, text=True).stdout)
+    assert dur >= 65 / 24 + AUDIO_MARGIN_S - 0.02

@@ -34,3 +34,9 @@ def engine_root() -> Path:
 
 def repo_root() -> Path:
     return engine_root().parent
+
+
+def ACTOR() -> str:  # noqa: N802
+    """Who is making a change: chat (default), or studio when the Studio bridge runs mb with MB_ACTOR=studio."""
+    a = os.environ.get("MB_ACTOR", "chat")
+    return a if a in ("chat", "studio") else "chat"

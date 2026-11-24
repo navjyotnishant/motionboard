@@ -11,6 +11,7 @@ from motionboard.audio import analyze as analyze_mod
 from motionboard.audio import segment as segment_mod
 from motionboard.backends import registry
 from motionboard.cli import JsonOpt, app, run
+from motionboard.config import ACTOR
 from motionboard.db import repo
 from motionboard.report import MbError
 from motionboard.storyboard import board, contact_sheet, io_json, templates
@@ -98,8 +99,8 @@ def analyze(
             repo.insert(conn, "song_analysis", {
                 "project_id": p["id"], "tempo_bpm": a.tempo_bpm, "beats": a.beats,
                 "lines": [vars(x) for x in lines], "loudness": a.loudness, "waveform_peaks": a.peaks,
-                "verified_vocal_alignment": verified}, "chat", key="project_id")
-            projects.touch(conn, p["id"], "chat", segment_start=s, segment_end=round(s + a.duration, 3))
+                "verified_vocal_alignment": verified}, ACTOR(), key="project_id")
+            projects.touch(conn, p["id"], ACTOR(), segment_start=s, segment_end=round(s + a.duration, 3))
         r.data = {"segment": {"start": s, "end": round(s + a.duration, 3), "how": how},
                   "duration": a.duration, "tempo_bpm": a.tempo_bpm, "beats": len(a.beats), "lines": len(lines),
                   "segment_audio": str(seg)}
@@ -121,7 +122,7 @@ def concepts_add(project: str = ProjectOpt, file: Path = typer.Option(..., "--fi
     def go(conn, r):
         p = projects.get(conn, project)
         r.project = p["id"]
-        cs = board.add_concepts(conn, p["id"], file, "chat")
+        cs = board.add_concepts(conn, p["id"], file, ACTOR())
         r.data = {"concepts": [{k: c[k] for k in ("id", "title", "premise")} for c in cs]}
         r.next = f"mb concepts choose --project {p['id']} --concept <id>"
 
@@ -136,7 +137,7 @@ def concepts_choose(project: str = ProjectOpt, concept: str = typer.Option(..., 
     def go(conn, r):
         p = projects.get(conn, project)
         r.project = p["id"]
-        c = board.choose_concept(conn, p["id"], concept, "chat")
+        c = board.choose_concept(conn, p["id"], concept, ACTOR())
         r.data = {"chosen": c["title"]}
 
     run("mb concepts choose", as_json, go)
@@ -181,7 +182,7 @@ def draft(
         ideas = draft_mod.load_shot_ideas(shots_file)
         b = registry.get(p["video_backend"])
         shots = draft_mod.draft(conn, p, m, lk, b, {"beats": json.loads(a["beats"]), "lines": json.loads(a["lines"])},
-                                ideas, "chat", replace)
+                                ideas, ACTOR(), replace)
         r.data = {"mode": m.slug, "look": lk.slug, "animation": m.animation, "shots": len(shots),
                   "list": [_shot_summary(s) for s in shots]}
         r.verified.append("shots tile the segment with no gaps or overlaps")
@@ -209,7 +210,7 @@ def shot_set(
         r.project = p["id"]
         s = board.shot_by_ord(conn, p["id"], shot)
         lk = templates.get_look(p["visual_look"], conn) if p.get("visual_look") else None
-        s = board.set_field(conn, s["id"], field, value, "chat", lk)
+        s = board.set_field(conn, s["id"], field, value, ACTOR(), lk)
         r.data = {"shot": _shot_summary(s), "plate_prompt": s["plate_prompt"], "motion_prompt": s["motion_prompt"]}
 
     run("mb shot set", as_json, go)
@@ -229,7 +230,7 @@ def shot_move(
         r.project = p["id"]
         a = repo.get(conn, "song_analysis", p["id"], key="project_id") or {"beats": "[]"}
         s = board.shot_by_ord(conn, p["id"], shot)
-        pair = board.move_boundary(conn, s["id"], end, registry.get(p["video_backend"]), "chat",
+        pair = board.move_boundary(conn, s["id"], end, registry.get(p["video_backend"]), ACTOR(),
                                    json.loads(a["beats"]))
         r.data = {"shots": [_shot_summary(x) for x in pair]}
 
@@ -256,14 +257,14 @@ def sheet(project: str = ProjectOpt, kind: str = typer.Option("storyboard", "--k
 
 @app.command()
 def approve(project: str = ProjectOpt, stage: str = typer.Option(..., "--stage"),
-            revoke: bool = typer.Option(False, "--revoke"), via: str = typer.Option("chat", "--via"),
+            revoke: bool = typer.Option(False, "--revoke"), via: str = typer.Option(None, "--via"),
             as_json: bool = JsonOpt) -> None:
     """Approve (or revoke) a review gate: storyboard, plates, clips, final."""
 
     def go(conn, r):
         p = projects.get(conn, project)
         r.project = p["id"]
-        r.data = {"approvals": board.approve(conn, p, stage, via, revoke)}
+        r.data = {"approvals": board.approve(conn, p, stage, via or ACTOR(), revoke)}
         r.verified.append(f"{stage} {'revoked' if revoke else 'approved'}")
 
     run("mb approve", as_json, go)

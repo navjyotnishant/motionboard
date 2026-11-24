@@ -8,6 +8,7 @@ import typer
 
 from motionboard import assets, projects
 from motionboard.cli import JsonOpt, app, run
+from motionboard.config import ACTOR
 from motionboard.db import repo
 from motionboard.finish import assemble, metadata
 from motionboard.finish import deliver as deliver_mod
@@ -50,7 +51,7 @@ def theme(
         for k in unset or []:
             th.pop(k, None)
         if set_ or unset:
-            projects.touch(conn, p["id"], "chat", theme=th)
+            projects.touch(conn, p["id"], ACTOR(), theme=th)
         mode = templates.get_mode(p["mode"], conn) if p.get("mode") else None
         keys = packs.load_pack(mode.animation)["theme_keys"] if mode else {}
         r.data = {"theme": th, "pack": mode.animation if mode else None, "pack_keys": keys}

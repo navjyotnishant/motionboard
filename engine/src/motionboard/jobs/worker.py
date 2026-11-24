@@ -89,7 +89,8 @@ def run_job(conn: sqlite3.Connection, job: dict, sampler=monitor.sample, start_t
     audio, isolated = None, None
     if s["mode"] == "a2v" and shot:
         try:
-            audio, isolated = vocals.shot_vocal(Path(project["folder"]), shot, profile)
+            audio, isolated = vocals.shot_vocal(Path(project["folder"]), shot, profile, s["frames"],
+                                                    s.get("fps", 24))
         except MbError as e:
             _fail(conn, job, shot, e.message)
             return {"job": job["id"], "ok": False, "reason": e.message}

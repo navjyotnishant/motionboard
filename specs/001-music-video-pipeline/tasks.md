@@ -135,9 +135,9 @@ description: "Task list for Music Video Pipeline (Motionboard v1)"
 
 ## Phase 8: Polish
 
-- [ ] T073 [MOT-89] [P] Write docs: install, first video, adapters, guard presets, licenses in `docs/`
-- [ ] T074 [MOT-90] [P] Add GitHub Actions CI (ruff, pytest with stub backend, no GPU) in `.github/workflows/ci.yml`
-- [ ] T075 [MOT-91] Run quickstart.md steps 1 to 6 on the reference Mac and record results in `specs/001-music-video-pipeline/checklists/quickstart-run.md`
+- [x] T073 [MOT-89] [P] Write docs: install, first video, adapters, guard presets, licenses in `docs/`
+- [x] T074 [MOT-90] [P] Add GitHub Actions CI (ruff, pytest with stub backend, no GPU) in `.github/workflows/ci.yml`
+- [x] T075 [MOT-91] Run quickstart.md steps 1 to 6 on the reference Mac and record results in `specs/001-music-video-pipeline/checklists/quickstart-run.md`
 
 ## Phase 9: Mode animation packs (Motionboard IP)
 

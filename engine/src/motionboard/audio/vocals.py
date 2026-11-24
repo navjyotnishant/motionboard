@@ -39,20 +39,29 @@ def separate(segment: Path, out: Path, profile: GuardProfile) -> bool:
     return True
 
 
-def slice_audio(src: Path, start: float, end: float, out: Path) -> Path:
+def slice_audio(src: Path, start: float, end: float, out: Path, min_seconds: float = 0.0) -> Path:
+    """Cut [start, end) from src. Pads with silence up to min_seconds when the clip is longer than the shot
+    (frames are rounded up to the backend's frame rule, and the audio must cover every frame)."""
+    af = f"atrim=start={start}:end={max(end, start + min_seconds)},asetpts=PTS-STARTPTS"
+    if min_seconds > 0:
+        af += f",apad=whole_dur={min_seconds:.3f}"
     r = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(src),
-                        "-af", f"atrim=start={start}:end={end},asetpts=PTS-STARTPTS", "-ac", "1", "-ar", "44100",
-                        str(out)], capture_output=True, text=True)
+                        "-af", af, "-ac", "1", "-ar", "44100", str(out)], capture_output=True, text=True)
     if r.returncode != 0:
         raise MbError("INTERNAL", f"audio slice failed: {r.stderr.strip()}")
     return out
 
 
-def shot_vocal(project_folder: Path, shot: dict, profile: GuardProfile) -> tuple[Path, bool]:
-    """Audio for one lip-sync shot. Returns (path, isolated)."""
+AUDIO_MARGIN_S = 0.3  # the a2v encoder needs a little more audio than frames / fps
+
+
+def shot_vocal(project_folder: Path, shot: dict, profile: GuardProfile, frames: int = 0,
+               fps: float = 24.0) -> tuple[Path, bool]:
+    """Audio for one lip-sync shot, long enough for every rendered frame. Returns (path, isolated)."""
     seg = project_folder / "audio" / "segment.wav"
     vocals = project_folder / "audio" / "vocals.wav"
     isolated = separate(seg, vocals, profile)
     src = vocals if isolated else seg
     out = project_folder / "audio" / f"shot-{shot['ord']:02d}-vocal.wav"
-    return slice_audio(src, shot["start"], shot["end"], out), isolated
+    need = frames / fps + AUDIO_MARGIN_S if frames else 0.0
+    return slice_audio(src, shot["start"], shot["end"], out, need), isolated
