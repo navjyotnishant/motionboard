@@ -98,16 +98,16 @@ description: "Task list for Music Video Pipeline (Motionboard v1)"
 
 **Independent Test**: One MP4 matching segment duration, frame count, size and audio, plus cover and metadata.
 
-- [ ] T053 [MOT-69] [US3] Port assemble (trim to cut points, optional piecewise retime, lanczos upscale to 1080x1920 or 1920x1080, mux original audio, tail) in `engine/src/motionboard/finish/assemble.py`
-- [ ] T054 [MOT-70] [P] [US3] Port the Almost Yours dust overlay and matte as the Two Lovers animation pack (lyric rows from `song_analysis.lines`, ruby thread, motes, dusting end card from theme, no follow ask by default) in `modes/two-lovers/animation/`
-- [ ] T055 [MOT-71] [US3] Implement animation pack contract (pack.json: inputs, theme keys, fonts, duration rules), overlay config writer and foreground HyperFrames render in `engine/src/motionboard/finish/overlay.py`
-- [ ] T056 [MOT-72] [US3] Add grade, multiply matte, screen overlay, noise alls=3, CRF 19, faststart to assemble in `engine/src/motionboard/finish/assemble.py`
-- [ ] T057 [MOT-73] [P] [US3] Implement cover from a chosen frame with title block in `engine/src/motionboard/finish/cover.py`
-- [ ] T058 [MOT-74] [P] [US3] Implement metadata file (title, description, tags, hashtags, post time, platforms, synthetic content flag) in `engine/src/motionboard/finish/metadata.py`
-- [ ] T059 [MOT-75] [US3] Implement deliver (copy to folder, verify sizes and durations with ffprobe) in `engine/src/motionboard/finish/deliver.py`
-- [ ] T060 [MOT-76] [US3] Add `mb finish` and `mb deliver` with verification report (duration, frame count, cut points within one frame) in `engine/src/motionboard/cli.py`
-- [ ] T061 [MOT-77] [US3] Write skill `skills/mb-finish/SKILL.md`: theme check, finish, contact sheet of final, stop for approval, deliver
-- [ ] T062 [MOT-78] [P] [US3] Tests: ffmpeg command builder golden output in `engine/tests/unit/test_assemble.py`
+- [x] T053 [MOT-69] [US3] Port assemble (trim to cut points, optional piecewise retime, lanczos upscale to 1080x1920 or 1920x1080, mux original audio, tail) in `engine/src/motionboard/finish/assemble.py`
+- [x] T054 [MOT-70] [P] [US3] Port the Almost Yours dust overlay and matte as the Two Lovers animation pack (lyric rows from `song_analysis.lines`, ruby thread, motes, dusting end card from theme, no follow ask by default) in `modes/two-lovers/animation/`
+- [x] T055 [MOT-71] [US3] Implement animation pack contract (pack.json: inputs, theme keys, fonts, duration rules), overlay config writer and foreground HyperFrames render in `engine/src/motionboard/finish/overlay.py`
+- [x] T056 [MOT-72] [US3] Add grade, multiply matte, screen overlay, noise alls=3, CRF 19, faststart to assemble in `engine/src/motionboard/finish/assemble.py`
+- [x] T057 [MOT-73] [P] [US3] Implement cover from a chosen frame with title block in `engine/src/motionboard/finish/cover.py`
+- [x] T058 [MOT-74] [P] [US3] Implement metadata file (title, description, tags, hashtags, post time, platforms, synthetic content flag) in `engine/src/motionboard/finish/metadata.py`
+- [x] T059 [MOT-75] [US3] Implement deliver (copy to folder, verify sizes and durations with ffprobe) in `engine/src/motionboard/finish/deliver.py`
+- [x] T060 [MOT-76] [US3] Add `mb finish` and `mb deliver` with verification report (duration, frame count, cut points within one frame) in `engine/src/motionboard/cli.py`
+- [x] T061 [MOT-77] [US3] Write skill `skills/mb-finish/SKILL.md`: theme check, finish, contact sheet of final, stop for approval, deliver
+- [x] T062 [MOT-78] [P] [US3] Tests: ffmpeg command builder golden output in `engine/tests/unit/test_assemble.py`
 
 ## Phase 6: User Story 4 - Setup check and fit check (P2)
 
@@ -145,7 +145,7 @@ description: "Task list for Music Video Pipeline (Motionboard v1)"
 
 **Independent Test**: each pack renders over the fixture song with stub clips; lyrics follow `song_analysis.lines`; end card shows theme texts; no follow or subscribe ask.
 
-- [ ] T076 [MOT-143] Add `modes/LICENSE` (full PolyForm Noncommercial 1.0.0 text, required notice), dual licence section in `README.md`, and a licence check in `engine/tests/unit/test_licences.py` that every `modes/*/animation/` folder carries the notice
+- [x] T076 [MOT-143] Add `modes/LICENSE` (full PolyForm Noncommercial 1.0.0 text, required notice), dual licence section in `README.md`, and a licence check in `engine/tests/unit/test_licences.py` that every `modes/*/animation/` folder carries the notice
 - [ ] T077 [MOT-144] [P] Build the Studio Session pack (VU meter and waveform pulses on beats, lyrics on a lyric sheet, REC light, tape counter, cassette label end card) in `modes/studio-session/animation/`
 - [ ] T078 [MOT-145] [P] Build the Travel pack (route line drawn between cuts, lyric words as ink stamps without place names, boarding pass end card) in `modes/travel/animation/`
 - [ ] T079 [MOT-146] [P] Port the A Letter Never Sent kinetic typography as the Lyric Story pack (one big word per beat, hard cuts, handwriting contrast) in `modes/lyric-story/animation/`

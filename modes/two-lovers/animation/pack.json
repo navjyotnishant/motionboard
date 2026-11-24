@@ -1,0 +1,26 @@
+{
+  "name": "two-lovers",
+  "title": "Two Lovers: ruby thread and fairy dust lyrics",
+  "version": "1.0.0",
+  "licence": "PolyForm-Noncommercial-1.0.0",
+  "origin": "NAVAAN, Almost Yours (The Museum of Almosts), Nov 2026",
+  "aspects": ["9:16", "16:9"],
+  "layers": {
+    "matte": {"file": "matte.html", "blend": "multiply"},
+    "overlay": {"file": "overlay.html", "blend": "screen"}
+  },
+  "cover": "cover.html",
+  "tail_seconds": 1.5,
+  "theme_keys": {
+    "artist": "end card top line, e.g. NAVAAN",
+    "song": "song title",
+    "album_line": "e.g. FROM THE ALBUM  AFTER DARK (optional)",
+    "release_note": "e.g. COMING SOON or OUT NOW (optional)",
+    "highlight_words": "words that turn ruby when sung, e.g. [\"almost\", \"love\"]",
+    "snap_at": "second (segment time) where the thread snaps; omit for no snap",
+    "colors": "optional overrides: ivory, amber, ruby, brass as [r,g,b]"
+  },
+  "inputs": ["duration", "width", "height", "lines", "cuts", "downbeats", "theme"],
+  "fonts": ["Cormorant Garamond (OFL 1.1)", "JetBrains Mono (OFL 1.1)"],
+  "notes": "Every frame is a pure function of time. No follow or subscribe ask on the end card."
+}

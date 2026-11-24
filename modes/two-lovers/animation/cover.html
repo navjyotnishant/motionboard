@@ -1,0 +1,66 @@
+<!doctype html>
+<!-- Motionboard · Two Lovers pack · cover. Title block at the bottom, inside the 3:4 grid crop.
+     Required Notice: Copyright (c) 2026 Navjyot Nishant. PolyForm Noncommercial 1.0.0. -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=__W__, height=__H__" />
+    <title>Two Lovers · cover</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "CG"; font-weight: 500; font-style: normal; src: url(fonts/cormorant-garamond-latin-500-normal.woff2) format("woff2"); }
+      @font-face { font-family: "CG"; font-weight: 400; font-style: italic; src: url(fonts/cormorant-garamond-latin-400-italic.woff2) format("woff2"); }
+      @font-face { font-family: "JBM"; font-weight: 500; src: url(fonts/jetbrains-mono-latin-500-normal.woff2) format("woff2"); }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: __W__px; height: __H__px; overflow: hidden; background: #000; }
+      #root { position: relative; width: __W__px; height: __H__px; overflow: hidden; background: #000; }
+      .layer { position: absolute; inset: 0; }
+      #bg { background: url(cover-bg.jpg) center / cover no-repeat; }
+      #shade { background: linear-gradient(180deg, rgba(4,5,10,0) 61%, rgba(4,5,10,0.55) 73%, rgba(4,5,10,0.86) 81%, rgba(4,5,10,0.95) 100%); }
+      .t { position: absolute; left: 0; width: 100%; text-align: center; white-space: nowrap; }
+      #fx { position: absolute; inset: 0; width: __W__px; height: __H__px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="1" data-width="__W__" data-height="__H__">
+      <div id="stage" class="clip layer" data-start="0" data-duration="1" data-track-index="1">
+        <div id="bg" class="layer"></div>
+        <div id="shade" class="layer"></div>
+        <canvas id="fx" width="__W__" height="__H__"></canvas>
+        <div id="artist" class="t"></div>
+        <div id="rule"></div>
+        <div id="song" class="t"></div>
+        <div id="album" class="t"></div>
+      </div>
+    </div>
+    <script src="js/config.js"></script>
+    <script>
+      (function () {
+        var C = window.MB, T = C.theme || {}, W = C.width, H = C.height, S = Math.min(W, H) / 1080;
+        var base = H - 506 * S;
+        function put(id, txt, top, css) { var e = document.getElementById(id); e.textContent = txt || ""; e.style.cssText += "top:" + top + "px;" + css; }
+        put("artist", T.artist, base, "font:500 " + 112 * S + "px CG;letter-spacing:" + 30 * S + "px;padding-left:" + 30 * S + "px;color:#f3ece0;text-shadow:0 0 26px rgba(255,214,150,.45),0 2px 18px rgba(0,0,0,.9)");
+        var r = document.getElementById("rule"); r.style.cssText = "position:absolute;top:" + (base + 142 * S) + "px;left:" + (W / 2 - 140 * S) + "px;width:" + 280 * S + "px;height:1.5px;background:rgba(201,160,96,.85)";
+        if (!T.artist) r.style.display = "none";
+        put("song", T.song, base + 148 * S, "font:italic 400 " + 84 * S + "px CG;color:#eccc96;text-shadow:0 0 22px rgba(255,214,150,.4),0 2px 16px rgba(0,0,0,.9)");
+        put("album", T.album_line, base + 254 * S, "font:500 " + 30 * S + "px JBM;letter-spacing:" + 9 * S + "px;padding-left:" + 9 * S + "px;color:#c9a060;text-shadow:0 2px 12px rgba(0,0,0,.9)");
+        var g = document.getElementById("fx").getContext("2d");
+        function hash(n) { var s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }
+        g.globalCompositeOperation = "lighter";
+        for (var i = 0; i < 260; i++) {
+          var h = hash(i * 3.1), k = hash(i * 7.7), m = hash(i * 1.9);
+          var x = W / 2 - 400 * S + h * 800 * S + (k - 0.5) * 120 * S, y = base - 54 * S + k * 420 * S + (m - 0.5) * 60 * S;
+          var a = 0.15 + 0.6 * m * m, rr = (1 + m * 2.2) * S;
+          g.fillStyle = "rgba(255," + (196 + Math.floor(h * 50)) + "," + (130 + Math.floor(k * 70)) + "," + a.toFixed(3) + ")";
+          g.fillRect(x - rr / 2, y - rr / 2, rr, rr);
+        }
+        window.__hf = window.__hf || {}; window.__hf.buildReady = window.__hf.buildReady || {};
+        window.__hf.buildReady["main"] = document.fonts.ready.then(function () {
+          return Promise.all([document.fonts.load('500 80px "CG"'), document.fonts.load('italic 400 80px "CG"'), document.fonts.load('500 24px "JBM"')]);
+        });
+        var tl = gsap.timeline({ paused: true }); tl.to({ t: 0 }, { t: 1, duration: 1 });
+        window.__timelines = window.__timelines || {}; window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>
