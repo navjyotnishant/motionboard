@@ -49,22 +49,22 @@ description: "Task list for Music Video Pipeline (Motionboard v1)"
 
 **Independent Test**: 60 s song gives a storyboard whose shot boundaries are within 0.1 s of measured beats or line starts.
 
-- [ ] T022 [MOT-38] [P] [US1] Implement `mb project new` (folder layout `audio/ plates/ clips/ out/ logs/`) in `engine/src/motionboard/cli.py` and `engine/src/motionboard/db/repo.py`
-- [ ] T023 [MOT-39] [P] [US1] Implement tempo, beats, RMS, onsets, waveform peaks in `engine/src/motionboard/audio/analyze.py`
-- [ ] T024 [MOT-40] [P] [US1] Implement segment picker (first chorus heuristic, manual override) and cut with atrim and short fades in `engine/src/motionboard/audio/segment.py`
-- [ ] T025 [MOT-41] [US1] Implement lyric line alignment with mlx-whisper word timestamps, beat grid fallback and `verified_vocal_alignment` flag in `engine/src/motionboard/audio/align.py`
-- [ ] T026 [MOT-42] [US1] Add `mb analyze` writing `song_analysis` in `engine/src/motionboard/cli.py`
-- [ ] T027 [MOT-43] [US1] Implement timing grid (one shot per line or beat group, min frames merge, frame rule rounding, tiling validation) in `engine/src/motionboard/storyboard/timing.py`
-- [ ] T028 [MOT-44] [P] [US1] Write five modes (Studio Session, Travel, Two Lovers, Lyric Story, Mood Loop) as `modes/<mode>/mode.yaml` (rhythm rules, camera language, figure rules, animation pack name) and five looks (Origami, Exotic, Vintage Film, Neon Night, Cosmic) as `looks/*.yaml` (style lines, no figure lines, plate prompt language)
-- [ ] T029 [MOT-45] [US1] Implement mode and look loader, validation and combination in `engine/src/motionboard/storyboard/templates.py`
-- [ ] T030 [MOT-46] [US1] Implement draft from chosen concept or mode plus look (fills visual, action, camera, has_figure, plate and motion prompts; one clear action per shot) in `engine/src/motionboard/storyboard/draft.py`
-- [ ] T031 [MOT-47] [US1] Add `mb concepts add`, `mb draft`, `mb shot set` (dirty and state rules) in `engine/src/motionboard/cli.py`
-- [ ] T032 [MOT-48] [P] [US1] Implement contact sheet (aspect aware tiles, shot number, timecode, lyric) in `engine/src/motionboard/storyboard/contact_sheet.py` and `mb sheet`
-- [ ] T033 [MOT-49] [P] [US1] Implement JSON export and import per `contracts/storyboard.schema.json` in `engine/src/motionboard/storyboard/io_json.py` and `mb export` / `mb import`
-- [ ] T034 [MOT-50] [US1] Implement gates (`mb approve`, revoke, rule that every shot is in the matching state) in `engine/src/motionboard/cli.py`
-- [ ] T035 [MOT-51] [US1] Write skill `skills/mb-storyboard/SKILL.md`: gather song, lyrics, idea, aspect, look; offer Brainstorm (Claude writes three concepts as JSON, `mb concepts add`) or template; run analyze and draft; show contact sheet; stop for approval
-- [ ] T036 [MOT-52] [P] [US1] Tests: golden timing for fixture song, tiling and frame rule in `engine/tests/unit/test_timing.py`
-- [ ] T037 [MOT-53] [P] [US1] Tests: export then import round trip identical in `engine/tests/unit/test_io_json.py`
+- [x] T022 [MOT-38] [P] [US1] Implement `mb project new` (folder layout `audio/ plates/ clips/ out/ logs/`) in `engine/src/motionboard/cli.py` and `engine/src/motionboard/db/repo.py`
+- [x] T023 [MOT-39] [P] [US1] Implement tempo, beats, RMS, onsets, waveform peaks in `engine/src/motionboard/audio/analyze.py`
+- [x] T024 [MOT-40] [P] [US1] Implement segment picker (first chorus heuristic, manual override) and cut with atrim and short fades in `engine/src/motionboard/audio/segment.py`
+- [x] T025 [MOT-41] [US1] Implement lyric line alignment with mlx-whisper word timestamps, beat grid fallback and `verified_vocal_alignment` flag in `engine/src/motionboard/audio/align.py`
+- [x] T026 [MOT-42] [US1] Add `mb analyze` writing `song_analysis` in `engine/src/motionboard/cli.py`
+- [x] T027 [MOT-43] [US1] Implement timing grid (one shot per line or beat group, min frames merge, frame rule rounding, tiling validation) in `engine/src/motionboard/storyboard/timing.py`
+- [x] T028 [MOT-44] [P] [US1] Write five modes (Studio Session, Travel, Two Lovers, Lyric Story, Mood Loop) as `modes/<mode>/mode.yaml` (rhythm rules, camera language, figure rules, animation pack name) and five looks (Origami, Exotic, Vintage Film, Neon Night, Cosmic) as `looks/*.yaml` (style lines, no figure lines, plate prompt language)
+- [x] T029 [MOT-45] [US1] Implement mode and look loader, validation and combination in `engine/src/motionboard/storyboard/templates.py`
+- [x] T030 [MOT-46] [US1] Implement draft from chosen concept or mode plus look (fills visual, action, camera, has_figure, plate and motion prompts; one clear action per shot) in `engine/src/motionboard/storyboard/draft.py`
+- [x] T031 [MOT-47] [US1] Add `mb concepts add`, `mb draft`, `mb shot set` (dirty and state rules) in `engine/src/motionboard/cli.py`
+- [x] T032 [MOT-48] [P] [US1] Implement contact sheet (aspect aware tiles, shot number, timecode, lyric) in `engine/src/motionboard/storyboard/contact_sheet.py` and `mb sheet`
+- [x] T033 [MOT-49] [P] [US1] Implement JSON export and import per `contracts/storyboard.schema.json` in `engine/src/motionboard/storyboard/io_json.py` and `mb export` / `mb import`
+- [x] T034 [MOT-50] [US1] Implement gates (`mb approve`, revoke, rule that every shot is in the matching state) in `engine/src/motionboard/cli.py`
+- [x] T035 [MOT-51] [US1] Write skill `skills/mb-storyboard/SKILL.md`: gather song, lyrics, idea, aspect, look; offer Brainstorm (Claude writes three concepts as JSON, `mb concepts add`) or template; run analyze and draft; show contact sheet; stop for approval
+- [x] T036 [MOT-52] [P] [US1] Tests: golden timing for fixture song, tiling and frame rule in `engine/tests/unit/test_timing.py`
+- [x] T037 [MOT-53] [P] [US1] Tests: export then import round trip identical in `engine/tests/unit/test_io_json.py`
 
 **Checkpoint**: Storyboard stage usable on its own.
 

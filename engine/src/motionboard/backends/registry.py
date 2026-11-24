@@ -3,6 +3,7 @@
 import os
 
 from motionboard.backends.base import VideoBackend
+from motionboard.backends.ltx23 import LTX23Backend
 from motionboard.backends.stub import StubBackend
 from motionboard.report import MbError
 
@@ -25,3 +26,4 @@ def names() -> list[str]:
 
 
 register(StubBackend())
+register(LTX23Backend())

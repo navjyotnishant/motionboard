@@ -1,0 +1,41 @@
+kind: mode
+slug: studio-session
+name: Studio Session
+summary: The singer records the song in a recording booth, lip-syncing the chorus, with cutaways to the desk and lyric sheet. Signature animation is VU meters, lyric sheet text, REC light and a cassette end card.
+animation: studio-session
+characters: [SINGER]
+lip_sync: chorus
+rhythm:
+  unit: line
+  min_shot_s: 2.0
+  max_shot_s: 5.0
+pattern:
+  - role: booth-wide
+    visual: "SINGER in a recording booth with a large condenser microphone and pop filter, {world}"
+    action: "the singer adjusts the headphones and closes their eyes"
+    camera: "wide through the booth glass, slow push in"
+  - role: sing-close
+    visual: "SINGER singing into the microphone, close, {world}"
+    action: "the singer sings the line with feeling"
+    camera: "close up, locked off"
+    lip_sync: true
+  - role: desk
+    visual: "a mixing desk with glowing meters and faders, {world}"
+    action: "a hand slowly pushes one fader up"
+    camera: "macro, slow slide along the desk"
+    has_figure: false
+  - role: sheet
+    visual: "a handwritten lyric sheet on a music stand, {world}"
+    action: "the page lifts slightly in a soft breeze"
+    camera: "top down, slow push in"
+    has_figure: false
+  - role: sing-profile
+    visual: "SINGER in profile at the microphone, {world}"
+    action: "the singer sings the line, one hand on the headphones"
+    camera: "profile medium shot, slow arc"
+    lip_sync: true
+  - role: speakers
+    visual: "studio monitor speakers in a dim control room, {world}"
+    action: "the speaker cones pulse gently with the music"
+    camera: "medium, locked off"
+    has_figure: false

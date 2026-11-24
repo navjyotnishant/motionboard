@@ -13,9 +13,9 @@ from motionboard.guard.monitor import Sample
 
 def test_migrate_is_idempotent(mb_home):
     c = open_db()
-    assert current_version(c) == latest_version() == 1
+    assert current_version(c) == latest_version() >= 2
     c2 = open_db()
-    assert current_version(c2) == 1
+    assert current_version(c2) == latest_version()
     assert c.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
     assert c.execute("PRAGMA foreign_keys").fetchone()[0] == 1
 

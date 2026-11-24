@@ -1,0 +1,33 @@
+kind: mode
+slug: mood-loop
+name: Mood Loop
+summary: Slow ambient shots with no story, timed to the beat, for lyric reels. Signature animation is light leaks, drifting particles and breathing lyric fades.
+animation: mood-loop
+characters: []
+lip_sync: never
+rhythm:
+  unit: beats
+  beats_per_shot: 8
+  min_shot_s: 3.0
+  max_shot_s: 5.0
+pattern:
+  - role: drift
+    visual: "{world}, soft and atmospheric, nobody present"
+    action: "mist drifts slowly through the frame"
+    camera: "very slow push in"
+    has_figure: false
+  - role: light
+    visual: "light falling across a surface in {world}"
+    action: "the light slowly brightens and fades"
+    camera: "locked off"
+    has_figure: false
+  - role: detail
+    visual: "a small detail of {world} in shallow focus"
+    action: "particles float upward past the detail"
+    camera: "macro, slow rack focus"
+    has_figure: false
+  - role: horizon
+    visual: "a wide horizon in {world}"
+    action: "clouds move slowly across the sky"
+    camera: "slow pan right"
+    has_figure: false

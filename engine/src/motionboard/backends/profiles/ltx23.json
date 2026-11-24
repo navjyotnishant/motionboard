@@ -1,0 +1,18 @@
+{
+  "backend": "ltx23",
+  "note": "Measured on an M3 Max 36 GB, ltx-2-mlx distilled two stage, --low-ram, 576x1024, Almost Yours shots (Nov 2026). peak_gb is the peak Metal memory the CLI reports; sec_per_frame is wall time / frames.",
+  "base_gb": 9.5,
+  "points": [
+    {"mode": "i2v", "width": 576, "height": 1024, "frames": 25, "peak_gb": 10.87, "sec_per_frame": 5.70},
+    {"mode": "i2v", "width": 576, "height": 1024, "frames": 41, "peak_gb": 17.26, "sec_per_frame": 4.79},
+    {"mode": "i2v", "width": 576, "height": 1024, "frames": 49, "peak_gb": 12.95, "sec_per_frame": 4.57},
+    {"mode": "i2v", "width": 576, "height": 1024, "frames": 57, "peak_gb": 13.38, "sec_per_frame": 4.37},
+    {"mode": "i2v", "width": 576, "height": 1024, "frames": 65, "peak_gb": 16.32, "sec_per_frame": 4.30},
+    {"mode": "i2v", "width": 576, "height": 1024, "frames": 73, "peak_gb": 16.32, "sec_per_frame": 4.60},
+    {"mode": "i2v", "width": 576, "height": 1024, "frames": 81, "peak_gb": 16.32, "sec_per_frame": 4.15},
+    {"mode": "i2v", "width": 576, "height": 1024, "frames": 89, "peak_gb": 16.32, "sec_per_frame": 4.97},
+    {"mode": "i2v", "width": 576, "height": 1024, "frames": 97, "peak_gb": 17.41, "sec_per_frame": 5.20},
+    {"mode": "i2v", "width": 576, "height": 1024, "frames": 145, "peak_gb": 17.62, "sec_per_frame": 4.88},
+    {"mode": "a2v", "width": 576, "height": 1024, "frames": 81, "peak_gb": 16.32, "sec_per_frame": 2.80}
+  ]
+}

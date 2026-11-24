@@ -1,0 +1,23 @@
+kind: mode
+slug: lyric-story
+name: Lyric Story
+summary: One scene per sung line, each picturing the words. Signature animation is kinetic typography, one big word per beat with hard cuts.
+animation: lyric-story
+characters: []
+lip_sync: never
+rhythm:
+  unit: line
+  min_shot_s: 1.5
+  max_shot_s: 4.0
+# {lyric} is the sung line; Claude replaces these defaults with a scene per line when drafting from a concept.
+pattern:
+  - role: line-scene
+    visual: "a single image that shows the line '{lyric}', {world}"
+    action: "one element in the scene moves slowly to reveal the meaning"
+    camera: "slow push in"
+    has_figure: false
+  - role: line-detail
+    visual: "a close detail that echoes the line '{lyric}', {world}"
+    action: "light shifts across the detail"
+    camera: "macro, locked off"
+    has_figure: false

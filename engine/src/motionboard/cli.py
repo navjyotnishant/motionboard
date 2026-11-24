@@ -127,5 +127,8 @@ def fit(
     run("mb fit", as_json, go)
 
 
+# Stage commands register themselves on `app`.
+from motionboard import cmd_storyboard  # noqa: E402,F401
+
 if __name__ == "__main__":
     app()

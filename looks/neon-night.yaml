@@ -1,0 +1,8 @@
+kind: look
+slug: neon-night
+name: Neon Night City
+summary: Rooftops, wet streets and glowing signs after midnight.
+world: "a rain-wet city at night with glowing neon signs"
+style_line: "night city cinematography, neon magenta and cyan reflections on wet surfaces, light rain, shallow depth of field, moody contrast"
+no_figure_line: "only streets, rooftops, signs and objects, no people"
+negative: "readable text on signs, logos, watermark, daylight"

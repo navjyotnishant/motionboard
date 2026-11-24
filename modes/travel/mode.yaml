@@ -1,0 +1,40 @@
+kind: mode
+slug: travel
+name: Travel
+summary: A journey, one place per section, seen through windows, roads and arrivals. Signature animation is a route line drawn between cuts, ink stamp lyrics and a boarding pass end card.
+animation: travel
+characters: [TRAVELLER]
+lip_sync: never
+rhythm:
+  unit: line
+  min_shot_s: 2.0
+  max_shot_s: 5.0
+pattern:
+  - role: departure
+    visual: "a quiet station platform at dawn, {world}"
+    action: "a train slides into the frame and stops"
+    camera: "wide, locked off"
+    has_figure: false
+  - role: window
+    visual: "TRAVELLER by a train window, landscape passing outside, {world}"
+    action: "the traveller rests their head against the glass"
+    camera: "medium close up, steady"
+  - role: landscape
+    visual: "a wide landscape seen from a moving vehicle, {world}"
+    action: "the landscape scrolls past the window"
+    camera: "lateral tracking"
+    has_figure: false
+  - role: map
+    visual: "a worn paper map on a small table, {world}"
+    action: "a finger traces a route across the map"
+    camera: "top down, slow push in"
+    has_figure: false
+  - role: walk
+    visual: "TRAVELLER walking into a new place, {world}"
+    action: "the traveller walks away from the camera into the light"
+    camera: "low angle, slow follow"
+  - role: arrival
+    visual: "a view opening up at the end of a path, {world}"
+    action: "clouds drift slowly over the view"
+    camera: "slow crane up"
+    has_figure: false

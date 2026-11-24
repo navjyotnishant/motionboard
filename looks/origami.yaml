@@ -1,0 +1,8 @@
+kind: look
+slug: origami
+name: Origami
+summary: A handmade paper world, folded figures and objects, soft museum light (the Almost Yours look).
+world: "a handmade paper world of folded origami"
+style_line: "handcrafted origami paper diorama, visible paper folds and fibres, soft warm museum lighting, shallow depth of field, gentle film grain"
+no_figure_line: "only paper objects and scenery, no people, no paper figures, no characters"
+negative: "photorealistic people, text, logos, watermark"

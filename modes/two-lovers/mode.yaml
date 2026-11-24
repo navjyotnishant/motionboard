@@ -1,0 +1,49 @@
+kind: mode
+slug: two-lovers
+name: Two Lovers
+summary: A couple across scenes, close, apart, reunited. Signature animation is the ruby thread with fairy dust lyrics.
+animation: two-lovers
+characters: [HER, HIM]
+lip_sync: never
+rhythm:
+  unit: line
+  min_shot_s: 2.0
+  max_shot_s: 4.5
+# One clear action per shot. {world} comes from the look, {lyric} from the sung line.
+pattern:
+  - role: establishing
+    visual: "{world}, wide and quiet, warm light falling across the space"
+    action: "the camera drifts slowly forward through the empty space"
+    camera: "slow dolly in"
+    has_figure: false
+  - role: her
+    visual: "HER alone in {world}, looking at something just out of frame"
+    action: "she lifts her hand and touches the space beside her"
+    camera: "medium close up, gentle push in"
+  - role: him
+    visual: "HIM alone in {world}, mirrored framing"
+    action: "he turns his head as if he heard his name"
+    camera: "medium close up, gentle push in"
+  - role: object
+    visual: "a small object that belongs to both of them, resting in {world}"
+    action: "the object trembles slightly and catches the light"
+    camera: "macro, slow rack focus"
+    has_figure: false
+  - role: almost
+    visual: "HER and HIM on either side of {world}, a narrow gap between them"
+    action: "both reach toward each other and stop just before touching"
+    camera: "wide two shot, locked off"
+  - role: together
+    visual: "HER and HIM together in {world}"
+    action: "they turn slowly in a small waltz, hands joined"
+    camera: "slow orbit around them"
+  - role: memory
+    visual: "a fleeting memory of the two of them in {world}, soft and hazy"
+    action: "petals drift down through the frame"
+    camera: "slow tilt down"
+    has_figure: false
+  - role: release
+    visual: "{world} after they have gone, one light left on"
+    action: "the light flickers once and stays"
+    camera: "slow pull back"
+    has_figure: false
