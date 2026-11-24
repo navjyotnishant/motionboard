@@ -115,11 +115,11 @@ description: "Task list for Music Video Pipeline (Motionboard v1)"
 
 **Independent Test**: Without weights, `mb setup` lists the model with license link and size and downloads nothing.
 
-- [ ] T063 [MOT-79] [P] [US4] Write model catalog (LTX-2.3 q8, Gemma 3 12B 4bit, demucs, whisper; license URLs, sizes, `hf download` with include and exclude and `HF_HUB_DISABLE_XET=1`) in `engine/src/motionboard/setup/models.py`
-- [ ] T064 [MOT-80] [US4] Implement doctor (chip, memory, free disk, uv, ffmpeg, node, npx hyperframes, ltx bin, partial downloads) in `engine/src/motionboard/setup/doctor.py`
-- [ ] T065 [MOT-81] [US4] Add `mb setup` and `--fix-plan` in `engine/src/motionboard/cli.py`
-- [ ] T066 [MOT-82] [US4] Write skill `skills/mb-setup/SKILL.md`: run setup, explain gaps, never download without the creator, show guard presets and let the creator pick
-- [ ] T067 [MOT-83] [P] [US4] Tests: fit refuses oversize request with suggestions in `engine/tests/unit/test_fitcheck.py`
+- [x] T063 [MOT-79] [P] [US4] Write model catalog (LTX-2.3 q8, Gemma 3 12B 4bit, demucs, whisper; license URLs, sizes, `hf download` with include and exclude and `HF_HUB_DISABLE_XET=1`) in `engine/src/motionboard/setup/models.py`
+- [x] T064 [MOT-80] [US4] Implement doctor (chip, memory, free disk, uv, ffmpeg, node, npx hyperframes, ltx bin, partial downloads) in `engine/src/motionboard/setup/doctor.py`
+- [x] T065 [MOT-81] [US4] Add `mb setup` and `--fix-plan` in `engine/src/motionboard/cli.py`
+- [x] T066 [MOT-82] [US4] Write skill `skills/mb-setup/SKILL.md`: run setup, explain gaps, never download without the creator, show guard presets and let the creator pick
+- [x] T067 [MOT-83] [P] [US4] Tests: fit refuses oversize request with suggestions in `engine/tests/unit/test_fitcheck.py`
 
 ## Phase 7: User Story 5 - Realistic characters and lip-sync performance (P3)
 

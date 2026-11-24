@@ -32,7 +32,7 @@ def find_snapshot(repo: str = HF_REPO) -> Path | None:
 
 class LTX23Backend:
     name = "ltx23"
-    license_url = "https://huggingface.co/Lightricks/LTX-2/blob/main/LICENSE"
+    license_url = "https://huggingface.co/Lightricks/LTX-2.3/blob/main/LICENSE"
     min_frames = 9
     sizes = {"9:16": (576, 1024), "16:9": (1024, 576)}
 
