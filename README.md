@@ -39,7 +39,8 @@ Full rules: [.specify/memory/constitution.md](.specify/memory/constitution.md).
 skills/           plugin commands
 engine/           Python engine, `mb` CLI
 studio/           local Next.js Storyboard Studio
-templates/        storyboard templates
+modes/            story modes and their signature animation packs
+looks/            looks (style lines)
 specs/            Spec Kit specs, plans and tasks
 ```
 
