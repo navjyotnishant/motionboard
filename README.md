@@ -16,6 +16,10 @@ cd ~/motionboard && ./install.sh
 The installer checks your Mac, installs the engine, the `mb` command, the Studio and the Claude Code plugin, and
 asks before downloading anything large. Full guide, update and uninstall: [docs/install.md](docs/install.md).
 
+**Claude app (desktop or mobile):** upload [`dist/motionboard.plugin`](dist/motionboard.plugin) in claude.ai plugin
+settings. The skills then run `mb` on your Mac through the Claude desktop app link. Rebuild it with
+`scripts/package-plugin.sh` after changing the skills.
+
 ## Principles
 
 - **Storyboard first.** Nothing renders until you approve the board.
