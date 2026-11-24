@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/navjyotnishant/motionboard/schemas/project-export-v1.json",
+  "title": "Motionboard project export v1",
+  "type": "object",
+  "required": ["format", "project", "analysis", "shots"],
+  "properties": {
+    "format": { "const": "motionboard.project.v1" },
+    "project": {
+      "type": "object",
+      "required": ["title", "aspect", "look", "segment"],
+      "properties": {
+        "title": { "type": "string" },
+        "song": { "type": "string", "description": "relative path inside the export folder" },
+        "segment": { "type": "object", "required": ["start", "end"], "properties": { "start": { "type": "number" }, "end": { "type": "number" } } },
+        "lyrics": { "type": "string" },
+        "idea": { "type": "string" },
+        "aspect": { "enum": ["9:16", "16:9"] },
+        "look": { "enum": ["stylized", "realistic"] },
+        "theme": { "type": "object" },
+        "template": { "type": ["string", "null"] },
+        "synthetic_people": { "type": "boolean" }
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "properties": {
+        "tempo_bpm": { "type": "number" },
+        "beats": { "type": "array", "items": { "type": "number" } },
+        "lines": { "type": "array", "items": { "type": "object", "required": ["start", "end", "text"], "properties": { "start": { "type": "number" }, "end": { "type": "number" }, "text": { "type": "string" }, "source": { "enum": ["aligned", "beat"] } } } }
+      }
+    },
+    "concepts": { "type": "array", "items": { "type": "object" } },
+    "characters": {
+      "type": "array",
+      "items": { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" }, "reference_image": { "type": ["string", "null"] }, "style_line": { "type": "string" } } }
+    },
+    "shots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ord", "start", "end", "action"],
+        "properties": {
+          "ord": { "type": "integer", "minimum": 1 },
+          "start": { "type": "number" },
+          "end": { "type": "number" },
+          "lyric": { "type": "string" },
+          "visual": { "type": "string" },
+          "action": { "type": "string" },
+          "camera": { "type": "string" },
+          "has_figure": { "type": "boolean" },
+          "lip_sync": { "type": "boolean" },
+          "characters": { "type": "array", "items": { "type": "string" } },
+          "plate_prompt": { "type": "string" },
+          "motion_prompt": { "type": "string" },
+          "state": { "type": "string" },
+          "assets": {
+            "type": "array",
+            "items": { "type": "object", "required": ["kind"], "properties": { "kind": { "enum": ["plate", "clip", "prompt"] }, "path": { "type": ["string", "null"] }, "text": { "type": ["string", "null"] }, "source": { "type": "string" }, "active": { "type": "boolean" }, "notes": { "type": "array", "items": { "type": "object" } } } }
+          }
+        }
+      }
+    },
+    "approvals": { "type": "object", "additionalProperties": { "type": ["string", "null"] } }
+  }
+}

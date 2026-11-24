@@ -1,0 +1,50 @@
+# Model weights never go in the repo (constitution IV)
+*.safetensors
+*.gguf
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.npz
+weights/
+models/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Node / Studio
+node_modules/
+.next/
+studio/out/
+
+# Local state and media
+*.db
+*.db-wal
+*.db-shm
+.motionboard/
+projects/
+*.mp4
+*.mov
+*.wav
+!engine/tests/fixtures/**/*.wav
+*.mp3
+*.png
+*.jpg
+!engine/tests/fixtures/**/*.png
+!docs/**/*.png
+
+# Secrets
+.env
+.env.*
+*.key
+*_api_key
+
+# OS
+.DS_Store
