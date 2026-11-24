@@ -88,3 +88,14 @@ def test_vocal_slice_covers_every_frame(tmp_path, fixtures_dir):
     dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
                                 str(out)], capture_output=True, text=True).stdout)
     assert dur >= 65 / 24 + AUDIO_MARGIN_S - 0.02
+
+
+def test_template_save_strips_song_parts(project):
+    out = mb("template", "save", "-p", project, "--name", "My Lovers")
+    assert out["ok"], out
+    modes = {m["slug"]: m for m in mb("modes")["data"]["modes"]}
+    assert "my-lovers" in modes and modes["my-lovers"]["source"] == "user"
+    assert mb("template", "save", "-p", project, "--name", "My Lovers")["error"]["code"] == "INVALID_INPUT"
+    redraft = mb("draft", "-p", project, "--mode", "my-lovers", "--look", "cosmic", "--replace")
+    assert redraft["ok"], redraft
+    assert all("{world}" not in s["visual"] for s in redraft["data"]["list"])

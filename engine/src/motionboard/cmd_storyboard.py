@@ -14,7 +14,7 @@ from motionboard.cli import JsonOpt, app, run
 from motionboard.config import ACTOR
 from motionboard.db import repo
 from motionboard.report import MbError
-from motionboard.storyboard import board, contact_sheet, io_json, templates
+from motionboard.storyboard import board, contact_sheet, export_docs, io_json, templates
 from motionboard.storyboard import draft as draft_mod
 
 project_app = typer.Typer(no_args_is_help=True, help="Projects")
@@ -272,14 +272,25 @@ def approve(project: str = ProjectOpt, stage: str = typer.Option(..., "--stage")
 
 @app.command("export")
 def export_cmd(project: str = ProjectOpt, out: Path = typer.Option(..., "--out"),
-               no_media: bool = typer.Option(False, "--no-media"), as_json: bool = JsonOpt) -> None:
-    """Export the project as a folder with project.json and media."""
+               no_media: bool = typer.Option(False, "--no-media"),
+               fmt: str = typer.Option("json", "--format", help="json (folder), pdf or html (one file)"),
+               as_json: bool = JsonOpt) -> None:
+    """Export the project: a JSON folder with media, a PDF board, or one self-contained HTML page."""
 
     def go(conn, r):
         p = projects.get(conn, project)
         r.project = p["id"]
-        path = io_json.export(conn, p, out, with_media=not no_media)
-        r.data = {"file": str(path)}
+        if fmt == "json":
+            path = io_json.export(conn, p, out, with_media=not no_media)
+        elif fmt == "pdf":
+            path = export_docs.pdf(conn, p, out if out.suffix == ".pdf" else out.with_suffix(".pdf"))
+        elif fmt == "html":
+            path = export_docs.html_export(conn, p, out if out.suffix == ".html" else out.with_suffix(".html"),
+                                           with_audio=not no_media)
+        else:
+            raise MbError("INVALID_INPUT", "format must be json, pdf or html")
+        r.data = {"file": str(path), "format": fmt}
+        r.verified.append(f"{fmt} written ({path.stat().st_size // 1024} KB)" if path.is_file() else f"{fmt} written")
 
     run("mb export", as_json, go)
 
@@ -295,3 +306,22 @@ def import_cmd(file: Path = typer.Option(..., "--file", help="project.json or it
         r.data = {"id": p["id"], "folder": p["folder"], "title": p["title"]}
 
     run("mb import", as_json, go)
+
+
+template_app = typer.Typer(no_args_is_help=True, help="Save boards as reusable modes")
+app.add_typer(template_app, name="template")
+
+
+@template_app.command("save")
+def template_save(project: str = ProjectOpt, name: str = typer.Option(..., "--name"), as_json: bool = JsonOpt) -> None:
+    """Save this board as a user mode. Lyrics, timing and the look's world are stripped out."""
+
+    def go(conn, r):
+        p = projects.get(conn, project)
+        r.project = p["id"]
+        m = templates.save_from_project(conn, p, name, ACTOR())
+        r.data = {"mode": m.slug, "name": m.name, "shots": len(m.pattern), "animation": m.animation}
+        r.verified.append(f"mode '{m.slug}' saved with {len(m.pattern)} pattern shots")
+        r.next = f"mb draft --project <id> --mode {m.slug} --look <look>"
+
+    run("mb template save", as_json, go)

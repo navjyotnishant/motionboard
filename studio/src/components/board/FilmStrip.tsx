@@ -12,13 +12,15 @@ export function FilmStrip({ board, selected, onSelect }: {
     <div className="flex h-11 w-full overflow-hidden border-t border-line bg-bg">
       {shots.map((s) => {
         const plate = activeAsset(board, s.id, "plate");
+        const clip = activeAsset(board, s.id, "clip");
+        const still = clip?.poster ? { path: clip.poster, id: clip.id } : plate;
         return (
           <button key={s.id} onClick={() => onSelect(s.id)} title={`Shot ${s.ord}`}
             className="relative h-full overflow-hidden border-r border-line"
             style={{ width: `${((s.end - s.start) / dur) * 100}%`, outline: s.id === selected ? "1px solid var(--accent)" : undefined,
               outlineOffset: -1 }}>
-            {plate?.path
-              ? <img src={media(plate.path, plate.id)} alt="" className="h-full w-full object-cover opacity-80" loading="lazy" />
+            {still?.path
+              ? <img src={media(still.path, still.id)} alt="" className="h-full w-full object-cover opacity-80" loading="lazy" />
               : <div className="h-full w-full bg-s2" />}
           </button>
         );

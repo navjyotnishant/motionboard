@@ -15,6 +15,14 @@ export function ExportMenu({ board }: { board: Board }) {
       { project: board.project.id, out: `${board.project.folder}/exports/project-${stamp()}` })) },
     { label: "Project JSON, no media", run: async () => toast(await mb("export_json",
       { project: board.project.id, out: `${board.project.folder}/exports/project-${stamp()}-lite`, no_media: true })) },
+    { label: "PDF board", run: async () => toast(await mb("export_pdf",
+      { project: board.project.id, out: `${board.project.folder}/exports/board-${stamp()}.pdf` })) },
+    { label: "HTML page (one file, with the song)", run: async () => toast(await mb("export_html",
+      { project: board.project.id, out: `${board.project.folder}/exports/board-${stamp()}.html` })) },
+    { label: "Save board as a template…", run: async () => {
+      const name = window.prompt("Template name");
+      if (name) toast(await mb("template_save", { project: board.project.id, name }));
+    } },
     { label: "Contact sheet (storyboard)", run: async () => toast(await mb("sheet", { project: board.project.id, kind: "storyboard" })) },
     { label: "Contact sheet (plates)", run: async () => toast(await mb("sheet", { project: board.project.id, kind: "plates" })) },
   ];

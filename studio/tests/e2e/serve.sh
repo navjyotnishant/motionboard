@@ -19,6 +19,7 @@ mkdir -p "$F/plates/inbox"
 for i in 1 2 3 4; do cp "$ENGINE/tests/fixtures/plates/shot-0$i.png" "$F/plates/inbox/shot-0$i.png"; done
 cp "$ENGINE/tests/fixtures/plates/shot-01.png" "$E2E/upload.png"
 echo "$P" > "$E2E/project"; echo "$F" > "$E2E/folder"
+mb import --file "$ENGINE/tests/fixtures/export80.json" | python3 -c "import json,sys;print(json.load(sys.stdin)['project'])" > "$E2E/project80"
 [ -f .next/BUILD_ID ] || npm run build >/dev/null
 export MB_STUDIO_TOKEN=e2e-token MB_CLAUDE_BIN=none PORT=4399 MB_REPO=$STUDIO/..
 exec npx next start -H 127.0.0.1 -p 4399

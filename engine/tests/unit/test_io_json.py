@@ -100,3 +100,29 @@ def test_shot_ideas_file(project, tmp_path):
     assert r["ok"]
     assert r["data"]["list"][0]["action"] == "a paper boat drifts left to right"
     assert r["not_verified"]  # fewer ideas than shots is reported
+
+
+def test_pdf_and_html_exports(mb_home, fixtures_dir, tmp_path, monkeypatch):
+    import json as _json
+
+    from typer.testing import CliRunner
+
+    from motionboard.cli import app
+
+    monkeypatch.setenv("MB_BACKEND", "stub")
+    run = CliRunner()
+
+    def mb(*a):
+        return _json.loads(run.invoke(app, [*a, "--json"]).stdout)
+
+    pid = mb("project", "new", "--title", "Docs <b>", "--song", str(fixtures_dir / "song10s.wav"),
+             "--lyrics-file", str(fixtures_dir / "lyrics.txt"))["project"]
+    mb("analyze", "-p", pid)
+    mb("draft", "-p", pid, "--mode", "travel", "--look", "origami")
+    pdf = mb("export", "-p", pid, "--out", str(tmp_path / "board.pdf"), "--format", "pdf")
+    assert pdf["ok"] and (tmp_path / "board.pdf").read_bytes()[:5] == b"%PDF-"
+    page = mb("export", "-p", pid, "--out", str(tmp_path / "board.html"), "--format", "html")
+    assert page["ok"]
+    text = (tmp_path / "board.html").read_text()
+    assert "Docs &lt;b&gt;" in text and "<b>" not in text.split("<title>")[1].split("</title>")[0]
+    assert "data:audio/mpeg;base64," in text and "http" not in text.split("<script>")[1]

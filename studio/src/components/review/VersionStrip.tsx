@@ -21,7 +21,8 @@ export function VersionStrip({ board, shot }: { board: Board; shot: Shot; reload
             title={`${a.kind} v${i + 1} · ${a.source}${a.active ? " · active" : ""}`}>
             {a.kind === "plate"
               ? <img src={media(a.path, a.id)} alt="" className="h-full w-full object-cover" />
-              : <video src={media(a.path, a.id)} muted preload="metadata" className="h-full w-full object-cover" />}
+              : a.poster ? <img src={media(a.poster, a.id)} alt="" className="h-full w-full object-cover" />
+                : <video src={media(a.path, a.id)} muted preload="metadata" className="h-full w-full object-cover" />}
             <span className="absolute bottom-0 left-0 bg-black/70 px-1 text-[9px] uppercase">{a.kind}</span>
           </button>
         ))}

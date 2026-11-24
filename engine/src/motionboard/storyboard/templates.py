@@ -134,3 +134,52 @@ def get_mode(key: str, conn: sqlite3.Connection | None = None) -> Mode:
 
 def get_look(key: str, conn: sqlite3.Connection | None = None) -> Look:
     return _find(list_looks(conn), key, "look")
+
+
+def _slug(name: str) -> str:
+    import re
+
+    s = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+    if not s:
+        raise MbError("INVALID_INPUT", "template name needs letters or digits")
+    return s
+
+
+def save_from_project(conn: sqlite3.Connection, project: dict, name: str, actor) -> Mode:
+    """Save the project's board as a user mode (002 T027). Song specific parts are stripped: lyrics leave the
+    visuals, the look's world becomes {world}, timing becomes the base mode's rhythm."""
+    from motionboard.db import repo
+
+    slug = _slug(name)
+    if any(m.slug == slug or m.name.lower() == name.lower() for m in list_modes(conn)):
+        raise MbError("INVALID_INPUT", f"a mode named '{name}' already exists")
+    shots = [dict(r) for r in conn.execute("SELECT * FROM shot WHERE project_id = ? ORDER BY ord", (project["id"],))]
+    if not shots:
+        raise MbError("INVALID_INPUT", "the board has no shots to save")
+    base = get_mode(project["mode"], conn) if project.get("mode") else None
+    look = get_look(project["visual_look"], conn) if project.get("visual_look") else None
+    pattern = []
+    for s in shots:
+        visual = s["visual"]
+        if s["lyric"]:
+            visual = visual.replace(s["lyric"], "{lyric}")
+        if look and look.world and look.world in visual:
+            visual = visual.replace(look.world, "{world}")
+        elif "{world}" not in visual:
+            visual = visual.rstrip(". ") + ", {world}"
+        pattern.append({"role": f"shot-{s['ord']}", "visual": visual, "action": s["action"], "camera": s["camera"],
+                        "has_figure": bool(s["has_figure"]), "lip_sync": bool(s["lip_sync"])})
+    chars = [r["name"] for r in conn.execute("SELECT name FROM character WHERE project_id = ? ORDER BY name",
+                                             (project["id"],))]
+    r = base.rhythm if base else Rhythm("line", 8, 2.0, 5.0)
+    body = {"kind": "mode", "slug": slug, "name": name, "animation": base.animation if base else "mood-loop",
+            "summary": f"Saved from '{project['title']}'" + (f", based on {base.name}" if base else ""),
+            "characters": chars, "lip_sync": base.lip_sync if base else "never",
+            "rhythm": {"unit": r.unit, "beats_per_shot": r.beats_per_shot, "min_shot_s": r.min_shot_s,
+                       "max_shot_s": r.max_shot_s},
+            "pattern": pattern}
+    mode = _validate_mode(_mode_from(body, "user"))
+    with repo.tx(conn):
+        repo.insert(conn, "template", {"name": name, "source": "user", "body": yaml.safe_dump(body, sort_keys=False)},
+                    actor)
+    return mode

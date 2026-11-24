@@ -55,6 +55,9 @@ const ACTIONS = {
   character_link: z.object({ project: id, name: z.string().max(40), shots: z.string().regex(/^[0-9, ]{1,200}$/),
     on: z.boolean() }),
   export_json: z.object({ project: id, out: file, no_media: z.boolean().optional() }),
+  export_pdf: z.object({ project: id, out: file }),
+  export_html: z.object({ project: id, out: file, no_audio: z.boolean().optional() }),
+  template_save: z.object({ project: id, name: z.string().min(1).max(60) }),
   import_json: z.object({ file }),
   sheet: z.object({ project: id, kind: z.enum(["storyboard", "plates", "clips"]).optional() }),
   finish: z.object({ project: id }),
@@ -99,6 +102,9 @@ function argv(action: Action, a: any): string[] {
     case "character_set": return ["character", "set", ...p, "--name", a.name, "--field", a.field, "--value", a.value];
     case "character_link": return ["character", a.on ? "link" : "unlink", ...p, "--name", a.name, "--shots", a.shots];
     case "export_json": return ["export", ...p, "--out", a.out, ...(a.no_media ? ["--no-media"] : [])];
+    case "export_pdf": return ["export", ...p, "--out", a.out, "--format", "pdf"];
+    case "export_html": return ["export", ...p, "--out", a.out, "--format", "html", ...(a.no_audio ? ["--no-media"] : [])];
+    case "template_save": return ["template", "save", ...p, "--name", a.name];
     case "import_json": return ["import", "--file", a.file];
     case "sheet": return ["sheet", ...p, ...(a.kind ? ["--kind", a.kind] : [])];
     case "finish": return ["finish", ...p];

@@ -1,6 +1,7 @@
 """Small previews for the Studio (002 T035): a 240 px wide proxy clip and a poster frame next to each clip.
 
-clip clips/shot-03-v2.mp4 -> clips/.previews/shot-03-v2.proxy.mp4 and .poster.jpg, so the clips folder holds only clips. Failure never fails the render."""
+clip clips/shot-03-v2.mp4 -> clips/.previews/shot-03-v2.proxy.mp4 and .poster.jpg,
+so the clips folder holds only clips. Failure never fails the render."""
 
 import subprocess
 from pathlib import Path
