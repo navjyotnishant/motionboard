@@ -62,11 +62,14 @@ Full rules: [.specify/memory/constitution.md](.specify/memory/constitution.md).
 | Skill | What it does |
 |---|---|
 | `mb-setup` | Checks your machine, tools and models; prints exact steps for anything missing |
-| `mb-storyboard` | Brainstorm or mode plus look, director's treatment, timed shot list, characters, contact sheet, approval |
-| `mb-clips` | Image plates per shot from any source, local video clips and lip sync under the memory guard, take checks |
-| `mb-finish` | Animation pack, lyrics, grade, end card, cover, metadata, delivery folder |
+| `mb-writer` | The writer: three concepts, a story with a turn, lyrics for a song or a script for a promo |
+| `mb-composer` | The composer: your song untouched, or a song or music bed made free on your Mac with ACE-Step 1.5; tempo, beats, sections and sung lines |
+| `mb-director` | The director: a one page treatment, mode and look, a storyboard timed to the music, cast and looks, approval |
+| `mb-cinematographer` | The cinematographer: image plates from any source, local clips and lip sync under the memory guard, fixing bad takes |
+| `mb-editor` | The editor: watches every take, picks takes, rough cut, finish with lyrics and end card, cover, delivery |
+| `mb-studio` | Opens the local Storyboard Studio |
 
-Each skill drives the `mb` CLI. Every command takes `--json` and prints one report.
+The skills work as a small film crew, each a professional in one role, handing over in that order. Each skill drives the `mb` CLI. Every command takes `--json` and prints one report.
 
 Checks the tool runs for you: a clip that jumps scene part way through, a sung line the singer holds only in part, and a shot that repeats its lyric word for word. Lip-sync shots can mute a backing echo with `mb clips --sing-until`.
 

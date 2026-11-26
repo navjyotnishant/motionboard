@@ -24,6 +24,6 @@ def setup(
         r.verified.append(f"read machine: {rep['machine']['chip']}, {rep['machine']['free_disk_gb']} GB disk free")
         r.verified.append("checked tools and model folders on disk")
         r.not_verified.append("model files are checked by name, not by checksum")
-        r.next = "mb setup --fix-plan" if rep["gaps"] else "mb-storyboard: start a project"
+        r.next = "mb setup --fix-plan" if rep["gaps"] else "mb-writer or mb-composer: start a project"
 
     run("mb setup", as_json, go)
