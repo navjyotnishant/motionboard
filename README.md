@@ -2,9 +2,9 @@
 
 Storyboard first video, made on your own Mac. Free, open video models: no credits, no subscription, no limit on takes.
 
-[![Motionboard product overview: $0 AI music videos on your own Mac](docs/media/motionboard-cover.jpg)](docs/media/motionboard-overview.mp4)
+https://github.com/user-attachments/assets/d171b3b7-4e39-4a7e-8ed2-088020a57247
 
-**[Watch the 64 second overview](docs/media/motionboard-overview.mp4)**
+Higher quality: [docs/media/motionboard-overview.mp4](docs/media/motionboard-overview.mp4)
 
 Motionboard is an open source Claude plugin. Give it a song, lyrics and an idea. It helps you write a director's treatment and a storyboard timed to the music, makes an image plate per shot from whatever image source you use, animates each shot locally with a free, open video model (LTX-2.3 by default, LTX-2.5 for lip sync), and finishes the cut with lyrics, grade and an end card. A local Storyboard Studio web app shows the whole board, every take, the render queue and your memory use.
 
