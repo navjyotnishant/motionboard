@@ -38,15 +38,39 @@ Tell the creator the segment picked, the tempo, the number of sung lines, and wh
 
 Run `mb modes --json` and show modes and looks briefly (name and one line each). Offer two paths:
 
-**Brainstorm.** Write exactly three distinct concepts from the lyrics, idea and analysis. Each concept: `title`, `premise` (one line), `hero_image_idea`, `sample_shots` (three short shots), plus the mode and look it uses. Save them as JSON, then:
+**Brainstorm.** Write exactly three distinct concepts from the lyrics, idea and analysis. The three must differ in what the song means and whose story it is, not only in look; none of them may be the lyric acted out line by line. Each concept: `title`, `premise` (one line), `hero_image_idea`, `sample_shots` (three short shots), plus the mode and look it uses. Save them as JSON, then:
 
 ```bash
 mb concepts add --project <id> --file concepts.json --json
 ```
 
-Show the three side by side. When the creator picks one (or mixes), `mb concepts choose`, then write one shot idea per sung line (see step 4).
+Show the three side by side. When the creator picks one (or mixes), `mb concepts choose`, then write the treatment (step 3b) and, from it, one shot idea per timed shot (step 4).
 
 **Mode plus look.** The creator picks one mode and one look. The mode carries the signature animation used in finishing; say which.
+
+## 3b. Direct it: write the treatment before any shot
+
+This is the step that decides whether the video is worth watching. A lyric is already heard. A picture that repeats it adds nothing, and a video made of such pictures is a slideshow of the words. Work as a director, not as an illustrator.
+
+Write `<project folder>/treatment.md` and show it to the creator before drafting shots. Keep it to one page:
+
+1. **What the song is about, under the words.** One sentence the lyric never says out loud. ("He has agreed to be someone's secret, and tonight he stops agreeing.")
+2. **The story on screen.** Who wants what, what stands in the way, what changes by the end. Three short beats: start, turn, end. The picture may tell a story the lyric only hints at.
+3. **The point of view.** Whose eyes we are in, and what the audience knows that a character does not.
+4. **Two or three motifs.** Objects, places or gestures that come back and change meaning (a second cup, a phone face down, a light left on). Say what each one means the first time and the last time.
+5. **The visual arc.** How light, colour, distance and pace move across the song: verse against chorus, the bridge, the last chorus. Night in the lyric can be noon on screen if noon tells the truth better.
+6. **Where the singer sings.** Which lines are performance and which are story. Performance needs a reason and a place.
+7. **What we refuse to show.** The obvious pictures for this lyric, listed so they stay out.
+
+Then, for every sung line, ask three questions in this order: what does the line mean, what does this character do when they feel that, where is the camera. Write the shot from the answers, never from the nouns in the line.
+
+- "You leave your jacket by my door" is about someone who keeps one foot in. Show a toothbrush put back in a bag, or him setting out two cups and putting one away. Not a jacket on a door.
+- "You only miss me in the dark" does not need a dark room. A bright crowded street where she does not look up from her phone says it harder.
+- "Slow" in a lyric is not a slow push in. "Burn" is not a flame. "Rain" is not rain.
+
+Use contrast and counterpoint (a warm picture under a cold line), the reaction and not the event, the moment before or after and not the moment itself, and a motif returning in place of a new idea. Give the chorus a different picture each time it comes back: the same words must mean more the third time.
+
+Literal is allowed when it is a choice, about once or twice in a song, where the plain picture lands hardest. `mb draft`, `mb sheet` and `mb approve --stage storyboard` list shots that repeat their lyric word for word under `not_verified`. That check only catches shared words (it will not see "coat" for "jacket"), so read every shot against its line yourself. A board that passes it can still be flat.
 
 ## 4. Draft
 
@@ -56,12 +80,27 @@ Without shot ideas the engine fills shots from the mode's pattern:
 mb draft --project <id> --mode two-lovers --look origami --json
 ```
 
-With a chosen concept, write `shots.json` first: one entry per timed shot, each with `visual`, `action`, `camera`, `has_figure`, and `lip_sync` only for singing shots. Rules for every shot:
+With a chosen concept, write `shots.json` first: one entry per timed shot, each with `visual`, `action`, `camera`, `has_figure`, `motion_prompt`, and `lip_sync` only for singing shots. Rules for every shot:
 
 - Exactly one clear action, written as a gesture or movement the model can see ("she lifts her hand to the glass"), never a feeling.
-- Object or scenery shots set `has_figure: false`; the engine then adds the look's no figure line so stray people do not appear.
+- Each shot shows what its line means, taken from the treatment, not what the line names.
+- Object or scenery shots set `has_figure: false`; the plate prompt then carries the look's no figure line. Clip prompts never list things that are not in the frame ("no people, no streets"): a video model reads the list as things to show.
+- A sung line belongs to singing shots as a whole. Put cuts at the edges of a sung line, or make every shot inside the line a singing shot. `mb draft` lists lines that the singer holds only in part; fix each one before approval, because a singer who arrives or leaves mid line reads as broken lip sync.
+- When a person's face is hidden or turned away in the plate, do not ask them to turn to the camera: the model has nothing to draw the face from and invents a stranger. Make a plate that shows the face.
 - Characters are named in capitals (HER, HIM, SINGER) consistently.
 - No on screen text, place names or exhibit labels in the visual.
+- Write a detailed `motion_prompt` for every shot. Video models follow long prompts far better than short ones. Use one flowing paragraph of 120 to 200 words, with no lists, in this order:
+  1. The action, in the present tense.
+  2. How it moves: speed, gestures, small lifelike details (breath, blinks, hair, fabric, rain, smoke).
+  3. Who is in the shot and how they look, matching their style line.
+  4. Where it is: the setting and what is behind them.
+  5. The camera: shot size, angle and one movement (or locked off).
+  6. The light and colour.
+  7. Any change during the shot.
+- Write the motion prompt from the plate's first frame. Never ask for something the image cannot become, such as a new person or a different room.
+- For lip-sync shots, the person sings clearly. Never write "softly" or "barely": those words make the mouth hardly move. Say that the lips move precisely in sync with each sung syllable, the jaw and throat move naturally, the face stays stable and the camera is static or slow.
+- Keep "film still", "still image" and "photo" out of motion prompts, because they ask for no motion. "The camera is still" is fine.
+- When you leave `motion_prompt` out, the engine builds a fuller paragraph from the shot, its cast and the look. A hand-written one is still better, and shots with realistic people should always get one.
 
 ```bash
 mb draft --project <id> --mode two-lovers --look origami --shots-file shots.json --replace --json
@@ -73,7 +112,7 @@ The draft creates the mode's cast (HER and HIM, SINGER) and links each to the sh
 
 - `mb character list -p <id> --json` shows each character and its shots.
 - Ask the creator how each one looks. Save it with `mb character set -p <id> --name HER --field style_line --value "..."`. Only linked shots get the line in their plate prompt.
-- A reference image keeps a face consistent: `mb character add|set ... --ref <image>` or `--field reference_image`. Plate adapters receive it with each request.
+- A reference image keeps a face consistent: `mb character add ... --ref <image>`, or for an existing character `mb character set ... --field reference_image --value <image>`. Plate adapters receive it with each request.
 - `mb character link|unlink -p <id> --name HER --shots 2,5` changes who is in a shot. A shot needs a figure first.
 - Changing a style line or reference marks finished plates for redo. Say which shots changed.
 - Realistic looks with people set the synthetic flag; delivery metadata says so. Never clear it.

@@ -49,6 +49,8 @@ mb clips --project <id> --json      # fit check, then queue; refuses with sugges
 mb worker --detach --json           # renders in the background, one shot at a time
 ```
 
+Before a long queue, render two or three shots first (one with people, one object shot, one singing shot) with `--shots`, and watch them from start to end. A fault in how prompts are built repeats in every shot, so it is found in ten minutes and not after a night.
+
 Tell the creator the estimated time from the report. LTX-2.3 takes about 4 to 5 seconds per frame at 576x1024 on an M3 Max.
 
 ## 4. Watch, pause, stop, redo
@@ -63,6 +65,36 @@ mb clips --project <id> --shots 7 --redo --json
 
 If the guard or fit check stopped a shot, read its `stop_reason` and `suggestion` and offer them; do not retry the same settings blindly.
 
+## 4b. Lip-sync shots that mis-say a word
+
+The video model can blur words on lip-sync shots (for example "dark" read as "bark"). Render 2 or 3 seed takes of that shot and let the creator pick:
+
+```bash
+mb clips --project <id> --shots 6 --redo --seeds 7,2024 --json
+```
+
+If seed takes do not fix it and LTX-2.5 is installed (`mb setup` lists it), render the shot with it. It followed the vocal more closely on the first real video:
+
+```bash
+mb clips --project <id> --shots 6 --redo --backend ltx25 --json
+```
+
+If the singer mouths a word twice, the voice stem has a backing echo after the lead line (the stem holds lead and backing voices together). Render the shot again with the echo silenced for the model; the finished video still plays the full song:
+
+```bash
+mb clips --project <id> --shots 46 --redo --backend ltx25 --sing-until 1.9 --json
+```
+
+`--sing-until` is seconds into the shot, where the lead voice ends.
+
+Run it alone: no other render or large download at the same time. Each LTX-2.5 lip-sync shot takes about 9 minutes on a 36 GB Mac.
+
+Every take is kept, and the take in use only changes when the creator picks one: in the Studio, open the shot panel, tap a take under Versions to play it with the song, then press "Use this take". The CLI equivalent is `mb use --project <id> --asset <id>`. On the first real video, a different seed fixed the word. A mouth-redraw model (MuseTalk) was tried and removed: it softened realistic faces on every shot.
+
 ## 5. Review clips
+
+Each finished job carries `problems` in `mb queue --json` (wrong frame count or size, or a scene jump inside the clip, which means the model left its plate). `mb sheet --kind clips` and `mb approve --stage clips` list the clips in use that have a scene jump. Render another take for each before review.
+
+Those checks do not see a changed face, lips that do not move or the wrong action. Watch every take in full before saying it is good. A few sampled frames is not a review, and say plainly which takes you did not watch.
 
 `mb sheet --kind clips`, then per shot `mb review --kind clip --decision approve|reject --note`. Finished shots are never re-rendered unless `--redo`. When every clip is approved and the creator says yes: `mb approve --stage clips`, then hand over to `mb-finish`.
