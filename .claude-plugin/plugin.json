@@ -1,6 +1,6 @@
 {
   "name": "motionboard",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Storyboard first music videos on your own machine: timed storyboard, image plates from any source, local LTX-2.3 clips under a memory guard, finishing, and a local Storyboard Studio.",
   "author": {
     "name": "Navjyot Nishant"
