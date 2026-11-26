@@ -127,7 +127,7 @@ The creator can choose a realistic look instead of a stylized one, keep the same
   - **Lyric Story**: one scene per line; animation: kinetic typography, one big word per beat with hard cuts (the A Letter Never Sent pack).
   - **Mood Loop**: slow ambient shots; animation: light leaks, drifting particles, breathing lyric fades.
   v1 looks (style lines and plate prompt language, no animation of their own): Origami / Paper World, Exotic, Vintage Film, Neon Night City, Cosmic. Any project can be saved as a new mode or look.
-- **FR-018**: Mode animation packs MUST be distributed under a source available, non commercial licence (PolyForm Noncommercial 1.0.0), separate from the MIT licence of the engine and Studio. Videos a creator makes with the packs belong to the creator; the restriction covers reuse or resale of the packs themselves.
+- **FR-018**: Mode animation packs MUST be distributed under a source available, non commercial licence (PolyForm Noncommercial 1.0.0), separate from the Apache 2.0 licence of the engine and Studio. Videos a creator makes with the packs belong to the creator; the restriction covers reuse or resale of the packs themselves.
 
 ### Key Entities
 

@@ -138,7 +138,7 @@ modes/                           # story modes; animation packs are Motionboard 
 ├── lyric-story/ (mode.yaml, animation/)  # A Letter Never Sent kinetic type
 └── mood-loop/ (mode.yaml, animation/)
 looks/
-└── *.yaml                       # origami, exotic, vintage-film, neon-night, cosmic (MIT)
+└── *.yaml                       # origami, exotic, vintage-film, neon-night, cosmic (Apache-2.0)
 studio/                          # feature 002
 docs/
 ```

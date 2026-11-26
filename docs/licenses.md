@@ -2,7 +2,7 @@
 
 | Part | Licence |
 |---|---|
-| Engine (`engine/`), Studio (`studio/`), skills and plugin files | MIT, see [LICENSE](../LICENSE) |
+| Engine (`engine/`), Studio (`studio/`), skills and plugin files | Apache License 2.0, see [LICENSE](../LICENSE) and [NOTICE](../NOTICE) |
 | Mode animation packs (`modes/*/animation/`) | PolyForm Noncommercial 1.0.0, see [modes/LICENSE](../modes/LICENSE) |
 | Fonts inside packs | SIL Open Font License 1.1, files next to each font |
 | Video model weights (LTX-2.3 and others) | their own licences; you download and accept them |

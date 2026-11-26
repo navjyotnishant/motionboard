@@ -2,7 +2,7 @@
 
 **Storyboard first video, made on your own Mac. Free, open video models: no credits, no subscription, no limit on takes.**
 
-[![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
+[![Licence: Apache 2.0](https://img.shields.io/badge/licence-Apache%202.0-blue)](LICENSE)
 [![Packs: PolyForm Noncommercial](https://img.shields.io/badge/animation%20packs-PolyForm%20NC-purple)](modes/LICENSE)
 ![Platform: Apple Silicon](https://img.shields.io/badge/platform-Apple%20Silicon%20Mac-black)
 ![Version 0.4.0](https://img.shields.io/badge/version-0.4.0-orange)
@@ -276,7 +276,7 @@ cd engine && uv run pytest -q && uv run ruff check src tests
 
 ## Licence
 
-- Engine, Studio, skills and plugin files: MIT ([LICENSE](LICENSE)).
+- Engine, Studio, skills and plugin files: Apache License 2.0 ([LICENSE](LICENSE), [NOTICE](NOTICE)).
 - Mode animation packs (`modes/*/animation/`): PolyForm Noncommercial 1.0.0. Free for your own videos and to study or change; not for commercial reuse or resale of the packs themselves. Videos you make with them are yours.
 - Model weights you download keep their own licences.
 

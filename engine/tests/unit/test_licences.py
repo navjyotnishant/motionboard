@@ -1,4 +1,4 @@
-"""Every animation pack carries the PolyForm Noncommercial notice (T076); the engine stays MIT."""
+"""Every animation pack carries the PolyForm Noncommercial notice (T076); the engine is Apache 2.0."""
 
 from motionboard import config
 
@@ -30,5 +30,7 @@ def test_bundled_fonts_ship_with_their_licence():
             assert list((pack / "fonts").glob("OFL*.txt")), pack
 
 
-def test_engine_is_mit():
-    assert (ROOT / "LICENSE").read_text().startswith("MIT License")
+def test_engine_is_apache():
+    assert "Apache License" in (ROOT / "LICENSE").read_text().splitlines()[1]
+    assert "Version 2.0, January 2004" in (ROOT / "LICENSE").read_text()
+    assert (ROOT / "NOTICE").read_text().startswith("Motionboard")

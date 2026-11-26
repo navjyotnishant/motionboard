@@ -1,7 +1,7 @@
 # Motionboard mode animation packs
 
 The animation packs in `modes/*/animation/` are licensed under the PolyForm Noncommercial License 1.0.0, below.
-The rest of this repository (engine, Studio, plugin glue, `modes/*/mode.yaml`, `looks/`) is MIT; see the root LICENSE.
+The rest of this repository (engine, Studio, plugin glue, `modes/*/mode.yaml`, `looks/`) is Apache License 2.0; see the root LICENSE and NOTICE.
 Fonts inside packs keep their own licences (SIL Open Font License 1.1, see each pack's fonts folder).
 Videos you make with the packs are yours.
 

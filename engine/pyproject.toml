@@ -2,7 +2,7 @@
 name = "motionboard"
 version = "0.1.0"
 description = "Motionboard engine: storyboard first music videos on your own machine"
-license = "MIT"
+license = "Apache-2.0"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "typer>=0.12",
