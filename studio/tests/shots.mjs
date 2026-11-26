@@ -24,6 +24,11 @@ if (pid) {
   await page.goto(`${base}/p/${pid}`);
   await page.waitForTimeout(2000);
   await page.screenshot({ path: `${out}/board.png` });
+  await page.keyboard.press("s");
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: `${out}/story.png` });
+  await page.keyboard.press("s");
+  await page.waitForTimeout(400);
   await page.locator("[data-shot='2']").dblclick();
   await page.waitForTimeout(1200);
   await page.screenshot({ path: `${out}/panel.png` });

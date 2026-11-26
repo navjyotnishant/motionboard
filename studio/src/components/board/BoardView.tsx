@@ -10,6 +10,7 @@ import { KbdHelp } from "@/components/ui/KbdHelp";
 import { useToast } from "@/components/ui/Toast";
 import { Animatic } from "@/components/animatic/Animatic";
 import { QueuePanel } from "@/components/queue/QueuePanel";
+import { SystemLoad } from "@/components/queue/SystemLoad";
 import { reviewKind } from "@/components/review/ApproveBar";
 import { ShotCard } from "./ShotCard";
 import { SidePanel } from "./SidePanel";
@@ -17,6 +18,7 @@ import { Timeline } from "./Timeline";
 import { FilmStrip } from "./FilmStrip";
 import { GateBar } from "./GateBar";
 import { ExportMenu } from "./ExportMenu";
+import { StoryList } from "./StoryList";
 import type { Board } from "./types";
 
 export function BoardView({ id }: { id: string }) {
@@ -28,7 +30,13 @@ export function BoardView({ id }: { id: string }) {
   const [queueOpen, setQueueOpen] = useState(false);
   const [help, setHelp] = useState(false);
   const [animatic, setAnimatic] = useState(false);
+  const [view, setView] = useState<"grid" | "story">("grid");
+  useEffect(() => { try { const v = localStorage.getItem("mb.view"); if (v === "story" || v === "grid") setView(v); } catch {} }, []);
+  const pick = (v: "grid" | "story") => { setView(v); try { localStorage.setItem("mb.view", v); } catch {} };
   const [time, setTime] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const stopAt = useRef<number | null>(null);
+  const [soloShot, setSoloShot] = useState<string | null>(null);
   const [rejectSignal, setRejectSignal] = useState(0);
   const [tick, setTick] = useState(0);
   const audio = useRef<HTMLAudioElement>(null);
@@ -43,7 +51,14 @@ export function BoardView({ id }: { id: string }) {
 
   useEffect(() => {
     let raf = 0;
-    const loop = () => { if (audio.current && !audio.current.paused) setTime(audio.current.currentTime); raf = requestAnimationFrame(loop); };
+    const loop = () => {
+      const a = audio.current;
+      if (a && !a.paused) {
+        setTime(a.currentTime);
+        if (stopAt.current !== null && a.currentTime >= stopAt.current) { a.pause(); stopAt.current = null; setSoloShot(null); }
+      }
+      raf = requestAnimationFrame(loop);
+    };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
   }, []);
@@ -61,7 +76,20 @@ export function BoardView({ id }: { id: string }) {
     setSelected(n.id); seek(n.start);
     document.querySelector(`[data-shot="${n.ord}"]`)?.scrollIntoView({ block: "nearest" });
   };
-  const toggle = () => { const a = audio.current; if (!a) return; if (a.paused) a.play(); else a.pause(); };
+  const toggle = () => {
+    const a = audio.current; if (!a) return;
+    stopAt.current = null; setSoloShot(null);
+    if (a.paused) a.play(); else a.pause();
+  };
+  // Play one shot's slice of the song (and its clip, in sync) and stop at the cut. A second press stops it.
+  const playShot = (id: string) => {
+    const a = audio.current; const s = shots.find((q) => q.id === id);
+    if (!a || !s) return;
+    if (soloShot === id && !a.paused) { a.pause(); stopAt.current = null; setSoloShot(null); return; }
+    setSelected(id); setSoloShot(id);
+    a.currentTime = s.start; setTime(s.start); stopAt.current = s.end;
+    a.play().catch(() => {});
+  };
 
   useShortcuts({
     space: toggle,
@@ -71,8 +99,10 @@ export function BoardView({ id }: { id: string }) {
     left: () => move(-1),
     right: () => move(1),
     e: () => { if (sel) setPanel(true); },
+    p: () => { if (sel) playShot(sel.id); },
     q: () => setQueueOpen((o) => !o),
     v: () => setAnimatic(true),
+    s: () => pick(view === "grid" ? "story" : "grid"),
     help: () => setHelp((h) => !h),
     escape: () => { setHelp(false); setPanel(false); setAnimatic(false); },
     a: async () => {
@@ -91,10 +121,19 @@ export function BoardView({ id }: { id: string }) {
 
   return (
     <div className="flex h-full flex-col">
-      <audio ref={audio} src={media(segment)} preload="auto" onPause={() => audio.current && setTime(audio.current.currentTime)} />
+      <audio ref={audio} src={media(segment)} preload="auto" onPlay={() => setPlaying(true)} onEnded={() => setPlaying(false)}
+        onPause={() => { setPlaying(false); if (audio.current) setTime(audio.current.currentTime); }} />
       <TopBar title={<span>{board.project.title} <span className="text-fg3">· {board.project.mode ?? "no mode"} · {board.project.visual_look ?? ""}</span></span>}>
+        <SystemLoad onOpen={() => setQueueOpen(true)} />
         <GateBar board={board} reload={load} />
         <span className="mx-1 h-5 w-px bg-line" />
+        <span className="flex overflow-hidden rounded border border-line text-[12px]">
+          {(["grid", "story"] as const).map((v) => (
+            <button key={v} onClick={() => pick(v)} className={`px-2 py-1 ${view === v ? "bg-s3 text-fg" : "text-fg3 hover:bg-s2"}`}>
+              {v === "grid" ? "Grid" : "Story"}
+            </button>
+          ))}
+        </span>
         <button className="rounded px-2 py-1 text-[12px] text-fg2 hover:bg-s3" onClick={() => setAnimatic(true)}>Animatic <kbd className="opacity-50">V</kbd></button>
         <button className="rounded px-2 py-1 text-[12px] text-fg2 hover:bg-s3" onClick={() => setQueueOpen((o) => !o)}>Queue <kbd className="opacity-50">Q</kbd></button>
         <ExportMenu board={board} />
@@ -107,19 +146,28 @@ export function BoardView({ id }: { id: string }) {
               No shots yet. Draft the board from chat or the start page.
             </div>
           )}
-          <div className={`grid gap-3 ${ratio ? "grid-cols-[repeat(auto-fill,minmax(260px,1fr))]" : "grid-cols-[repeat(auto-fill,minmax(150px,1fr))]"}`}>
+          {view === "story" ? (
+            <StoryList board={board} selected={selected} playing={playingShot?.id ?? null}
+              solo={playing ? soloShot : null} onPlay={playShot}
+              onSelect={(sid) => { setSelected(sid); const q = shots.find((x) => x.id === sid); if (q) seek(q.start); }}
+              onOpen={(sid) => { setSelected(sid); setPanel(true); }} />
+          ) : (
+          <div className={`grid gap-3 ${ratio ? "grid-cols-[repeat(auto-fill,minmax(260px,1fr))]" : "grid-cols-[repeat(auto-fill,minmax(190px,1fr))]"}`}>
             {shots.map((s) => (
               <ShotCard key={s.id} board={board} shot={s} selected={s.id === selected} playing={s.id === playingShot?.id}
+                audioOn={playing} offset={s.id === playingShot?.id ? time - s.start : 0}
+                solo={soloShot === s.id && playing} onPlay={() => playShot(s.id)}
                 onSelect={() => { setSelected(s.id); seek(s.start); }} onOpen={() => { setSelected(s.id); setPanel(true); }} />
             ))}
           </div>
+          )}
         </main>
         {panel && sel && (
           <SidePanel board={board} shot={sel} onClose={() => setPanel(false)} reload={load} rejectSignal={rejectSignal} />
         )}
       </div>
       <FilmStrip board={board} selected={selected} onSelect={(sid) => { setSelected(sid); const s = shots.find((q) => q.id === sid); if (s) seek(s.start); }} />
-      <Timeline board={board} time={time} selected={selected} onSeek={seek} onSelect={setSelected}
+      <Timeline board={board} time={time} playing={playing} onToggle={toggle} selected={selected} onSeek={seek} onSelect={setSelected}
         onMoveCut={async (ord, end) => {
           const s = shots.find((q) => q.ord === ord)!;
           const r = await patchShot(s.id, s.updated_at, { end });

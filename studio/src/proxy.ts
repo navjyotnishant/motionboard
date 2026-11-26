@@ -21,7 +21,7 @@ export function proxy(req: NextRequest) {
   if (!tokenOk(req.cookies.get(COOKIE)?.value)) {
     if (url.pathname.startsWith("/api/")) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
     return new NextResponse(
-      "Motionboard Studio: open the link that `mb studio start` printed (it carries the session token).",
+      "Motionboard Studio: this session has expired or the link is missing its token. Run `mb studio open` for a fresh link.",
       { status: 403, headers: { "content-type": "text/plain" } },
     );
   }

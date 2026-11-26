@@ -8,8 +8,9 @@ import type { Board } from "./types";
 const SNAP = 0.12;
 const H = 120;
 
-export function Timeline({ board, time, selected, onSeek, onSelect, onMoveCut }: {
+export function Timeline({ board, time, selected, onSeek, onSelect, onMoveCut, playing, onToggle }: {
   board: Board; time: number; selected: string | null; onSeek: (t: number) => void;
+  playing: boolean; onToggle: () => void;
   onSelect: (shotId: string) => void; onMoveCut: (ord: number, end: number) => void;
 }) {
   const wrap = useRef<HTMLDivElement>(null);
@@ -93,6 +94,15 @@ export function Timeline({ board, time, selected, onSeek, onSelect, onMoveCut }:
   return (
     <div className="border-t border-line bg-s1">
       <div className="flex items-center gap-3 px-3 py-1 text-[11px] text-fg3">
+        <button onClick={onToggle} title="Play or pause the song (Space)" aria-label={playing ? "Pause" : "Play"}
+          className="flex items-center gap-1.5 rounded bg-accent px-2.5 py-1 text-[12px] font-medium text-black hover:opacity-90">
+          {playing ? (
+            <svg width="10" height="10" viewBox="0 0 10 10"><rect x="1" y="1" width="3" height="8" fill="currentColor" /><rect x="6" y="1" width="3" height="8" fill="currentColor" /></svg>
+          ) : (
+            <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 1 L9 5 L2 9 Z" fill="currentColor" /></svg>
+          )}
+          {playing ? "Pause" : "Play"}
+        </button>
         <span className="tnum font-mono text-fg">{tc(time)}</span>
         <span className="tnum font-mono">/ {tc(dur)}</span>
         {board.analysis?.tempo_bpm && <span>{Math.round(board.analysis.tempo_bpm)} BPM</span>}

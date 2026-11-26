@@ -1,18 +1,31 @@
 "use client";
 // One shot: the frame (clip if there is one, else the plate), a thin bar with number, timecode and state.
 // Hovering a clip plays it muted; a guard stop shows its reason and suggestion on the card.
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { media, STATE_COLOR, STATE_LABEL, tc } from "@/lib/client";
 import { activeAsset, lastJob, type Board, type Shot } from "./types";
 
-export function ShotCard({ board, shot, selected, onSelect, onOpen, playing }: {
+export function ShotCard({ board, shot, selected, onSelect, onOpen, playing, audioOn = false, offset = 0, solo = false, onPlay }: {
   board: Board; shot: Shot; selected: boolean; onSelect: () => void; onOpen: () => void; playing: boolean;
+  audioOn?: boolean; offset?: number; solo?: boolean; onPlay?: () => void;
 }) {
   const plate = activeAsset(board, shot.id, "plate");
   const clip = activeAsset(board, shot.id, "clip");
   const job = lastJob(board, shot.id);
   const vid = useRef<HTMLVideoElement>(null);
   const ratio = board.project.aspect === "16:9" ? "16 / 9" : "9 / 16";
+  // While the song plays through this shot, run the clip muted and in step with the audio.
+  const synced = playing && audioOn && !!clip?.path;
+  useEffect(() => {
+    const v = vid.current;
+    if (!v) return;
+    if (synced) {
+      if (Math.abs(v.currentTime - offset) > 0.15) v.currentTime = Math.max(0, offset);
+      if (v.paused) v.play().catch(() => {});
+    } else if (!v.paused && !v.matches(":hover")) {
+      v.pause();
+    }
+  }, [synced, offset]);
   const failed = job && (job.state === "failed" || job.state === "stopped") && shot.state !== "clip_approved";
   return (
     <div
@@ -20,7 +33,7 @@ export function ShotCard({ board, shot, selected, onSelect, onOpen, playing }: {
       onClick={onSelect}
       onDoubleClick={onOpen}
       onMouseEnter={() => vid.current?.play().catch(() => {})}
-      onMouseLeave={() => { if (vid.current) { vid.current.pause(); vid.current.currentTime = 0; } }}
+      onMouseLeave={() => { if (vid.current && !synced) { vid.current.pause(); vid.current.currentTime = 0; } }}
       className="cursor-pointer select-none rounded-md border bg-s1"
       style={{ borderColor: selected ? "var(--accent)" : playing ? "var(--line-strong)" : "var(--line)" }}
     >
@@ -28,7 +41,7 @@ export function ShotCard({ board, shot, selected, onSelect, onOpen, playing }: {
         {clip?.path ? (
           <video ref={vid} src={media(clip.proxy || clip.path, clip.id)}
             poster={clip.poster ? media(clip.poster, clip.id) : plate?.path ? media(plate.path, plate.id) : undefined}
-            muted loop playsInline preload="none" className="h-full w-full object-cover" />
+            muted loop={!synced} playsInline preload="metadata" className="h-full w-full object-cover" />
         ) : plate?.path ? (
           <img src={media(plate.path, plate.id)} alt="" loading="lazy" className="h-full w-full object-cover" />
         ) : (
@@ -43,6 +56,20 @@ export function ShotCard({ board, shot, selected, onSelect, onOpen, playing }: {
         )}
         {shot.lip_sync && (
           <span className="absolute left-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-fg">LIP-SYNC</span>
+        )}
+        {onPlay && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onPlay(); }}
+            onDoubleClick={(e) => e.stopPropagation()}
+            title={solo ? "Stop" : clip?.path ? "Play this shot with its audio (P)" : "Play this shot's audio (P)"}
+            aria-label={solo ? "Stop shot" : "Play shot"}
+            className={`absolute bottom-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full text-black shadow ${solo ? "bg-accent" : "bg-white/85 hover:bg-accent"}`}>
+            {solo ? (
+              <svg width="10" height="10" viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" fill="currentColor" /></svg>
+            ) : (
+              <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2.5 1 L9 5 L2.5 9 Z" fill="currentColor" /></svg>
+            )}
+          </button>
         )}
         {shot.dirty && (
           <span className="absolute right-1.5 top-1.5 rounded bg-bad/80 px-1.5 py-0.5 text-[10px] text-white">REDO</span>
@@ -61,6 +88,10 @@ export function ShotCard({ board, shot, selected, onSelect, onOpen, playing }: {
         <span className="ml-auto flex items-center gap-1 text-fg3" title={STATE_LABEL[shot.state]}>
           <span className="h-2 w-2 rounded-full" style={{ background: STATE_COLOR[shot.state] }} />
         </span>
+      </div>
+      <div className="space-y-1 border-t border-line px-2 py-2 text-[12px] leading-snug">
+        {shot.lyric && <div className="line-clamp-3 italic text-fg2">“{shot.lyric}”</div>}
+        <div className="line-clamp-4 text-fg">{shot.action}</div>
       </div>
     </div>
   );

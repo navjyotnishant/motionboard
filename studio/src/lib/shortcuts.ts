@@ -9,6 +9,8 @@ export const SHORTCUTS: { key: string; label: string }[] = [
   { key: "A", label: "Approve the selected shot's plate or clip" },
   { key: "R", label: "Reject (asks for a note)" },
   { key: "E", label: "Edit the selected shot" },
+  { key: "P", label: "Play the selected shot with its audio" },
+  { key: "S", label: "Switch between grid and story view" },
   { key: "V", label: "Animatic" },
   { key: "Q", label: "Render queue" },
   { key: "?", label: "This help" },
@@ -16,10 +18,10 @@ export const SHORTCUTS: { key: string; label: string }[] = [
 ];
 
 export type Handlers = Partial<Record<
-  "space" | "j" | "k" | "l" | "left" | "right" | "a" | "r" | "e" | "v" | "q" | "help" | "escape", () => void>>;
+  "space" | "j" | "k" | "l" | "left" | "right" | "a" | "r" | "e" | "p" | "s" | "v" | "q" | "help" | "escape", () => void>>;
 
 const MAP: Record<string, keyof Handlers> = {
-  " ": "space", j: "j", k: "k", l: "l", ArrowLeft: "left", ArrowRight: "right", a: "a", r: "r", e: "e", v: "v",
+  " ": "space", j: "j", k: "k", l: "l", ArrowLeft: "left", ArrowRight: "right", a: "a", r: "r", e: "e", p: "p", s: "s", v: "v",
   q: "q", "?": "help", Escape: "escape",
 };
 

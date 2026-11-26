@@ -44,6 +44,7 @@ const ACTIONS = {
   review: z.object({ project: id, shot: ord, kind: z.enum(["plate", "clip"]), decision: z.enum(["approve", "reject"]),
     note: text.optional() }),
   plates: z.object({ project: id, adapter: z.string().max(60).optional(), shots, confirm_cost: z.boolean().optional() }),
+  use_version: z.object({ project: id, asset: z.string().regex(/^[0-9A-Za-z]{10,40}$/) }),
   plate_upload: z.object({ project: id, shot: ord, file }),
   clips: z.object({ project: id, shots, redo: z.boolean().optional() }),
   worker_start: z.object({}),
@@ -93,6 +94,7 @@ function argv(action: Action, a: any): string[] {
       ...(a.note ? ["--note", a.note] : [])];
     case "plates": return ["plates", ...p, ...(a.adapter ? ["--adapter", a.adapter] : []),
       ...(a.shots ? ["--shots", a.shots] : []), ...(a.confirm_cost ? ["--confirm-cost"] : [])];
+    case "use_version": return ["use", ...p, "--asset", a.asset];
     case "plate_upload": return ["plate", "upload", ...p, "--shot", String(a.shot), "--file", a.file];
     case "clips": return ["clips", ...p, ...(a.shots ? ["--shots", a.shots] : []), ...(a.redo ? ["--redo"] : [])];
     case "worker_start": return ["worker", "--detach"];

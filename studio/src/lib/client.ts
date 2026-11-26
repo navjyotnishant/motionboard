@@ -9,6 +9,9 @@ export type Report = {
 
 export async function getJson<T>(url: string): Promise<T> {
   const r = await fetch(url, { cache: "no-store" });
+  if (r.status === 403 && (await r.clone().text()).includes("FORBIDDEN")) {
+    throw new Error("This Studio session has expired. Run `mb studio open` (or ask Claude to open the Studio) for a fresh link.");
+  }
   if (!r.ok) throw new Error(`${r.status} ${(await r.text()).slice(0, 200)}`);
   return r.json() as Promise<T>;
 }
