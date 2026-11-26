@@ -53,5 +53,7 @@ for i, fr in enumerate(SCENES[:-1]):         # a soft whoosh into every cut and 
 mix = np.stack([L, R], axis=1)
 fade = np.minimum(1, t / 0.4) * np.minimum(1, (T - t) / 2.2)
 mix = np.tanh(mix * 1.5) * 0.8 * fade[:, None]
-sf.write("/Users/navjyotnishant/dev/motionboard/video/out/bed.wav", mix, SR)
+import pathlib
+out = pathlib.Path(__file__).resolve().parent.parent / "out"; out.mkdir(exist_ok=True)
+sf.write(out / "bed.wav", mix, SR)
 print(round(T, 2), "s", float(np.abs(mix).max()))
