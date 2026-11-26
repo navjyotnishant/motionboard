@@ -18,6 +18,11 @@
     "release_note": "e.g. COMING SOON or OUT NOW (optional)",
     "highlight_words": "words that turn ruby when sung, e.g. [\"almost\", \"love\"]",
     "snap_at": "second (segment time) where the thread snaps; omit for no snap",
+    "thread": "off to leave the ruby thread out (default on)",
+    "end_style": "credits for a centred credit card on a dimmed last frame, all serif (default: classic top block)",
+    "credits": "extra credit lines for end_style credits, split by | (up to 4), e.g. Written and produced by NAVAAN",
+    "end_hold": "seconds the end card stays after the segment (default 1.5); the song fades out under it",
+    "lyrics_y": "centre of the lyric block as a fraction of the height: 0.25 top (default), 0.72 lower third, clear of faces",
     "colors": "optional overrides: ivory, amber, ruby, brass as [r,g,b]"
   },
   "inputs": ["duration", "width", "height", "lines", "cuts", "downbeats", "theme"],

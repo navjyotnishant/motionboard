@@ -9,7 +9,11 @@
   var cv = document.getElementById("fx"), g = cv.getContext("2d");
   var IVORY = COL.ivory || [243, 236, 224], AMBER = COL.amber || [236, 204, 150];
   var RUBY = COL.ruby || [255, 70, 100], BRASS = COL.brass || [201, 160, 96];
-  var MAXW = W * 0.8, Y1 = H * 0.224, Y2 = H * 0.284, YS = H * 0.25, TY = H * 0.7385;
+  // lyrics_y: centre of the lyric block as a fraction of the height (0.25 top, 0.72 lower third, clear of faces)
+  var LY = T.lyrics_y == null || isNaN(parseFloat(T.lyrics_y)) ? 0.25 : Math.min(0.85, Math.max(0.12, parseFloat(T.lyrics_y)));
+  // thread: "off" leaves the ruby thread out (it suits stylized looks more than realistic footage)
+  var THREAD = !(T.thread === "off" || T.thread === "false" || T.thread === false);
+  var MAXW = W * 0.8, Y1 = H * (LY - 0.026), Y2 = H * (LY + 0.034), YS = H * LY, TY = H * 0.7385;
   var CAPS = { w: "500", st: "normal", px: 86 * S, fam: "CG", ls: 12 * S, col: IVORY };
   var LOW = { w: "400", st: "italic", px: 82 * S, fam: "CG", ls: 2 * S, col: AMBER };
   var HIGH = (T.highlight_words || []).map(function (w) { return String(w).toLowerCase(); });
@@ -67,11 +71,30 @@
     if (SNAP > 0 && SNAP >= t && SNAP <= out + 0.5) made.forEach(function (r) { r.fall = 1; });
   });
 
-  var endLines = [];
-  if (T.artist) endLines.push([0, H * 0.245, { w: "500", st: "normal", px: 124 * S, fam: "CG", ls: 30 * S, col: IVORY }, T.artist]);
-  if (T.song) endLines.push([0.12, H * 0.318, { w: "400", st: "italic", px: 92 * S, fam: "CG", ls: 2 * S, col: AMBER }, T.song]);
-  if (T.album_line) endLines.push([0.24, H * 0.367, { w: "500", st: "normal", px: 31 * S, fam: "JBM", ls: 8 * S, col: BRASS }, T.album_line]);
-  if (T.release_note) endLines.push([0.36, H * 0.427, { w: "500", st: "normal", px: 34 * S, fam: "JBM", ls: 16 * S, col: RUBY }, T.release_note]);
+  // end_style "credits": a centred credit card on a dimmed last frame, all in Cormorant (no mono), album name on its own line,
+  // optional credit lines (theme.credits, lines split by "|"). Default keeps the classic top block.
+  var endLines = [], RULE_Y = H * 0.276, RULE_W = 300, CREDITS = T.end_style === "credits";
+  if (!CREDITS) {
+    if (T.artist) endLines.push([0, H * 0.245, { w: "500", st: "normal", px: 124 * S, fam: "CG", ls: 30 * S, col: IVORY }, T.artist]);
+    if (T.song) endLines.push([0.12, H * 0.318, { w: "400", st: "italic", px: 92 * S, fam: "CG", ls: 2 * S, col: AMBER }, T.song]);
+    if (T.album_line) endLines.push([0.24, H * 0.367, { w: "500", st: "normal", px: 31 * S, fam: "JBM", ls: 8 * S, col: BRASS }, T.album_line]);
+    if (T.release_note) endLines.push([0.36, H * 0.427, { w: "500", st: "normal", px: 34 * S, fam: "JBM", ls: 16 * S, col: RUBY }, T.release_note]);
+  } else {
+    var cy = H * 0.43, LABEL = { w: "500", st: "normal", px: 27 * S, fam: "CG", ls: 14 * S, col: BRASS };
+    if (T.artist) endLines.push([0, cy - 118 * S, { w: "500", st: "normal", px: 134 * S, fam: "CG", ls: 36 * S, col: IVORY }, String(T.artist).toUpperCase()]);
+    RULE_Y = cy - 62 * S; RULE_W = 220;
+    if (T.song) endLines.push([0.14, cy + 40 * S, { w: "400", st: "italic", px: 88 * S, fam: "CG", ls: 1 * S, col: AMBER }, T.song]);
+    var alb = String(T.album_line || "").trim().split(/\s{2,}/);
+    if (alb[0] && alb.length > 1) {
+      endLines.push([0.3, cy + 168 * S, LABEL, alb[0].toUpperCase()]);
+      endLines.push([0.4, cy + 236 * S, { w: "500", st: "normal", px: 58 * S, fam: "CG", ls: 20 * S, col: IVORY }, alb.slice(1).join(" ").toUpperCase()]);
+    } else if (alb[0]) endLines.push([0.3, cy + 180 * S, LABEL, alb[0].toUpperCase()]);
+    if (T.release_note) endLines.push([0.5, cy + 322 * S, { w: "500", st: "normal", px: 30 * S, fam: "CG", ls: 16 * S, col: RUBY }, String(T.release_note).toUpperCase()]);
+    var cr = Array.isArray(T.credits) ? T.credits : String(T.credits || "").split("|");
+    cr.map(function (x) { return String(x).trim(); }).filter(Boolean).slice(0, 4).forEach(function (line, i) {
+      endLines.push([0.6 + 0.1 * i, cy + (446 + 54 * i) * S, { w: "400", st: "italic", px: 36 * S, fam: "CG", ls: 1 * S, col: [214, 200, 176] }, line]);
+    });
+  }
   endLines.forEach(function (e) { row(END + e[0], EOUT, e[1], e[2], [{ s: e[3] }], { end: 1 }); });
 
   var ready = false;
@@ -174,7 +197,7 @@
     if (!T.artist) return;
     var a = t - (END + 0.2); if (a < 0) return;
     var al = clamp01(a / 0.4) * (1 - clamp01((t - EOUT) / 0.3)); if (al <= 0) return;
-    var w = 300 * S * eo(a / 0.6), y = H * 0.276;
+    var w = RULE_W * S * eo(a / 0.6), y = RULE_Y;
     g.save(); g.strokeStyle = rgba(BRASS, 0.8 * al); g.lineWidth = 1.5 * S; g.beginPath(); g.moveTo(W / 2 - w / 2, y); g.lineTo(W / 2 + w / 2, y); g.stroke(); g.restore();
   }
 
@@ -253,7 +276,7 @@
     rows: ROWS,
     render: function (t) {
       g.clearRect(0, 0, W, H); g.fillStyle = "#000"; g.fillRect(0, 0, W, H); if (!ready) return;
-      motes(t); thread(t);
+      motes(t); if (THREAD) thread(t);
       for (var i = 0; i < ROWS.length; i++) drawRow(ROWS[i], i, t);
       endRule(t); blooms(t);
     },
