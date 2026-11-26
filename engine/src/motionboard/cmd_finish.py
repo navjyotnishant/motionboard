@@ -19,8 +19,23 @@ from motionboard.storyboard import board, templates
 
 ProjectOpt = typer.Option(..., "--project", "-p", help="Project id (or its last characters)")
 LIST_KEYS = {"highlight_words", "tags", "hashtags", "platforms", "chorus"}
-NUM_KEYS = {"snap_at"}
+NUM_KEYS = {"snap_at", "end_hold", "lyrics_y"}
 
+
+
+def _tail_audio(p: dict, workdir: Path, tail: float) -> Path:
+    """For a long end hold the song plays on under the end card and fades out, instead of cutting to silence."""
+    seg = projects.segment_audio(p)
+    song, start, end = p.get("song_path"), p.get("segment_start"), p.get("segment_end")
+    if not song or start is None or end is None or not Path(song).exists():
+        return seg
+    workdir.mkdir(parents=True, exist_ok=True)
+    out = workdir / "audio_tail.wav"
+    music = float(end) - float(start)
+    res = subprocess.run(["ffmpeg", "-y", "-v", "error", "-ss", f"{float(start):.3f}", "-t", f"{music + tail:.3f}",
+                          "-i", str(song), "-af", f"afade=t=out:st={music:.3f}:d={tail:.3f}", str(out)],
+                         capture_output=True, text=True)
+    return out if res.returncode == 0 and out.exists() else seg
 
 @app.command()
 def theme(
@@ -106,6 +121,9 @@ def finish(
         if mode and not no_animation:
             pack = packs.load_pack(mode.animation)
             pack_name, tail = pack["name"], float(pack.get("tail_seconds", 1.5))
+            theme_now = json.loads(p.get("theme") or "{}")
+            if theme_now.get("end_hold") is not None:  # creator asked the end card to stay longer (or shorter)
+                tail = min(12.0, max(1.5, float(theme_now["end_hold"])))
             if p["aspect"] not in pack["aspects"]:
                 raise MbError("INVALID_INPUT", f"pack '{pack_name}' does not support {p['aspect']}")
             cfg = packs.make_config(p, analysis, shots, tail)
@@ -120,7 +138,8 @@ def finish(
             r.verified.append(f"animation pack '{pack_name}' rendered ({cfg['duration']} s)")
         else:
             r.not_verified.append("no animation pack used")
-        plan = assemble.build(shots, clips, projects.segment_audio(p), final, p["aspect"], 24, overlay_mp4, matte_mp4,
+        audio = _tail_audio(p, outdir / "finish", tail) if tail > 1.5 else projects.segment_audio(p)
+        plan = assemble.build(shots, clips, audio, final, p["aspect"], 24, overlay_mp4, matte_mp4,
                               tail)
         res = subprocess.run(plan.cmd, capture_output=True, text=True)
         if res.returncode != 0:

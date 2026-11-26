@@ -6,7 +6,7 @@ from pathlib import Path
 
 import typer
 
-from motionboard import projects
+from motionboard import assets, projects
 from motionboard.backends import registry
 from motionboard.cli import JsonOpt, app, run
 from motionboard.config import ACTOR
@@ -132,6 +132,25 @@ def plate_upload(project: str = ProjectOpt, shot: int = typer.Option(..., "--sho
     run("mb plate upload", as_json, go)
 
 
+@app.command("use")
+def use_version(project: str = ProjectOpt, asset: str = typer.Option(..., "--asset", help="Asset version id"),
+                as_json: bool = JsonOpt) -> None:
+    """Make an earlier plate or clip version (a take) the one the shot uses."""
+
+    def go(conn, r):
+        p = projects.get(conn, project)
+        r.project = p["id"]
+        row = conn.execute("SELECT a.id, a.kind, s.ord FROM asset_version a JOIN shot s ON s.id = a.shot_id "
+                           "WHERE a.id = ? AND s.project_id = ?", (asset, p["id"])).fetchone()
+        if not row:
+            raise MbError("NOT_FOUND", f"no version '{asset}' in this project")
+        a = assets.set_active(conn, asset, ACTOR())
+        r.data = {"shot": row["ord"], "kind": row["kind"], "path": a["path"]}
+        r.verified.append(f"shot {row['ord']} now uses this {row['kind']} version")
+
+    run("mb use", as_json, go)
+
+
 @app.command()
 def review(
     project: str = ProjectOpt,
@@ -172,6 +191,12 @@ def clips(
     shots: str = typer.Option(None, "--shots"),
     redo: bool = typer.Option(False, "--redo", help="Render again even if a finished clip exists"),
     preset: str = typer.Option(None, "--preset", help="Guard preset to make active for this run"),
+    seeds: str = typer.Option(None, "--seeds", help="One take per seed, e.g. 7,101,2024 (each a new version)"),
+    backend: str = typer.Option(None, "--backend",
+                                help="Video model for this run, e.g. ltx25 (default: the project's)"),
+    sing_until: float = typer.Option(None, "--sing-until",
+                                     help="Lip-sync shots of this run: seconds into the shot after which the singer "
+                                          "hears silence (stops a backing echo being mouthed as a repeated word)"),
     as_json: bool = JsonOpt,
 ) -> None:
     """Queue clip renders for approved plates (fit check first). Start them with mb worker."""
@@ -183,20 +208,25 @@ def clips(
         if preset:
             presets.set_active(conn, preset, ACTOR())
         profile = presets.active(conn)
-        b = registry.get(p["video_backend"])
+        b = registry.get(backend or p["video_backend"])
         inst = b.check_installed()
         if not inst.installed:
             raise MbError("MISSING_MODEL", f"{b.name} is not ready: {'; '.join(inst.missing)}", hint="mb setup")
         w, h = b.sizes[p["aspect"]]
         now = monitor.sample()
         eff = replace(now, free_pct=max(now.free_pct, profile.start_free_pct))
-        rows = conn.execute("SELECT DISTINCT frames, lip_sync FROM shot WHERE project_id = ?", (p["id"],)).fetchall()
-        worst = max(rows, key=lambda x: x[0])
+        want = _ords(shots)
+        rows = [x for x in conn.execute("SELECT frames, lip_sync, ord FROM shot WHERE project_id = ?",
+                                        (p["id"],)).fetchall() if not want or x[2] in want]
+        if not rows:
+            raise MbError("INVALID_INPUT", "no such shots in this project")
+        worst = max(rows, key=lambda x: x[0])  # the fit check sizes the longest shot of this run
         fit = fitcheck.fit(b, "a2v" if worst[1] else "i2v", w, h, b.frame_rule(worst[0]), profile, conn, eff)
         if not fit.fits:
             raise MbError("FIT_REFUSED", fit.summary(), hint="; ".join(fit.suggestions))
-        res = queue.enqueue_clips(conn, p, b, _ords(shots), redo, ACTOR())
-        r.data = {**res, "guard": profile.describe(), "fit_longest_shot": fit.summary(),
+        seed_list = _ords(seeds) if seeds else None
+        res = queue.enqueue_clips(conn, p, b, _ords(shots), redo, ACTOR(), seed_list, sing_until)
+        r.data = {**res, "guard": profile.describe(), "backend": b.name, "fit_longest_shot": fit.summary(),
                   "est_minutes": round(sum((fit.est_seconds or 0) / max(1, worst[0]) * q["frames"]
                                            for q in res["queued"]) / 60, 1)}
         r.verified.append(f"fit check passed for the longest shot ({worst[0]} frames)")
@@ -230,6 +260,12 @@ def worker_cmd(
             r.not_verified.append("lip-sync used the full mix; install the vocals extra to isolate the voice")
         if len(ok) < len(res):
             r.not_verified.append("some jobs failed or were stopped; see each job's reason")
+        bad = [x for x in ok if x.get("problems")]
+        if bad:
+            r.not_verified.append("takes with problems: " + "; ".join(
+                f"shot {x['shot']} {', '.join(x['problems'])}" for x in bad))
+        r.not_verified.append("a clip can pass these checks and still be wrong (a changed face, lips that do not "
+                              "move, the wrong action): watch every take before it is used")
 
     run("mb worker", as_json, go)
 
@@ -242,9 +278,10 @@ def queue_cmd(
     resume: bool = typer.Option(False, "--resume"),
     stop: bool = typer.Option(False, "--stop", help="Stop the running job now and clear the queue"),
     move: str = typer.Option(None, "--move", help="JOB:POSITION"),
+    cancel: str = typer.Option(None, "--cancel", help="Shots to take out of the queue, e.g. 1,2,5 (needs --project)"),
     as_json: bool = JsonOpt,
 ) -> None:
-    """Show the render queue, or pause, resume, stop, reorder."""
+    """Show the render queue, or pause, resume, stop, cancel, reorder."""
 
     def go(conn, r):
         pid = projects.get(conn, project)["id"] if project else None
@@ -254,6 +291,11 @@ def queue_cmd(
             queue.resume(conn, ACTOR())
         if stop:
             r.data["stopped"] = queue.stop(conn, pid, ACTOR())
+        if cancel:
+            if not pid:
+                raise MbError("INVALID_INPUT", "--cancel needs --project")
+            r.data["cancelled"] = queue.cancel(conn, pid, _ords(cancel), ACTOR())
+            r.verified.append(f"cancelled queued shots {r.data['cancelled']}; shots with a clip keep it")
         if move:
             jid, pos = move.rsplit(":", 1)
             queue.move(conn, jid, int(pos), ACTOR())
@@ -269,7 +311,7 @@ def queue_cmd(
             "guard": presets.active(conn).describe(),
             "jobs": [{"id": j["id"], "shot": j["shot_ord"], "kind": j["kind"], "state": j["state"],
                       "progress": j["progress"], "frames": j["settings"].get("frames"),
-                      "memory": last.get(j["id"])} for j in js],
+                      "memory": last.get(j["id"]), "problems": j.get("stop_reason") or None} for j in js],
         })
 
     run("mb queue", as_json, go)

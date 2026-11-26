@@ -2,7 +2,7 @@
 
 Storyboard first music videos, made on your own machine.
 
-Motionboard is an open source Claude plugin. Give it a song, lyrics and an idea. It helps you build a storyboard timed to the music, makes an image plate per shot from whatever image source you use, animates each shot locally with an open video model (LTX-2.3 by default), and finishes the cut with lyrics, grade and an end card. A local Storyboard Studio web app shows the whole board, the render queue and your memory use.
+Motionboard is an open source Claude plugin. Give it a song, lyrics and an idea. It helps you build a storyboard timed to the music, makes an image plate per shot from whatever image source you use, animates each shot locally with an open video model (LTX-2.3 by default, LTX-2.5 optional), and finishes the cut with lyrics, grade and an end card. A local Storyboard Studio web app shows the whole board, the render queue and your memory use.
 
 > Status: early development. The engine, skills and five mode packs work end to end with the stub backend and on the reference Mac. The Storyboard Studio web app is next.
 

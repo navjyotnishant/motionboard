@@ -16,4 +16,4 @@
 
 ## Model licences
 
-`mb setup` lists each model with its licence link. LTX-2.3: https://huggingface.co/Lightricks/LTX-2.3/blob/main/LICENSE (free under USD 10M annual revenue). Motionboard never downloads or bundles weights for you.
+`mb setup` lists each model with its licence link. LTX-2.3: https://huggingface.co/Lightricks/LTX-2.3/blob/main/LICENSE (free under USD 10M annual revenue). LTX-2.5 and its detail add-on: https://github.com/Lightricks/LTX-2/blob/main/LICENSE-2_x. The detail add-on is gated, so you accept its licence on Hugging Face before downloading. Motionboard never bundles weights, and the installer downloads them only after showing the size and licence and getting a yes.

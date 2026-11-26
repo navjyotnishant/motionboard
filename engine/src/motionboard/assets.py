@@ -19,6 +19,23 @@ def active(conn: sqlite3.Connection, shot_id: str, kind: str) -> dict | None:
     return dict(row) if row else None
 
 
+def _retarget_queued(conn: sqlite3.Connection, shot_id: str, plate_path: str, actor: Actor) -> bool:
+    """Point queued or paused render jobs for a shot at its new active plate.
+
+    A job copies the plate path into its settings when it is queued, so without this a plate swapped
+    after queueing would still render from the old image. Returns True when a job was updated.
+    """
+    hit = False
+    for j in conn.execute("SELECT id, settings FROM render_job WHERE shot_id = ? AND state IN ('queued','paused')",
+                          (shot_id,)).fetchall():
+        st = json.loads(j["settings"]) if isinstance(j["settings"], str) else dict(j["settings"])
+        if st.get("plate") != plate_path:
+            st["plate"] = plate_path
+            repo.update(conn, "render_job", j["id"], {"settings": st}, actor)
+        hit = True
+    return hit
+
+
 def versions(conn: sqlite3.Connection, shot_id: str, kind: str | None = None) -> list[dict]:
     if kind:
         return repo.find(conn, "asset_version", order="created_at", shot_id=shot_id, kind=kind)
@@ -46,6 +63,8 @@ def set_active(conn: sqlite3.Connection, asset_id: str, actor: Actor) -> dict:
             repo.update(conn, "asset_version", v["id"], {"active": False}, actor)
         repo.update(conn, "asset_version", asset_id, {"active": True}, actor)
         state = "plate_ready" if a["kind"] == "plate" else "clip_ready"
+        if a["kind"] == "plate" and a["path"] and _retarget_queued(conn, a["shot_id"], a["path"], actor):
+            state = "clip_queued"
         repo.update(conn, "shot", a["shot_id"], {"state": state, "updated_at": repo.now()}, actor)
     return repo.get(conn, "asset_version", asset_id)
 
@@ -61,7 +80,8 @@ def store_plate(conn: sqlite3.Connection, project: dict, shot: dict, src: Path, 
     if src.resolve() != dst.resolve():
         shutil.copy2(src, dst)
     a = add(conn, shot["id"], "plate", dst, source, actor, cost_usd)
-    repo.update(conn, "shot", shot["id"], {"state": "plate_ready", "dirty": False, "updated_at": repo.now()}, actor)
+    state = "clip_queued" if _retarget_queued(conn, shot["id"], str(dst), actor) else "plate_ready"
+    repo.update(conn, "shot", shot["id"], {"state": state, "dirty": False, "updated_at": repo.now()}, actor)
     return a
 
 

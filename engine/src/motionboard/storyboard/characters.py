@@ -8,7 +8,7 @@ from motionboard.db import repo
 from motionboard.db.events import Actor
 from motionboard.report import MbError
 from motionboard.storyboard import board
-from motionboard.storyboard.draft import plate_prompt
+from motionboard.storyboard.draft import motion_prompt, plate_prompt
 from motionboard.storyboard.templates import Look
 
 FIELDS = {"style_line", "reference_image", "name"}
@@ -58,10 +58,15 @@ def refresh_prompts(conn: sqlite3.Connection, shot_ids: list[str], look: Look | 
     changed = []
     for sid in shot_ids:
         s = board.get_shot(conn, sid)
-        new = plate_prompt(s["visual"], bool(s["has_figure"]), look, board.cast_lines(conn, sid))
+        lines = board.cast_lines(conn, sid)
+        new = plate_prompt(s["visual"], bool(s["has_figure"]), look, lines)
+        motion = motion_prompt(s["action"], s["camera"], bool(s["has_figure"]), look, bool(s["lip_sync"]),
+                               s["visual"], lines)
         if new == s["plate_prompt"]:
+            if motion != s["motion_prompt"]:  # the cast description also lives in the video prompt
+                repo.update(conn, "shot", sid, {"motion_prompt": motion, "updated_at": repo.now()}, actor)
             continue
-        fields = {"plate_prompt": new, "updated_at": repo.now()}
+        fields = {"plate_prompt": new, "motion_prompt": motion, "updated_at": repo.now()}
         if s["state"] in board.PLATE_DONE:
             fields.update(state="needs_redo", dirty=True)
         repo.update(conn, "shot", sid, fields, actor)

@@ -15,7 +15,7 @@ time; it skips what is already done.
 | Node | 20 or later | `brew install node` |
 | git | any | `xcode-select --install` |
 | Claude Code | current | https://docs.claude.com/en/docs/claude-code |
-| Free disk | about 45 GB | model weights (29 + 7.5 + 1.6 GB) plus projects |
+| Free disk | about 45 GB | model weights (29 + 7.5 + 1.6 GB) plus projects. Add about 44 GB if you also install LTX-2.5 |
 
 The installer checks all of these and prints the exact command for anything missing. It does not install system
 tools for you.
@@ -38,7 +38,7 @@ What it does, in order:
 | 3. Engine | `uv sync` into `engine/.venv`, with demucs (vocal isolation) and mlx-whisper (line timing); creates the database at `~/.motionboard/motionboard.db` | no |
 | 4. `mb` command | Writes `~/.local/bin/mb`, a launcher for the engine; tells you if that folder is not on your PATH | no |
 | 5. ltx-2-mlx | The video model runtime. Uses yours if found, else clones it into `~/.motionboard/ltx-2-mlx` (about 1 GB of packages) | yes |
-| 6. Model weights | LTX-2.3 q8 (29 GB), Gemma 3 12B 4-bit text encoder (7.5 GB), Whisper turbo (1.6 GB, optional). Shows each size and licence | yes, one by one |
+| 6. Model weights | LTX-2.3 q8 (29 GB), Gemma 3 12B 4-bit text encoder (7.5 GB), Whisper turbo (1.6 GB, optional), LTX-2.5 q8 (43 GB, optional) and its detail add-on (0.3 GB, optional, gated). Shows each size and licence | yes, one by one |
 | 7. Studio | `npm ci` and `next build` in `studio/` | no |
 | 8. Plugin | `claude plugin marketplace add <repo>` and `claude plugin install motionboard@motionboard` | no |
 | 9. Check | Runs `mb setup` and prints the result | no |
@@ -93,3 +93,39 @@ Set `MB_BACKEND=stub` to run the whole pipeline without a GPU (solid colour clip
 - A model download stalls: run it again; the installer already sets `HF_HUB_DISABLE_XET=1`, which resumes reliably.
 - `ready_for_clips: False`: run `mb setup --fix-plan` for the exact missing step, or run `./install.sh` again.
 - Studio will not start: `mb studio start --rebuild`; the log is in `~/.motionboard/studio.log`.
+
+## LTX-2.5 (optional)
+
+LTX-2.5 is the newer video model. On the first real video it followed the vocal more closely on lip-sync shots than LTX-2.3. It is optional, and LTX-2.3 stays the default.
+
+| Piece | Size | What it does |
+|---|---|---|
+| `dgrauet/ltx-2.5-mlx-q8` | 43 GB | The model and its own text encoder. The installer skips the 20 GB full-quality transformer and the distilled LoRA |
+| `Lightricks/LTX-2.5-22b-IC-LoRA-Pixel-Spatial-Upscaler` | 0.3 GB | The detail add-on. With it, lip-sync shots render in DFR mode, where the second pass runs at full resolution and faces stay sharp. Without it they use the fast path, which is slightly soft |
+
+The detail add-on is gated. Do this once before the installer can download it:
+
+1. Sign in at https://huggingface.co/Lightricks/LTX-2.5-22b-IC-LoRA-Pixel-Spatial-Upscaler and accept the licence.
+2. Run `hf auth login` on the Mac.
+3. Run `./install.sh` again and say yes to the add-on.
+
+Use it for one run, without changing the project:
+
+```bash
+mb clips --project <id> --shots 14,16 --redo --backend ltx25 --json
+mb worker --detach --json
+```
+
+Each result is a new take. The take in use changes only when you pick one in the Studio or with `mb use`.
+
+Limits measured on a 36 GB M3 Max, 576x1024:
+
+- A 97-frame lip-sync shot peaks at about 17.7 GB and takes about 9 minutes. Close other heavy apps first.
+- Only lip-sync shots are measured so far. The fit check refuses other LTX-2.5 shots until they are measured.
+- Run one render at a time. A large download or a second render alongside it trips the memory guard.
+
+| Setting | Meaning |
+|---|---|
+| `MB_LTX25_SNAPSHOT` | folder of the LTX-2.5 weights, if not in the Hugging Face cache |
+| `MB_LTX25_DETAIL_LORA` | file or folder of the detail add-on, if not in the Hugging Face cache |
+

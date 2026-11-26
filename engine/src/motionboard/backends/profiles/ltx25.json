@@ -1,0 +1,8 @@
+{
+  "backend": "ltx25",
+  "note": "Measured on an M3 Max 36 GB, ltx-2-mlx with dgrauet/ltx-2.5-mlx-q8, --low-ram, 576x1024, shot 14 of You Only Miss Me in the Dark (Nov 2026). Only lip-sync (a2v) is measured: 97 frames, fast path 17.41 GB and 5.2 s per frame, DFR path 17.72 GB and 5.8 s per frame. Image to video is not measured yet, so the fit check refuses it.",
+  "base_gb": 9.5,
+  "points": [
+    {"mode": "a2v", "width": 576, "height": 1024, "frames": 97, "peak_gb": 17.72, "sec_per_frame": 5.78}
+  ]
+}

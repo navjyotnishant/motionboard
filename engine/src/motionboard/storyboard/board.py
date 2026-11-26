@@ -4,6 +4,7 @@ import json
 import sqlite3
 from pathlib import Path
 
+from motionboard import checks
 from motionboard.backends.base import VideoBackend
 from motionboard.db import repo
 from motionboard.db.events import Actor
@@ -72,9 +73,11 @@ def set_field(conn: sqlite3.Connection, shot_id: str, field: str, value, actor: 
         visual = v if field == "visual" else s["visual"]
         if field in {"visual", "has_figure"}:
             fields["plate_prompt"] = plate_prompt(visual, has_figure, look, cast_lines(conn, shot_id))
-        if field in {"action", "camera", "has_figure"}:
+        if field in {"action", "camera", "has_figure", "lip_sync", "visual"}:
+            lip = bool(fields.get("lip_sync", v if field == "lip_sync" else s["lip_sync"]))
             fields["motion_prompt"] = motion_prompt(
-                v if field == "action" else s["action"], v if field == "camera" else s["camera"], has_figure, look)
+                v if field == "action" else s["action"], v if field == "camera" else s["camera"], has_figure, look,
+                lip, visual, cast_lines(conn, shot_id))
     touched = set(fields)
     redo_plate = touched & PLATE_FIELDS and s["state"] in PLATE_DONE
     redo_clip = touched & CLIP_FIELDS and s["state"] in CLIP_DONE | {"clip_failed"}
@@ -178,6 +181,38 @@ def gate_problems(conn: sqlite3.Connection, project: dict, stage: str) -> list[s
         if not d or not d.get("video_path"):
             problems.append("no finished video yet; run mb finish")
     return problems
+
+
+def sung_line_warnings(conn: sqlite3.Connection, project: dict) -> list[str]:
+    """Sung lines that the board gives to the singer only in part (see checks.split_lines)."""
+    a = repo.get(conn, "song_analysis", project["id"], key="project_id")
+    if not a:
+        return []
+    shots = [dict(r) for r in conn.execute("SELECT * FROM shot WHERE project_id = ? ORDER BY ord", (project["id"],))]
+    return checks.split_lines(shots, json.loads(a["lines"] or "[]"))
+
+
+def literal_warnings(conn: sqlite3.Connection, project: dict) -> list[str]:
+    """Shots that repeat their lyric as a picture (see checks.literal_shots), as one line for the report."""
+    shots = [dict(r) for r in conn.execute("SELECT * FROM shot WHERE project_id = ? ORDER BY ord", (project["id"],))]
+    found = checks.literal_shots(shots)
+    if not found:
+        return []
+    return [f"{len(found)} of {len(shots)} shots illustrate the lyric literally; rework them from the treatment: "
+            + "; ".join(found[:6]) + ("; ..." if len(found) > 6 else "")]
+
+
+def clip_warnings(conn: sqlite3.Connection, project: dict) -> list[str]:
+    """The clips in use that jump scene part way through (see checks.scene_cuts)."""
+    out = []
+    for r in conn.execute(
+            "SELECT s.ord, v.path FROM shot s JOIN asset_version v ON v.shot_id = s.id AND v.kind = 'clip' "
+            "AND v.active = 1 WHERE s.project_id = ? ORDER BY s.ord", (project["id"],)):
+        path = Path(r["path"])
+        problem = checks.clip_problem(path) if path.is_file() else "file is missing"
+        if problem:
+            out.append(f"shot {r['ord']} clip in use: {problem}")
+    return out
 
 
 def approve(conn: sqlite3.Connection, project: dict, stage: str, via: str, revoke: bool = False) -> dict:

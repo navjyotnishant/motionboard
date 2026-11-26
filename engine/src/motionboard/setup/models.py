@@ -32,7 +32,9 @@ class ModelEntry:
         snap = find_snapshot(self.repo)
         if not snap:
             return None
-        want = [p for p in self.include if "*" not in p] or ["config.json"]
+        want = [p for p in self.include if "*" not in p]
+        if not want:  # no file list: any weights file in the snapshot counts
+            return snap if (snap / "config.json").exists() or any(snap.glob("*.safetensors")) else None
         return snap if all((snap / w).exists() for w in want) else None
 
 
@@ -72,8 +74,17 @@ CATALOG: list[ModelEntry] = [
         backlog=True, notes=["Video decode exceeded 36 GB in tests; not supported in v1."],
     ),
     ModelEntry(
-        key="ltx25", repo="Lightricks/LTX-2.5", role="newer LTX (backlog)",
-        licence="LTX-2 Community License", licence_url="https://huggingface.co/Lightricks/LTX-2.3/blob/main/LICENSE",
-        approx_gb=60.0, backlog=True, notes=["Text encoder load exceeded 36 GB in tests; not supported in v1."],
+        key="ltx25", repo="dgrauet/ltx-2.5-mlx-q8", role="newer video model, more accurate lip-sync (optional)",
+        licence="LTX-2 Community License", licence_url="https://github.com/Lightricks/LTX-2/blob/main/LICENSE-2_x",
+        approx_gb=43.0, exclude=("transformer-dev.safetensors", "*lora*"), optional=True,
+        notes=["Brings its own text encoder. Use it with: mb clips --backend ltx25.",
+               "Only lip-sync shots are measured on a 36 GB Mac so far."],
+    ),
+    ModelEntry(
+        key="ltx25-detail", repo="Lightricks/LTX-2.5-22b-IC-LoRA-Pixel-Spatial-Upscaler",
+        role="detail add-on for LTX-2.5, keeps faces sharp on lip-sync shots (optional)",
+        licence="LTX-2 Community License", licence_url="https://github.com/Lightricks/LTX-2/blob/main/LICENSE-2_x",
+        approx_gb=0.3, optional=True,
+        notes=["Gated: accept the licence on its Hugging Face page and run `hf auth login` first."],
     ),
 ]

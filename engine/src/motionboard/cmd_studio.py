@@ -1,7 +1,8 @@
 """mb studio start|stop|status: run the Storyboard Studio on 127.0.0.1 only (002 T004).
 
 First start installs the Node packages (npm ci) and builds the app (next build); later starts reuse the build
-unless the Studio source changed. A fresh session token is made on every start and printed in the URL.
+unless the Studio source changed. The session token is kept across restarts so open tabs keep working;
+`mb studio start --new-session` or `mb studio stop --forget` replaces it.
 """
 
 import os
@@ -93,6 +94,8 @@ def _wait_up(port: int, seconds: float = 40) -> bool:
 @studio_app.command("start")
 def studio_start(port: int = typer.Option(4317, "--port"), rebuild: bool = typer.Option(False, "--rebuild"),
                  no_open: bool = typer.Option(False, "--no-open", help="Do not open the browser"),
+                 new_session: bool = typer.Option(False, "--new-session",
+                                                  help="Make a new session token; open tabs must reopen"),
                  as_json: bool = JsonOpt) -> None:
     """Start the Studio and print its URL (with the session token)."""
 
@@ -115,10 +118,13 @@ def studio_start(port: int = typer.Option(4317, "--port"), rebuild: bool = typer
         if rebuild or _needs_build(sd):
             _npm(["run", "build"], sd, log)
             r.verified.append("built the Studio (next build)")
-        token = secrets.token_urlsafe(24)
         tf = _token_file()
+        old = tf.read_text().strip() if tf.exists() else ""
+        token = old if (old and not new_session) else secrets.token_urlsafe(24)
         tf.write_text(token)
         tf.chmod(0o600)
+        r.verified.append("kept the session token, open tabs keep working" if token == old
+                          else "new session token: reopen Studio tabs with mb studio open")
         env = {**os.environ, "MB_STUDIO_TOKEN": token, "PORT": str(port), "MB_HOME": str(config.home()),
                "MB_DB": str(config.db_path()), "MB_PROJECTS": str(config.projects_root()),
                "MB_REPO": str(config.repo_root()), "NODE_ENV": "production"}
@@ -156,8 +162,9 @@ def studio_open(as_json: bool = JsonOpt) -> None:
 
 
 @studio_app.command("stop")
-def studio_stop(as_json: bool = JsonOpt) -> None:
-    """Stop the Studio."""
+def studio_stop(forget: bool = typer.Option(False, "--forget", help="Also delete the session token"),
+                as_json: bool = JsonOpt) -> None:
+    """Stop the Studio. The session token is kept for the next start unless --forget."""
 
     def go(conn, r):
         cur = _running()
@@ -174,9 +181,11 @@ def studio_stop(as_json: bool = JsonOpt) -> None:
         else:
             os.killpg(pid, signal.SIGKILL)
         _pid_file().unlink(missing_ok=True)
-        _token_file().unlink(missing_ok=True)
+        if forget:
+            _token_file().unlink(missing_ok=True)
         r.data = {"stopped": True, "pid": pid}
-        r.verified.append("Studio process group stopped; session token removed")
+        kept = "removed" if forget else "kept for the next start"
+        r.verified.append(f"Studio process group stopped; session token {kept}")
 
     run("mb studio stop", as_json, go)
 

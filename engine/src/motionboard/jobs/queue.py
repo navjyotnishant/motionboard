@@ -25,7 +25,10 @@ def has_valid_clip(conn: sqlite3.Connection, shot: dict) -> bool:
 
 
 def enqueue_clips(conn: sqlite3.Connection, project: dict, backend: VideoBackend, ords: list[int] | None,
-                  redo: bool, actor: Actor) -> dict:
+                  redo: bool, actor: Actor, seeds: list[int] | None = None,
+                  sing_until: float | None = None) -> dict:
+    """Queue one job per shot, or one take per seed when seeds are given (each take is a new clip version)."""
+    seeds = seeds or [42]
     rows = [dict(r) for r in conn.execute("SELECT * FROM shot WHERE project_id = ? ORDER BY ord", (project["id"],))]
     if ords:
         rows = [r for r in rows if r["ord"] in set(ords)]
@@ -44,17 +47,24 @@ def enqueue_clips(conn: sqlite3.Connection, project: dict, backend: VideoBackend
         if not plate or not plate["path"] or not Path(plate["path"]).exists():
             skipped.append({"shot": s["ord"], "reason": "no plate"})
             continue
-        version = len(assets.versions(conn, s["id"], "clip")) + 1
-        settings = {"mode": "a2v" if s["lip_sync"] else "i2v", "width": w, "height": h,
-                    "frames": backend.frame_rule(s["frames"]), "fps": 24, "seed": 42, "plate": plate["path"],
-                    "prompt": s["motion_prompt"], "out": str(clip_path(project, s, version))}
-        jid = repo.insert(conn, "render_job", {
-            "project_id": project["id"], "shot_id": s["id"], "kind": "lipsync" if s["lip_sync"] else "clip",
-            "backend": backend.name, "settings": settings, "priority": base_pri + i + 1, "state": "queued",
-            "log_path": str(Path(project["folder"]) / "logs" / f"shot-{s['ord']:02d}-v{version}.log"),
-            "created_at": repo.now()}, actor)
+        base_version = len(assets.versions(conn, s["id"], "clip"))
+        for k, seed in enumerate(seeds):
+            version = base_version + 1 + k
+            settings = {"mode": "a2v" if s["lip_sync"] else "i2v", "width": w, "height": h,
+                        "frames": backend.frame_rule(s["frames"]), "fps": 24, "seed": int(seed),
+                        "plate": plate["path"], "prompt": s["motion_prompt"],
+                        "out": str(clip_path(project, s, version))}
+            if sing_until and s["lip_sync"]:
+                settings["sing_until"] = float(sing_until)
+            jid = repo.insert(conn, "render_job", {
+                "project_id": project["id"], "shot_id": s["id"], "kind": "lipsync" if s["lip_sync"] else "clip",
+                "backend": backend.name, "settings": settings, "priority": base_pri + i * len(seeds) + k + 1,
+                "state": "queued",
+                "log_path": str(Path(project["folder"]) / "logs" / f"shot-{s['ord']:02d}-v{version}.log"),
+                "created_at": repo.now()}, actor)
+            queued.append({"shot": s["ord"], "job": jid, "frames": settings["frames"], "mode": settings["mode"],
+                           "seed": int(seed), "version": version})
         repo.update(conn, "shot", s["id"], {"state": "clip_queued", "updated_at": repo.now()}, actor)
-        queued.append({"shot": s["ord"], "job": jid, "frames": settings["frames"], "mode": settings["mode"]})
     return {"queued": queued, "skipped": skipped, "size": f"{w}x{h}"}
 
 
@@ -103,6 +113,26 @@ def stop(conn: sqlite3.Connection, project_id: str | None, actor: Actor) -> int:
             repo.update(conn, "shot", j["shot_id"], {"state": "plate_approved", "updated_at": repo.now()}, actor)
         n += 1
     return n
+
+
+def cancel(conn: sqlite3.Connection, project_id: str, ords: list[int], actor: Actor) -> list[int]:
+    """Remove queued or paused jobs for these shots; the running job is left alone.
+
+    A shot that still has a clip goes back to clip_ready with that clip, so cancelling a redo keeps the take
+    you had. A shot without one goes back to plate_approved.
+    """
+    done = []
+    for j in jobs(conn, project_id):
+        if j["state"] not in ("queued", "paused") or j.get("shot_ord") not in set(ords):
+            continue
+        repo.update(conn, "render_job", j["id"], {"state": "stopped", "stop_reason": "cancelled by request",
+                                                  "ended_at": repo.now()}, actor)
+        clip = assets.active(conn, j["shot_id"], "clip")
+        has = bool(clip and clip["path"] and Path(clip["path"]).exists())
+        fields = {"state": "clip_ready", "dirty": False} if has else {"state": "plate_approved"}
+        repo.update(conn, "shot", j["shot_id"], {**fields, "updated_at": repo.now()}, actor)
+        done.append(j["shot_ord"])
+    return sorted(done)
 
 
 def move(conn: sqlite3.Connection, job_id: str, position: int, actor: Actor) -> list[dict]:

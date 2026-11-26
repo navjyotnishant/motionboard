@@ -114,16 +114,24 @@ if [ "$MAC" = 1 ]; then
   if [ "$MODELS" = 1 ]; then
     step "6. Model weights (downloaded by you, under their own licences)"
     HUB="${HF_HOME:-$HOME/.cache/huggingface}/hub"
-    model() { # repo, size, licence, url, optional, what it is for
+    model() { # repo, size, licence, url, optional, what it is for, [extra hf args], [gated: 1]
       local dir="$HUB/models--${1//\//--}"
       if [ -d "$dir/snapshots" ] && [ -n "$(ls -A "$dir/snapshots" 2>/dev/null)" ]; then ok "$1 present ($6)"; return; fi
       echo "  $1"
       echo "    What it does: $6"
       echo "    Size: about $2. Licence: $3 ($4)"
+      if [ "${8:-0}" = 1 ]; then
+        echo "    Gated: sign in at https://huggingface.co/$1 and accept its licence once, and run 'hf auth login' on this Mac, before downloading."
+      fi
       if ask "Download $1 now$([ "$5" = 1 ] && echo ' (optional)')?"; then
-        HF_HUB_DISABLE_XET=1 uvx --from "huggingface_hub[cli]" hf download "$1" && ok "$1 downloaded"
+        # shellcheck disable=SC2086
+        if HF_HUB_DISABLE_XET=1 uvx --from "huggingface_hub[cli]" hf download "$1" ${7:-}; then
+          ok "$1 downloaded"
+        else
+          note "could not download $1. If it says access denied, accept the licence at https://huggingface.co/$1 and run: hf auth login"
+        fi
       else
-        note "skipped $1. Later: HF_HUB_DISABLE_XET=1 hf download $1"
+        note "skipped $1. Later: HF_HUB_DISABLE_XET=1 hf download $1 ${7:-}"
       fi
     }
     model "dgrauet/ltx-2.3-mlx-q8" "29 GB" "LTX-2 Community License, free under USD 10M annual revenue" "https://huggingface.co/Lightricks/LTX-2.3/blob/main/LICENSE" 0 \
@@ -132,6 +140,12 @@ if [ "$MAC" = 1 ]; then
       "the text encoder LTX-2.3 uses to read each shot's motion prompt. Needed for clips."
     model "mlx-community/whisper-large-v3-turbo" "1.6 GB" "MIT" "https://huggingface.co/openai/whisper-large-v3-turbo" 1 \
       "listens to the song and finds when each lyric line is sung, so shots cut and lyrics appear on the right words. Without it, line timing is estimated from the beats."
+    model "dgrauet/ltx-2.5-mlx-q8" "43 GB" "LTX-2 Community License" "https://github.com/Lightricks/LTX-2/blob/main/LICENSE-2_x" 1 \
+      "the newer video model (LTX-2.5), with its own text encoder. More accurate lip-sync and sharper faces than LTX-2.3. Optional: choose it per project with --backend ltx25." \
+      "--exclude=transformer-dev.safetensors --exclude=*lora*"
+    model "Lightricks/LTX-2.5-22b-IC-LoRA-Pixel-Spatial-Upscaler" "0.3 GB" "LTX-2 Community License" "https://github.com/Lightricks/LTX-2/blob/main/LICENSE-2_x" 1 \
+      "the detail add-on for LTX-2.5. It lets the second pass run at full resolution so faces stay sharp. Only useful with LTX-2.5." \
+      "" 1
     note "demucs (vocal isolation) downloads its own small model (about 0.3 GB) the first time a lip-sync shot needs it. It pulls the voice out of the mix so lip-sync follows the singer, not the drums."
   fi
 fi

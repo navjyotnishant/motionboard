@@ -1,0 +1,9 @@
+kind: look
+slug: after-dark
+name: After Dark Cinematic
+summary: Realistic night cinema, amber lamplight against cool midnight blue, rain on glass, shallow focus.
+realistic: true
+world: "a European city late at night, rain-wet streets, a dim apartment lit by one lamp and a phone screen"
+style_line: "photorealistic cinematic film still, anamorphic 35mm look, warm amber practical light against cool midnight blue shadows, rain on glass, soft bokeh, shallow depth of field, gentle film grain, luxury fashion film grade"
+no_figure_line: "only rooms, windows, streets and objects, no people"
+negative: "readable text, logos, watermark, cartoon, illustration, plastic skin, oversaturated colour, daylight unless the shot asks for morning"

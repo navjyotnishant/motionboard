@@ -187,6 +187,7 @@ def draft(
                   "list": [_shot_summary(s) for s in shots]}
         r.verified.append("shots tile the segment with no gaps or overlaps")
         r.verified.append(f"frames rounded up to the {b.name} frame rule")
+        r.not_verified += board.sung_line_warnings(conn, p) + board.literal_warnings(conn, p)
         if ideas and len(ideas) != len(shots):
             r.not_verified.append(f"{len(ideas)} shot ideas for {len(shots)} timed shots; extra shots use the "
                                   "mode pattern")
@@ -251,6 +252,10 @@ def sheet(project: str = ProjectOpt, kind: str = typer.Option("storyboard", "--k
         r.data = {"sheet": str(out)}
         r.verified.append("sheet rendered")
         r.not_verified.append("visual quality of the board: review the sheet")
+        if kind == "storyboard":
+            r.not_verified += board.sung_line_warnings(conn, p) + board.literal_warnings(conn, p)
+        if kind == "clips":
+            r.not_verified += board.clip_warnings(conn, p)
 
     run("mb sheet", as_json, go)
 
@@ -266,6 +271,10 @@ def approve(project: str = ProjectOpt, stage: str = typer.Option(..., "--stage")
         r.project = p["id"]
         r.data = {"approvals": board.approve(conn, p, stage, via or ACTOR(), revoke)}
         r.verified.append(f"{stage} {'revoked' if revoke else 'approved'}")
+        if not revoke and stage == "storyboard":
+            r.not_verified += board.sung_line_warnings(conn, p) + board.literal_warnings(conn, p)
+        if not revoke and stage == "clips":
+            r.not_verified += board.clip_warnings(conn, p)
 
     run("mb approve", as_json, go)
 

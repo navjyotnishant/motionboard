@@ -15,7 +15,7 @@ from pathlib import Path
 
 import psutil
 
-from motionboard import assets, config
+from motionboard import assets, checks, config
 from motionboard.audio import vocals
 from motionboard.backends import registry
 from motionboard.backends.base import ClipJob
@@ -91,7 +91,7 @@ def run_job(conn: sqlite3.Connection, job: dict, sampler=monitor.sample, start_t
     if s["mode"] == "a2v" and shot:
         try:
             audio, isolated = vocals.shot_vocal(Path(project["folder"]), shot, profile, s["frames"],
-                                                    s.get("fps", 24))
+                                                    s.get("fps", 24), s.get("sing_until"))
         except MbError as e:
             _fail(conn, job, shot, e.message)
             return {"job": job["id"], "ok": False, "reason": e.message}
@@ -143,11 +143,19 @@ def run_job(conn: sqlite3.Connection, job: dict, sampler=monitor.sample, start_t
         problems.append(f"expected {s['frames']} frames, got {info['frames']}")
     if (info["width"], info["height"]) != (s["width"], s["height"]):
         problems.append(f"expected {s['width']}x{s['height']}, got {info['width']}x{info['height']}")
+    # A clip is one continuous shot. A hard jump inside it means the model left the plate, which the
+    # frame count and size cannot show, so it is flagged here and not left for the creator to find.
+    cut = checks.clip_problem(out)
+    if cut:
+        problems.append(cut)
     record_fit_sample(conn, backend.name, s["mode"], s["width"], s["height"], s["frames"], outcome,
                       monitor.total_gb())
     previews = proxy.make(out)
     if shot:
-        assets.add(conn, shot["id"], "clip", out, backend.name, ACTOR)
+        # A first clip is put in use. A further take is only added: the creator compares takes and picks one,
+        # so a re-render never silently replaces the take they chose.
+        first = assets.active(conn, shot["id"], "clip") is None
+        assets.add(conn, shot["id"], "clip", out, backend.name, ACTOR, make_active=first)
         repo.update(conn, "shot", shot["id"], {"state": "clip_ready", "dirty": False, "updated_at": repo.now()},
                     ACTOR)
     repo.update(conn, "render_job", job["id"], {

@@ -39,10 +39,15 @@ def separate(segment: Path, out: Path, profile: GuardProfile) -> bool:
     return True
 
 
-def slice_audio(src: Path, start: float, end: float, out: Path, min_seconds: float = 0.0) -> Path:
+def slice_audio(src: Path, start: float, end: float, out: Path, min_seconds: float = 0.0,
+                mute_after: float | None = None) -> Path:
     """Cut [start, end) from src. Pads with silence up to min_seconds when the clip is longer than the shot
     (frames are rounded up to the backend's frame rule, and the audio must cover every frame)."""
     af = f"atrim=start={start}:end={max(end, start + min_seconds)},asetpts=PTS-STARTPTS"
+    if mute_after is not None and mute_after > 0:
+        # The voice stem holds the lead and the backing voices together. A backing echo after the lead line
+        # makes the singer mouth the word a second time, so the model hears silence from here on.
+        af += f",afade=t=out:st={mute_after:.3f}:d=0.06"
     if min_seconds > 0:
         af += f",apad=whole_dur={min_seconds:.3f}"
     r = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(src),
@@ -56,7 +61,7 @@ AUDIO_MARGIN_S = 0.3  # the a2v encoder needs a little more audio than frames / 
 
 
 def shot_vocal(project_folder: Path, shot: dict, profile: GuardProfile, frames: int = 0,
-               fps: float = 24.0) -> tuple[Path, bool]:
+               fps: float = 24.0, sing_until: float | None = None) -> tuple[Path, bool]:
     """Audio for one lip-sync shot, long enough for every rendered frame. Returns (path, isolated)."""
     seg = project_folder / "audio" / "segment.wav"
     vocals = project_folder / "audio" / "vocals.wav"
@@ -64,4 +69,4 @@ def shot_vocal(project_folder: Path, shot: dict, profile: GuardProfile, frames: 
     src = vocals if isolated else seg
     out = project_folder / "audio" / f"shot-{shot['ord']:02d}-vocal.wav"
     need = frames / fps + AUDIO_MARGIN_S if frames else 0.0
-    return slice_audio(src, shot["start"], shot["end"], out, need), isolated
+    return slice_audio(src, shot["start"], shot["end"], out, need, sing_until), isolated
