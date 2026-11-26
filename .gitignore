@@ -48,3 +48,9 @@ projects/
 
 # OS
 .DS_Store
+
+# README media is tracked
+!docs/media/
+!docs/media/*
+!docs/images/
+!docs/images/*

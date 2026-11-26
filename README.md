@@ -1,10 +1,37 @@
 # Motionboard
 
-Storyboard first music videos, made on your own machine.
+Storyboard first video, made on your own Mac. Free, open video models: no credits, no subscription, no limit on takes.
 
-Motionboard is an open source Claude plugin. Give it a song, lyrics and an idea. It helps you build a storyboard timed to the music, makes an image plate per shot from whatever image source you use, animates each shot locally with an open video model (LTX-2.3 by default, LTX-2.5 optional), and finishes the cut with lyrics, grade and an end card. A local Storyboard Studio web app shows the whole board, the render queue and your memory use.
+[![Motionboard product overview: $0 AI music videos on your own Mac](docs/media/motionboard-cover.jpg)](docs/media/motionboard-overview.mp4)
 
-> Status: early development. The engine, skills and five mode packs work end to end with the stub backend and on the reference Mac. The Storyboard Studio web app is next.
+**[Watch the 64 second overview](docs/media/motionboard-overview.mp4)**
+
+Motionboard is an open source Claude plugin. Give it a song, lyrics and an idea. It helps you write a director's treatment and a storyboard timed to the music, makes an image plate per shot from whatever image source you use, animates each shot locally with a free, open video model (LTX-2.3 by default, LTX-2.5 for lip sync), and finishes the cut with lyrics, grade and an end card. A local Storyboard Studio web app shows the whole board, every take, the render queue and your memory use.
+
+A song is one way in. The same steps make music videos, vertical reels, lyric videos and promos.
+
+> Status: early. The engine, skills, Studio and mode packs work end to end on the reference Mac (M3 Max, 36 GB). The overview shows a real 3:47 music video, its 9:16 reel and a lyric story made with it.
+
+## Free to learn
+
+The video models run on your Mac, so a take costs nothing. Render, redo and try another direction as often as you like: it is a place to practise directing and editing without paying per try.
+
+- **Video:** LTX-2.3 and LTX-2.5 run locally. Their weights are free to download; LTX-2.3 is free for individuals and companies under USD 10M annual revenue ([licences](docs/licenses.md)).
+- **Images:** use your own pictures or a local image model and the whole video costs $0. A paid image tool (about 1 cent an image) is optional, and Motionboard always asks before spending.
+- **Machine:** the memory guard pauses a render before your Mac runs out of memory.
+
+## How it works
+
+| | |
+|---|---|
+| ![New project and song analysis](docs/images/01-cli-new-and-analyze.jpg) | **1. Listen.** `mb analyze` finds the tempo, the beats and every sung line on your machine. |
+| ![Story view of the board](docs/images/13-studio-story-clips.jpg) | **2. Storyboard.** A one page treatment first: what the song means, not what it names. Then one shot per beat of the story. Nothing renders until you approve it. |
+| ![Plates on the board](docs/images/08-studio-board-plates.jpg) | **3. Images.** One plate per shot from your own files, a local model, an HTTP API or an MCP image tool. Characters keep the same face. |
+| ![Shot panel with takes](docs/images/14-studio-shot-takes.jpg) | **4. Takes.** Each shot is animated locally. Every take is kept; the take in use only changes when you pick one. Takes that jump scene are flagged before you watch. |
+| ![The whole video on one board](docs/images/12-studio-board-clips.jpg) | **5. The cut.** Play the board against the song, move a cut to a beat, redo any shot. |
+| ![Queue and memory guard](docs/images/15-studio-queue.jpg) | **6. Render safely.** One shot at a time under a memory and swap guard you control. Then `mb finish` adds lyrics, grade, credits and a cover. |
+
+The people in the overview and screenshots are AI-generated characters.
 
 ## Install
 
@@ -23,7 +50,7 @@ settings. The skills then run `mb` on your Mac through the Claude desktop app li
 ## Principles
 
 - **Storyboard first.** Nothing renders until you approve the board.
-- **Local and free by default.** Paid services are optional and always ask first.
+- **Free and local by default.** Video models run on your Mac. Paid services are optional and always ask first.
 - **Never crash the machine.** Every heavy job runs under a memory and swap guard you control.
 - **No bundled weights.** You download models yourself and accept their licenses.
 - **Runs on localhost only.** No account, no hosted site.
@@ -35,11 +62,13 @@ Full rules: [.specify/memory/constitution.md](.specify/memory/constitution.md).
 | Skill | What it does |
 |---|---|
 | `mb-setup` | Checks your machine, tools and models; prints exact steps for anything missing |
-| `mb-storyboard` | Brainstorm or mode plus look, timed shot list, characters, contact sheet, approval |
-| `mb-clips` | Image plates per shot from any source, local video clips under the memory guard |
+| `mb-storyboard` | Brainstorm or mode plus look, director's treatment, timed shot list, characters, contact sheet, approval |
+| `mb-clips` | Image plates per shot from any source, local video clips and lip sync under the memory guard, take checks |
 | `mb-finish` | Animation pack, lyrics, grade, end card, cover, metadata, delivery folder |
 
 Each skill drives the `mb` CLI. Every command takes `--json` and prints one report.
+
+Checks the tool runs for you: a clip that jumps scene part way through, a sung line the singer holds only in part, and a shot that repeats its lyric word for word. Lip-sync shots can mute a backing echo with `mb clips --sing-until`.
 
 ## Modes
 
@@ -70,6 +99,7 @@ Looks: origami, exotic, vintage film, neon night, cosmic.
 skills/           plugin commands
 engine/           Python engine, `mb` CLI
 studio/           local Next.js Storyboard Studio
+video/            Remotion source of the product overview
 modes/            story modes and their signature animation packs
 looks/            looks (style lines)
 specs/            Spec Kit specs, plans and tasks
