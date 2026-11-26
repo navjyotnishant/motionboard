@@ -8,14 +8,14 @@ time; it skips what is already done.
 
 | You need | Version | Install it with |
 |---|---|---|
-| Apple Silicon Mac | macOS 14+, 32 GB memory or more | (Linux works for everything except local LTX clips) |
+| Apple Silicon Mac | macOS 14+, 32 GB memory or more | video rendering needs Apple Silicon (MLX); the rest of the engine also runs on Linux |
 | Homebrew | any | https://brew.sh |
 | uv | any recent | `brew install uv` |
 | ffmpeg | 7 or later | `brew install ffmpeg` |
 | Node | 20 or later | `brew install node` |
 | git | any | `xcode-select --install` |
 | Claude Code | current | https://docs.claude.com/en/docs/claude-code |
-| Free disk | about 45 GB | model weights (29 + 7.5 + 1.6 GB) plus projects. Add about 44 GB if you also install LTX-2.5 |
+| Free disk | about 45 GB | model weights (29 + 7.5 + 1.6 GB) plus projects. Add about 44 GB for LTX-2.5 and about 10 GB for ACE-Step 1.5 (local music, installed separately by the composer skill) |
 
 The installer checks all of these and prints the exact command for anything missing. It does not install system
 tools for you.
@@ -56,7 +56,7 @@ Model licences: LTX-2.3 is free to use under its licence for organisations under
 mb setup                 # ready_for_clips: True means clips can render
 ```
 
-Restart Claude Code, then say "make a music video for <song>". Or open the Studio with `mb studio start`.
+Restart Claude Code, then say "make a music video for <song>" or "write a promo for <product>"; the crew skills (writer, composer, director, cinematographer, editor) take it from there. Or open the Studio with `mb studio start`.
 
 ## 4. Update
 
