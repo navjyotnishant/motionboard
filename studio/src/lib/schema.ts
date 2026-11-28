@@ -1,5 +1,5 @@
 // Drizzle mirror of the engine schema (engine/src/motionboard/db/migrations). The engine owns migrations;
-// this file only describes the tables so the Studio can read them with types. Keep in step with 0001 and 0002.
+// this file only describes the tables so the Studio can read them with types. Keep in step with 0001 to 0003.
 import { integer, real, sqliteTable, text, primaryKey } from "drizzle-orm/sqlite-core";
 
 export const workspaceSetting = sqliteTable("workspace_setting", {
@@ -107,6 +107,13 @@ export const shot = sqliteTable("shot", {
   state: text("state", { enum: SHOT_STATES }).notNull(),
   dirty: integer("dirty", { mode: "boolean" }).notNull(),
   updatedAt: text("updated_at").notNull(),
+  creative: text("creative").notNull(), // 0003: JSON intent, audience, metaphor, motifs, continuity, materials, objects
+  // 0004: the generated prompt beside a creator-authored override (null base: not settled yet)
+  plateBase: text("plate_base"),
+  motionBase: text("motion_base"),
+  plateAuthored: integer("plate_authored", { mode: "boolean" }).notNull(),
+  motionAuthored: integer("motion_authored", { mode: "boolean" }).notNull(),
+  overrideKept: text("override_kept").notNull(),
 });
 
 export const shotCharacter = sqliteTable(
@@ -137,6 +144,8 @@ export const plateRequest = sqliteTable("plate_request", {
   estCostUsd: real("est_cost_usd").notNull(),
   resultAssetId: text("result_asset_id"),
   createdAt: text("created_at").notNull(),
+  refs: text("refs").notNull(), // 0003: JSON references sent
+  refsDropped: text("refs_dropped").notNull(), // 0003: JSON references not sent, with a reason
 });
 
 export const renderJob = sqliteTable("render_job", {
@@ -214,6 +223,51 @@ export const changeEvent = sqliteTable("change_event", {
   entityId: text("entity_id").notNull(),
   kind: text("kind", { enum: ["insert", "update", "delete"] }).notNull(),
   actor: text("actor", { enum: ["chat", "studio", "worker"] }).notNull(),
+});
+
+// 0003 creative direction
+export const artDirection = sqliteTable("art_direction", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id").notNull(),
+  version: integer("version").notNull(),
+  profile: text("profile", { enum: ["compact", "full"] }).notNull(),
+  status: text("status", { enum: ["draft", "in_review", "approved", "superseded"] }).notNull(),
+  body: text("body").notNull(),
+  note: text("note").notNull(),
+  basedOn: text("based_on"),
+  impact: text("impact").notNull(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+  createdVia: text("created_via", { enum: ["chat", "studio", "worker"] }).notNull(),
+  approvedAt: text("approved_at"),
+  approvedVia: text("approved_via", { enum: ["chat", "studio"] }),
+});
+
+export const characterReference = sqliteTable("character_reference", {
+  id: text("id").primaryKey(),
+  characterId: text("character_id").notNull(),
+  path: text("path").notNull(),
+  purpose: text("purpose", { enum: ["face", "silhouette", "costume", "material", "detail", "turnaround", "other"] }).notNull(),
+  description: text("description").notNull(),
+  isPrimary: integer("is_primary", { mode: "boolean" }).notNull(),
+  ord: integer("ord").notNull(),
+  meta: text("meta").notNull(),
+  createdAt: text("created_at").notNull(),
+});
+
+export const critique = sqliteTable("critique", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id").notNull(),
+  stage: text("stage", { enum: ["concept", "art_direction", "plate", "rough_cut"] }).notNull(),
+  role: text("role", { enum: ["director", "production_designer", "cinematographer", "editor", "emotion_editor", "creator"] }).notNull(),
+  verdict: text("verdict", { enum: ["ready", "revise", "blocked"] }).notNull(),
+  summary: text("summary").notNull(),
+  findings: text("findings").notNull(),
+  checked: text("checked").notNull(),
+  notChecked: text("not_checked").notNull(),
+  artDirectionId: text("art_direction_id"),
+  createdAt: text("created_at").notNull(),
+  resolvedAt: text("resolved_at"),
 });
 
 export type Project = typeof project.$inferSelect;

@@ -16,6 +16,14 @@ const Body = z.object({
     motion_prompt: z.string().max(4000).optional(),
     has_figure: z.boolean().optional(),
     lip_sync: z.boolean().optional(),
+    // 003 creative context; the engine validates and decides which prompts follow
+    intent: z.string().max(2000).optional(),
+    audience: z.string().max(2000).optional(),
+    metaphor: z.string().max(2000).optional(),
+    motifs: z.string().max(4000).optional(),
+    continuity: z.string().max(2000).optional(),
+    materials: z.string().max(2000).optional(),
+    objects: z.string().max(2000).optional(),
     end: z.number().optional(),
   }).refine((f) => Object.keys(f).length > 0, "no fields"),
 });

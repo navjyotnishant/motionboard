@@ -14,8 +14,9 @@ from pathlib import Path
 from motionboard.backends.base import VideoBackend
 from motionboard.db import repo
 from motionboard.db.events import Actor
+from motionboard.direction import store
 from motionboard.report import MbError
-from motionboard.storyboard import timing
+from motionboard.storyboard import compose, timing
 from motionboard.storyboard.templates import Look, Mode
 
 
@@ -24,74 +25,18 @@ def _fmt(text: str, look: Look, lyric: str) -> str:
 
 
 def plate_prompt(visual: str, has_figure: bool, look: Look, character_lines: list[str]) -> str:
-    parts = [visual.rstrip(". ")]
-    if has_figure:
-        parts += [c for c in character_lines if c]
-    parts.append(look.style_line)
-    if not has_figure:
-        parts.append(look.no_figure_line)
-    return ". ".join(p.strip() for p in parts if p) + "."
+    """The first frame without art direction (kept for callers and tests; see storyboard.compose)."""
+    return compose.plate_text(visual, has_figure, look, character_lines)
 
 
-# What the a2v model needs to hear for clear lip-sync. Proven on the Almost Yours singer tests: without it,
-# words like "softly" make the mouth barely move and similar sounds blur ("dark" reads as "bark").
-SINGING = ("singing the words with clear, precise lip movement exactly in sync with the vocal, "
-           "the mouth opening and closing on each syllable, natural jaw and throat movement, "
-           "stable face, the head moving gently with the melody")
-
-
-def _for_motion(style: str) -> str:
-    """A look's style line describes a still frame; for video, 'still' asks for no motion, so drop it."""
-    return re.sub(r"\bfilm still\b", "film shot", style or "")
-
-
-MAX_WORDS = 200  # LTX guidance: one flowing paragraph, under about 200 words
-
-
-def _sentence(text: str) -> str:
-    t = (text or "").strip().rstrip(". ")
-    return (t[0].upper() + t[1:] + ".") if t else ""
+SINGING = compose.SINGING
+MAX_WORDS = compose.MAX_WORDS
 
 
 def motion_prompt(action: str, camera: str, has_figure: bool, look: Look, lip_sync: bool = False,
                   visual: str = "", cast: list[str] | None = None) -> str:
-    """One detailed paragraph in the order LTX reads best: action, movement, appearance, scene, camera, light.
-
-    The plate already fixes the first frame, so this says what moves and how, with the scene and the
-    people restated so the model keeps them stable across the clip.
-    """
-    parts = [_sentence(action),
-             "One continuous shot with no cut: the place, the time of day, the light, the people and the framing stay "
-             "exactly as in the first frame for the whole shot"]
-    # The look's no figure line is written for image models ("only rooms, windows, streets and objects, no
-    # people"). A video model reads it as a list of things to show, so it is not used here: the first
-    # frame is the whole cast and the whole set. It sits early so the word limit never cuts it.
-    parts.append("Nobody and nothing new enters the frame, and each person keeps the same face, hair and clothes "
-                 "from the first frame to the last" if has_figure else
-                 "Nobody and nothing new enters the frame: only what the first frame shows")
-    if has_figure:
-        parts.append("The movement is slow, natural and continuous, with small lifelike details: steady breathing, "
-                     "soft blinking, hair and fabric shifting slightly, no sudden jumps")
-        if lip_sync:
-            parts.append(_sentence(SINGING))
-        parts += [_sentence(c) for c in (cast or []) if c]
-    else:
-        parts.append("Subtle natural motion runs through the frame: light flickers softly, the air and small "
-                     "particles drift, reflections shimmer")
-    if visual:
-        parts.append(_sentence(f"The scene: {visual}"))
-    # The plate fixes the place and the light. Naming the look's world here ("late at night, rain...") made
-    # the model leave the plate on shots that differ from it (a sunny street, a wide silhouette), so the
-    # motion prompt only asks it to stay where the first frame is.
-    if camera:
-        parts.append(_sentence(f"Camera: {camera}, smooth and steady, one continuous shot with no cuts"))
-    if getattr(look, "realistic", False):
-        parts.append("Photorealistic and cinematic, keeping the colour and light of the first frame, gentle film grain")
-    else:
-        parts.append(_sentence(_for_motion(look.style_line)))
-    text = " ".join(_sentence(p) if not p.endswith(".") else p for p in parts if p)
-    words = text.split()
-    return text if len(words) <= MAX_WORDS else " ".join(words[:MAX_WORDS]).rstrip(",;:") + "."
+    """What moves, with the look's motion grammar and no art direction (see storyboard.compose)."""
+    return compose.motion_text(action, camera, has_figure, look, lip_sync, visual, cast)
 
 
 def load_shot_ideas(path: Path | None) -> list[dict]:
@@ -133,6 +78,7 @@ def draft(
     chars = {c["name"]: c for c in repo.find(conn, "character", project_id=pid)}
     ideas = ideas or []
     chorus = chorus_lines(project.get("lyrics") or "", [sl.lyric for sl in slots])
+    body = store.approved_body(conn, pid)
     ts = repo.now()
     with repo.tx(conn):
         if existing:
@@ -148,13 +94,18 @@ def draft(
                 has_figure = bool(idea.get("has_figure", pat.has_figure))
                 lip = bool(idea.get("lip_sync", False)) and has_figure
                 idea_mp = (idea.get("motion_prompt") or "").strip()
+                idea_pp = (idea.get("plate_prompt") or "").strip()
+                creative = clean_creative(idea.get("creative") or {})
             else:
-                idea_mp = ""
+                idea_mp, idea_pp, creative = "", "", {}
                 visual = _fmt(pat.visual, look, sl.lyric)
                 action, camera, has_figure = pat.action, pat.camera, pat.has_figure
                 lip = pat.lip_sync and has_figure and bool(sl.lyric) and (
                     mode.lip_sync == "lines" or (mode.lip_sync == "chorus" and _norm(sl.lyric) in chorus))
             cast = cast_in(visual, chars) if has_figure else []
+            pr = compose.compose(look, body, visual=visual, action=action, camera=camera, has_figure=has_figure,
+                                 lip_sync=lip, cast=[{"name": c["name"], "style_line": c["style_line"]} for c in cast],
+                                 creative=creative)
             sid = repo.insert(
                 conn,
                 "shot",
@@ -163,9 +114,12 @@ def draft(
                     "frames": timing.frames_for(sl.dur, backend.frame_rule),
                     "lyric": sl.lyric, "visual": visual, "action": action, "camera": camera,
                     "has_figure": has_figure, "lip_sync": lip,
-                    "plate_prompt": plate_prompt(visual, has_figure, look, [c["style_line"] for c in cast]),
-                    "motion_prompt": (idea_mp or motion_prompt(action, camera, has_figure, look, lip, visual,
-                                                                  [c["style_line"] for c in cast])),
+                    # A prompt written in the shots file is the creator's override: kept beside the generated
+                    # baseline, never rewritten by the engine, and checked against the motion grammar (FR-028).
+                    "plate_prompt": idea_pp or pr.plate, "motion_prompt": idea_mp or pr.motion,
+                    "plate_base": pr.plate, "motion_base": pr.motion,
+                    "plate_authored": bool(idea_pp) and idea_pp != pr.plate,
+                    "motion_authored": bool(idea_mp) and idea_mp != pr.motion, "creative": creative,
                     "state": "draft", "dirty": False, "updated_at": ts,
                 },
                 actor,
@@ -207,3 +161,70 @@ def cast_in(visual: str, chars: dict[str, dict]) -> list[dict]:
 
 def shots(conn: sqlite3.Connection, project_id: str) -> list[dict]:
     return [dict(r) for r in conn.execute("SELECT * FROM shot WHERE project_id = ? ORDER BY ord", (project_id,))]
+
+
+def clean_creative(value) -> dict:
+    """Validate a shot's creative context (intent, audience, metaphor, motifs, continuity); all keys optional."""
+    if value in (None, "", {}):
+        return {}
+    if not isinstance(value, dict):
+        raise MbError("INVALID_INPUT", "creative must be an object with intent, audience, metaphor, motifs, "
+                      "continuity, materials, objects")
+    unknown = set(value) - set(compose.CREATIVE_KEYS)
+    if unknown:
+        raise MbError("INVALID_INPUT", f"unknown creative field(s): {', '.join(sorted(unknown))}",
+                      hint=f"fields: {', '.join(compose.CREATIVE_KEYS)}")
+    out: dict = {}
+    for k in ("intent", "audience", "metaphor", "continuity"):
+        if value.get(k):
+            out[k] = str(value[k]).strip()
+    motifs = parse_motifs(value.get("motifs"))
+    if motifs:
+        out["motifs"] = motifs
+    for k in ("materials", "objects"):
+        names = parse_names(value.get(k))
+        if names:
+            out[k] = names
+    return out
+
+
+def parse_names(value) -> list[str]:
+    """Names of Bible materials or objects this shot shows: a list, or text split on commas and lines."""
+    if value in (None, "", []):
+        return []
+    if isinstance(value, str):
+        v = value.strip()
+        if v.startswith("["):
+            try:
+                value = json.loads(v)
+            except json.JSONDecodeError as e:
+                raise MbError("INVALID_INPUT", f"not valid JSON: {e}") from e
+        else:
+            value = re.split(r"[,\n]", v)
+    if not isinstance(value, list) or not all(isinstance(x, str) for x in value):
+        raise MbError("INVALID_INPUT", "materials and objects are lists of names from the art direction")
+    return list(dict.fromkeys(x.strip() for x in value if x.strip()))
+
+
+def parse_motifs(value) -> list[dict]:
+    """A JSON list of {name, state}, or lines of 'name: state'."""
+    if value in (None, "", []):
+        return []
+    if isinstance(value, str):
+        v = value.strip()
+        if v.startswith("["):
+            try:
+                value = json.loads(v)
+            except json.JSONDecodeError as e:
+                raise MbError("INVALID_INPUT", f"motifs is not valid JSON: {e}") from e
+        else:
+            value = [{"name": a.strip(), "state": b.strip()} for a, _, b in
+                     (line.partition(":") for line in v.splitlines() if line.strip())]
+    if not isinstance(value, list):
+        raise MbError("INVALID_INPUT", "motifs must be a list of {name, state}")
+    out = []
+    for m in value:
+        if not isinstance(m, dict) or not str(m.get("name", "")).strip():
+            raise MbError("INVALID_INPUT", "each motif needs a name (and usually a state)")
+        out.append({"name": str(m["name"]).strip(), "state": str(m.get("state", "")).strip()})
+    return out

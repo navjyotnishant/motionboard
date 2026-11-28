@@ -1,0 +1,246 @@
+{
+  "identity": {
+    "title": "The Museum of Almosts",
+    "concept": "A midnight museum that keeps the relationships that almost happened, each one folded and sealed under glass.",
+    "premise": "Two paper figures, HER and HIM, are exhibits in neighbouring cases. A ruby thread runs between their worlds and keeps coming close to joining them. On the line where she asks him to hold it tight, it breaks.",
+    "emotional_intention": "Tender, held-breath longing that turns into quiet acceptance: the audience should ache for the touch and understand, at the end, why it never comes.",
+    "audience_experience": "The viewer walks the museum like a late visitor: close to the glass, unable to step in, reading the distance between two figures more than their faces.",
+    "central_metaphor": "Origami: a feeling folded so carefully it can be kept, but never unfolded without tearing.",
+    "song_relationship": "The song is about almost: almost staying, almost saying it. Paper suits that: it holds a shape only while nobody presses on it, and every fold is a decision that can be seen but not undone. The figures never sing; the lyric is the voice of the museum around them, and the thread carries what the words leave unsaid."
+  },
+  "world": {
+    "description": "One gallery of a museum after closing time: midnight blue-black walls, antique brass display cases with smoked glass, a dark reflective floor, small amber practical lamps above each case. Every exhibit is folded paper.",
+    "physical_rules": [
+      "Everything alive is folded paper; paper bends only at its creases and never stretches",
+      "Glass separates every exhibit; nothing passes through glass except the ruby thread",
+      "The only moving light is the amber practicals; there is no daylight and no window",
+      "The museum is always empty of visitors; the camera is the only witness"
+    ],
+    "architecture": "Long symmetrical galleries with arched doorways; cases at waist height on brass legs; a central aisle that the camera travels like a visitor.",
+    "environment": "Still air, a little paper dust caught in the lamp light, faint reflections of the cases on the floor.",
+    "scale": "The figures are about the height of a hand inside life-size cases, so the room feels vast around them.",
+    "time_and_light": "Always after midnight; the practicals are the only light.",
+    "belongs": [
+      "folded paper exhibits",
+      "brass labels with no readable text",
+      "smoked glass",
+      "small paper keepsakes: a letter, a key, a boat"
+    ],
+    "excluded": [
+      "people",
+      "daylight",
+      "windows",
+      "modern screens",
+      "readable signage",
+      "plastic"
+    ],
+    "prompt_line": "a midnight museum gallery of antique brass display cases with smoked glass on a dark reflective floor"
+  },
+  "characters": [
+    {
+      "name": "HER",
+      "silhouette": "Slender, upright, a long folded skirt that widens to a crisp triangle; head tilted slightly toward the thread.",
+      "construction": "Folded from a single sheet with no cuts; the face is a smooth plane with no drawn features.",
+      "materials": "Deep garnet washi paper, slightly translucent at the edges.",
+      "costume": "The skirt is the sheet itself; one sharp fold across the shoulders like a shawl.",
+      "color": "Deep garnet, darker than the thread so the thread reads as the warmest thing in the frame.",
+      "details": [
+        "visible paper fibres at the hem",
+        "one loose fold at the wrist where the thread is tied"
+      ],
+      "constraints": [
+        "never drawn eyes or mouth",
+        "never a second colour on her"
+      ],
+      "prompt_line": "HER, a slender folded origami woman of deep garnet washi paper with a crisp triangular skirt and no drawn face",
+      "motion": {
+        "allowed": [
+          "a slow turn at the waist fold",
+          "lifting one arm from the shoulder crease"
+        ]
+      }
+    },
+    {
+      "name": "HIM",
+      "silhouette": "Broader, square-shouldered, upright like a folded coat; always slightly turned away.",
+      "construction": "Folded from heavier card with sharp square creases; the face is a smooth plane with no drawn features.",
+      "materials": "Charcoal grey heavyweight paper with a matte surface.",
+      "costume": "A folded collar that stands up at the back of the neck.",
+      "color": "Charcoal grey, cool against her ruby.",
+      "details": [
+        "a single crease line down the centre of his back",
+        "the thread tied at his wrist"
+      ],
+      "constraints": [
+        "never drawn eyes or mouth",
+        "never softer folds than hers"
+      ],
+      "prompt_line": "HIM, a square-shouldered folded origami man of charcoal grey heavyweight paper with a standing collar and no drawn face"
+    }
+  ],
+  "materials": [
+    {
+      "name": "washi paper",
+      "properties": "Thin, fibrous, a little translucent; creases stay sharp.",
+      "light_response": "Amber light glows through the edges and shows the fibres.",
+      "motion_response": "Bends only at folds; edges tremble slightly; never stretches or melts.",
+      "prompt_line": "translucent washi paper with sharp creases and visible fibres"
+    },
+    {
+      "name": "smoked glass",
+      "properties": "Dark, slightly reflective, separates every exhibit.",
+      "light_response": "Holds soft reflections of the practicals."
+    }
+  ],
+  "objects": [
+    {
+      "name": "display case",
+      "role": "symbol",
+      "meaning": "What keeps them apart and also what keeps them safe.",
+      "appearance": "Antique brass frame, smoked glass, a small blank brass label."
+    },
+    {
+      "name": "paper boat",
+      "role": "prop",
+      "meaning": "The trip they never took.",
+      "appearance": "A small ruby paper boat in an empty case."
+    }
+  ],
+  "color": {
+    "palette": [
+      {
+        "name": "midnight",
+        "hex": "#0B1020",
+        "role": "primary"
+      },
+      {
+        "name": "antique brass",
+        "hex": "#9C7A3C",
+        "role": "secondary"
+      },
+      {
+        "name": "amber practical",
+        "hex": "#F2A541",
+        "role": "secondary"
+      },
+      {
+        "name": "ruby",
+        "hex": "#9B111E",
+        "role": "accent"
+      },
+      {
+        "name": "charcoal",
+        "hex": "#3A3D42",
+        "role": "secondary"
+      }
+    ],
+    "relationships": "Ruby is the only saturated colour; it belongs to HER and the thread. Charcoal is HIM. Everything else is midnight and brass.",
+    "contrast": "Deep blacks with small warm pools of light; the figures never brighter than the thread.",
+    "prompt_line": "midnight blue-black and antique brass with warm amber light and one ruby accent"
+  },
+  "lighting": {
+    "sources": [
+      "small amber practical lamps above each case",
+      "faint reflections off the floor"
+    ],
+    "quality": "Soft, low, pooled; the room falls into darkness between cases.",
+    "shadows": "Long soft shadows of the figures inside the cases; never hard noon shadows.",
+    "atmosphere": "A little paper dust drifting in the lamp light gives depth.",
+    "prompt_line": "warm amber practical lamps in pools of soft light"
+  },
+  "camera": {
+    "framing": "Symmetrical, case-centred frames; the two figures usually on opposite thirds with the thread between them.",
+    "distance": "Wide for the room, macro for the figures; never a casual medium shot.",
+    "lens": "Long lens for the figures to compress the gap between cases.",
+    "depth_of_field": "Shallow on the figures, the room falling into soft focus.",
+    "movement": [
+      "slow dolly along the aisle like a visitor",
+      "gentle push in toward the glass",
+      "locked off macro on the thread"
+    ],
+    "negative_space": "The empty space between the cases carries the story; keep it in frame.",
+    "rhythm": "Slow, one move per shot, cuts on the line changes.",
+    "transitions": "Cut, never dissolve; the museum is precise."
+  },
+  "motifs": [
+    {
+      "name": "ruby thread",
+      "meaning": "The connection between them: what is felt and never said.",
+      "first_appearance": "Running across the floor in the opening wide, before either figure is seen.",
+      "evolution": [
+        {
+          "stage": "opening",
+          "state": "slack across the dark floor",
+          "meaning": "a connection nobody has noticed yet"
+        },
+        {
+          "stage": "her verse",
+          "state": "taut, leading out of frame toward HIM",
+          "meaning": "she feels it"
+        },
+        {
+          "stage": "almost",
+          "state": "the two ends almost touching between the cases",
+          "meaning": "the moment it could happen"
+        },
+        {
+          "stage": "turn",
+          "state": "snapped, the two ends falling apart",
+          "meaning": "it was never going to be held"
+        }
+      ],
+      "payoff": "On the line 'hold the thread and hold it tight' the thread snaps: the request and the break are the same moment.",
+      "prompt_line": "a thin luminous ruby-red thread"
+    }
+  ],
+  "motion": {
+    "allowed": [
+      "precise pivots at the folds",
+      "deliberate small gestures",
+      "subtle changes in paper tension",
+      "small paper-edge movements",
+      "the thread swaying and tightening"
+    ],
+    "forbidden": [
+      "breathing",
+      "blinking",
+      "skin",
+      "hair",
+      "fabric",
+      "melting",
+      "stretching",
+      "random organic body movement"
+    ],
+    "materials": [
+      "paper bends only at its creases",
+      "glass and brass never move"
+    ],
+    "camera": [
+      "slow dolly",
+      "gentle push in",
+      "locked off macro"
+    ],
+    "invariants": [
+      "the cases stay closed"
+    ]
+  },
+  "constraints": {
+    "required": [
+      "the ruby thread in every shot with a figure",
+      "glass between the figures until the last shot"
+    ],
+    "forbidden": [
+      "people",
+      "readable text"
+    ],
+    "negative": "photorealistic people, skin, text, logos, watermark",
+    "never_change": [
+      "HER is deep ruby paper and HIM charcoal grey paper",
+      "the figures have no drawn faces"
+    ],
+    "may_evolve": [
+      "the tension and state of the ruby thread",
+      "how close the camera comes to the glass"
+    ]
+  }
+}

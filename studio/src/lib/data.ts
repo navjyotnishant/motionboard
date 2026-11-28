@@ -13,7 +13,8 @@ const sibling = (p: string | null, ext: string) => {
 export type ShotRow = {
   id: string; ord: number; start: number; end: number; frames: number; lyric: string; visual: string;
   action: string; camera: string; has_figure: number; lip_sync: number; plate_prompt: string; motion_prompt: string;
-  state: string; dirty: number; updated_at: string;
+  state: string; dirty: number; updated_at: string; creative: string;
+  plate_base: string | null; motion_base: string | null; plate_authored: number; motion_authored: number;
 };
 
 export function listProjects() {
@@ -52,6 +53,17 @@ export function board(projectId: string) {
   ).all(pid) as { id: string; asset_version_id: string; decision: string; text: string; at: string }[];
   const characters = db.prepare("SELECT * FROM character WHERE project_id = ? ORDER BY name").all(pid) as
     { id: string; name: string; reference_image: string | null; style_line: string }[];
+  const references = db.prepare(
+    `SELECT r.* FROM character_reference r JOIN character c ON c.id = r.character_id WHERE c.project_id = ?
+     ORDER BY r.is_primary DESC, r.ord, r.created_at`,
+  ).all(pid) as { id: string; character_id: string; path: string; purpose: string; description: string;
+    is_primary: number; ord: number }[];
+  const versions = db.prepare("SELECT * FROM art_direction WHERE project_id = ? ORDER BY version").all(pid) as
+    { id: string; version: number; profile: string; status: string; body: string; note: string; impact: string;
+      created_at: string; approved_at: string | null; approved_via: string | null }[];
+  const critiques = db.prepare("SELECT * FROM critique WHERE project_id = ? ORDER BY created_at DESC").all(pid) as
+    { id: string; stage: string; role: string; verdict: string; summary: string; findings: string; checked: string;
+      not_checked: string; created_at: string; resolved_at: string | null }[];
   const cast = db.prepare(
     "SELECT sc.shot_id, sc.character_id FROM shot_character sc JOIN shot s ON s.id = sc.shot_id WHERE s.project_id = ?",
   ).all(pid) as { shot_id: string; character_id: string }[];
@@ -79,16 +91,43 @@ export function board(projectId: string) {
     shots: shots.map((s) => ({
       ...s,
       has_figure: !!s.has_figure, lip_sync: !!s.lip_sync, dirty: !!s.dirty,
+      plate_authored: !!s.plate_authored, motion_authored: !!s.motion_authored,
       cast: cast.filter((c) => c.shot_id === s.id).map((c) => c.character_id),
+      creative: parseJson<Record<string, unknown>>(s.creative, {}),
     })),
     assets: assets.map((a) => ({
       ...a, active: !!a.active, notes: notes.filter((n) => n.asset_version_id === a.id),
       proxy: a.kind === "clip" ? sibling(a.path, ".proxy.mp4") : null,
       poster: a.kind === "clip" ? sibling(a.path, ".poster.jpg") : null,
     })),
-    characters,
+    characters: characters.map((c) => ({
+      ...c,
+      references: references.filter((r) => r.character_id === c.id).map((r) => ({
+        id: r.id, path: r.path, purpose: r.purpose, description: r.description, is_primary: !!r.is_primary, ord: r.ord,
+      })),
+    })),
     approvals,
     jobs,
+    artDirection: artDirectionOf(versions),
+    critiques: critiques.map((c) => ({
+      ...c, findings: parseJson(c.findings, []), checked: parseJson(c.checked, []), not_checked: parseJson(c.not_checked, []),
+    })),
+  };
+}
+
+// Versions as the Art view reads them. `required`: the latest version is a full Bible, so plates wait for approval
+// (the engine enforces it; this only explains the disabled button).
+function artDirectionOf(rows: { id: string; version: number; profile: string; status: string; body: string; note: string;
+  impact: string; created_at: string; approved_at: string | null; approved_via: string | null }[]) {
+  const full = rows.map((r) => ({ ...r, body: parseJson<Record<string, unknown>>(r.body, {}), impact: parseJson(r.impact, {}) }));
+  const approved = full.find((r) => r.status === "approved") || null;
+  const pending = full.find((r) => r.status === "draft" || r.status === "in_review") || null;
+  const latest = full[full.length - 1];
+  return {
+    approved, pending,
+    versions: full.map(({ id, version, profile, status, note, created_at, approved_at, approved_via }) =>
+      ({ id, version, profile, status, note, created_at, approved_at, approved_via })),
+    required: !!latest && latest.profile === "full" && !approved,
   };
 }
 

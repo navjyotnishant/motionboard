@@ -57,7 +57,22 @@ mb approve -p <id> --stage storyboard
 
 Shots tile the segment exactly. The draft and sheet reports flag sung lines the singer holds only in part and shots that repeat their lyric word for word; fix them before approval. Editing a shot after its plate or clip exists marks it for redo.
 
-## 5. Cinematographer: plates and clips
+## 5. Production designer: the film's world
+
+For a narrative film, the production designer turns the director's concept into an Art Direction Bible: the world's physical rules, each character as a physical construction, materials and symbolic objects, palette and light, camera language, motifs and how they change, the motion grammar and what never changes. A travel video or mood loop gets a compact Bible (concept, world, palette) or none.
+
+```bash
+mb art draft -p <id> --file art-direction.json --profile full --note "first version"
+mb art check -p <id>
+mb shot set -p <id> --shot 3 --field motifs --value "ruby thread: the two ends almost touching"
+mb character ref add -p <id> --name HER --file her-face.png --purpose face
+mb art submit -p <id>
+mb art approve -p <id>        # only after you say yes; or in the Studio's Art view
+```
+
+The director reviews it before you do. Once approved, every shot's prompts follow it, and a full Bible must be approved before plates. Details: [art-direction.md](art-direction.md).
+
+## 6. Cinematographer: plates and clips
 
 **Plates** (the first frame of every shot), from any image source:
 
@@ -87,7 +102,7 @@ mb clips -p <id> --shots 46 --redo --backend ltx25 --sing-until 1.9   # mute a b
 
 Lip-sync shots render from the vocal slice for that shot. A new take never replaces the take in use. The worker skips finished shots, so you can stop and resume.
 
-## 6. Editor: takes, cut, finish and delivery
+## 7. Editor: takes, cut, finish and delivery
 
 ```bash
 mb sheet -p <id> --kind clips               # clips in use, with scene jump warnings

@@ -47,6 +47,13 @@ class Look:
     negative: str = ""
     realistic: bool = False
     source: str = "builtin"
+    motion: dict = field(default_factory=dict)  # motion grammar (feature 003); empty means the default for people
+
+    @property
+    def grammar(self):
+        from motionboard.direction.grammar import for_look
+
+        return for_look(self.motion, self.slug)
 
 
 def modes_dir() -> Path:
@@ -74,14 +81,20 @@ def _mode_from(d: dict, source: str) -> Mode:
 
 
 def _look_from(d: dict, source: str) -> Look:
+    from motionboard.direction.grammar import validate
+
     try:
-        return Look(
+        look = Look(
             slug=d["slug"], name=d["name"], summary=d.get("summary", ""), world=d["world"],
             style_line=d["style_line"], no_figure_line=d["no_figure_line"], negative=d.get("negative", ""),
-            realistic=bool(d.get("realistic", False)), source=source,
+            realistic=bool(d.get("realistic", False)), source=source, motion=d.get("motion") or {},
         )
     except (KeyError, TypeError) as e:
         raise MbError("INVALID_INPUT", f"look '{d.get('slug', '?')}' is invalid: {e}") from e
+    problems = validate(look.motion, f"look {look.slug}") if look.motion else []
+    if problems:
+        raise MbError("INVALID_INPUT", f"look '{look.slug}' has an invalid motion grammar", hint="; ".join(problems))
+    return look
 
 
 def _validate_mode(m: Mode) -> Mode:

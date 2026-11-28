@@ -1,7 +1,14 @@
 export type Shot = {
   id: string; ord: number; start: number; end: number; frames: number; lyric: string; visual: string;
   action: string; camera: string; has_figure: boolean; lip_sync: boolean; plate_prompt: string;
-  motion_prompt: string; state: string; dirty: boolean; updated_at: string; cast: string[];
+  motion_prompt: string; state: string; dirty: boolean; updated_at: string; cast: string[]; creative: Creative;
+  // 0004: a prompt the creator wrote is an override the engine never rewrites; *_base is the generated prompt
+  plate_authored: boolean; motion_authored: boolean; plate_base: string | null; motion_base: string | null;
+};
+export type Motif = { name: string; state?: string };
+export type Creative = {
+  intent?: string; audience?: string; metaphor?: string; motifs?: Motif[]; continuity?: string;
+  materials?: string[]; objects?: string[]; // names of Bible materials and objects this shot shows
 };
 export type Note = { id: string; asset_version_id: string; decision: string; text: string; at: string };
 export type Asset = {
@@ -9,7 +16,28 @@ export type Asset = {
   source: string; cost_usd: number; active: boolean; created_at: string; notes: Note[];
   proxy?: string | null; poster?: string | null;
 };
-export type Character = { id: string; name: string; reference_image: string | null; style_line: string };
+export type Reference = { id: string; path: string; purpose: string; description: string; is_primary: boolean; ord: number };
+export type Character = {
+  id: string; name: string; reference_image: string | null; style_line: string; references: Reference[];
+};
+export type Impact = {
+  changed?: string[]; characters?: string[]; motifs?: string[]; materials?: string[]; objects?: string[];
+  review_only?: string[];
+  shots?: { shot: number; reasons: string[]; assets: { id: string; kind: string; created_at: string }[] }[];
+};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Bible = Record<string, any>;
+export type ArtVersion = {
+  id: string; version: number; profile: "compact" | "full"; status: "draft" | "in_review" | "approved" | "superseded";
+  body: Bible; note: string; impact: Impact; created_at: string; approved_at: string | null; approved_via: string | null;
+};
+export type Finding = {
+  observation: string; audience_impact: string; implication: string; recommendation: string; shots: number[]; motif?: string;
+};
+export type Critique = {
+  id: string; stage: string; role: string; verdict: "ready" | "revise" | "blocked"; summary: string; findings: Finding[];
+  checked: string[]; not_checked: string[]; created_at: string; resolved_at: string | null;
+};
 export type Job = {
   id: string; shot_id: string | null; ord: number | null; state: string; progress: number;
   sec_per_frame: number | null; stop_reason: string | null; suggestion: string | null; created_at: string;
@@ -29,6 +57,11 @@ export type Board = {
   characters: Character[];
   approvals: { stage: string; approved_at: string | null; via: string }[];
   jobs: Job[];
+  artDirection: {
+    approved: ArtVersion | null; pending: ArtVersion | null; required: boolean;
+    versions: Omit<ArtVersion, "body" | "impact">[];
+  };
+  critiques: Critique[];
 };
 
 export const activeAsset = (b: Board, shotId: string, kind: "plate" | "clip") =>

@@ -6,3 +6,39 @@ world: "a handmade paper world of folded origami"
 style_line: "handcrafted origami paper diorama, visible paper folds and fibres, soft warm museum lighting, shallow depth of field, gentle film grain"
 no_figure_line: "only paper objects and scenery, no people, no paper figures, no characters"
 negative: "photorealistic people, text, logos, watermark"
+# Motion grammar (feature 003): folded paper does not breathe, blink or have hair and clothes that sway.
+# The figure sentence is what video prompts say about movement; forbidden items are never written into a prompt,
+# and a board check warns when a shot's action asks for one of them.
+motion:
+  subject: "the paper figures"
+  identity: "each paper figure keeps the same folds, colour and proportions from the first frame to the last"
+  figure: "The paper figures move like folded paper handled with care: precise pivots at the folds, deliberate small gestures, the paper tension shifting where a crease bends, the paper edges trembling slightly, no sudden jumps"
+  ambient: "Only light and air move: the warm light flickers softly, fine paper dust drifts, reflections shimmer"
+  allowed:
+    - precise pivots at the folds
+    - deliberate small gestures
+    - folding or unfolding only when the story asks for it
+    - subtle changes in paper tension
+    - small paper edge movements
+    - careful contact with physical objects
+  forbidden:
+    - breathing
+    - blinking
+    - skin
+    - sweat
+    - hair
+    - fabric
+    - melting
+    - stretching
+    - warping
+    - random organic body movement
+  materials:
+    - paper bends only at its creases and never stretches
+    - folds stay crisp and the fibres stay visible
+  camera:
+    - slow dolly
+    - gentle push in
+    - locked off macro
+    - slow rack focus
+  invariants:
+    - the paper keeps its crisp folded geometry

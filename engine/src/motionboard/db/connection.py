@@ -40,12 +40,12 @@ def current_version(conn: sqlite3.Connection) -> int:
     return row["v"] or 0
 
 
-def migrate(conn: sqlite3.Connection) -> list[str]:
-    """Apply pending migrations in order. Returns names applied."""
+def migrate(conn: sqlite3.Connection, target: int | None = None) -> list[str]:
+    """Apply pending migrations in order, up to `target` when given (tests build old schemas). Returns names applied."""
     applied = []
     have = current_version(conn)
     for version, name, sql in _migration_files():
-        if version <= have:
+        if version <= have or (target is not None and version > target):
             continue
         conn.execute("BEGIN IMMEDIATE")
         try:

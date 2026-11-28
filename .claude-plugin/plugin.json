@@ -1,7 +1,7 @@
 {
   "name": "motionboard",
-  "version": "0.5.0",
-  "description": "Storyboard first video on your own Mac, made by a crew of role skills: writer, emotional editor, composer, director, cinematographer and editor. Free local video models (LTX-2.3, LTX-2.5) under a memory guard, a local music model option, finishing, and a local Storyboard Studio.",
+  "version": "0.6.1",
+  "description": "Storyboard first video on your own Mac, made by a crew of role skills: writer, emotional editor, composer, director, production designer, cinematographer and editor. A versioned Art Direction Bible keeps every shot in one world; free local video models (LTX-2.3, LTX-2.5) under a memory guard, a local music model option, finishing, and a local Storyboard Studio.",
   "author": {
     "name": "Navjyot Nishant"
   },

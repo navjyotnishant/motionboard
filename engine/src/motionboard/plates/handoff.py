@@ -12,3 +12,6 @@ class HandoffAdapter:
 
     def request(self, req: PlateRequest) -> Pending:
         return Pending()
+
+    def reference_capacity(self) -> int | None:
+        return None  # every reference is listed for the agent that makes the image

@@ -5,7 +5,7 @@
 [![Licence: Apache 2.0](https://img.shields.io/badge/licence-Apache%202.0-blue)](LICENSE)
 [![Packs: PolyForm Noncommercial](https://img.shields.io/badge/animation%20packs-PolyForm%20NC-purple)](modes/LICENSE)
 ![Platform: Apple Silicon](https://img.shields.io/badge/platform-Apple%20Silicon%20Mac-black)
-![Version 0.5.0](https://img.shields.io/badge/version-0.5.0-orange)
+![Version 0.6.1](https://img.shields.io/badge/version-0.6.1-orange)
 ![Video models: LTX-2.3, LTX-2.5](https://img.shields.io/badge/video%20models-LTX--2.3%20%C2%B7%20LTX--2.5-green)
 
 [Start here](#start-here) · [Why](#why-motionboard) · [How it works](#how-it-works) · [Proof](#proof-the-first-real-productions) · [Free to learn](#free-to-learn) · [Install](#install) · [Docs](#docs)
@@ -14,13 +14,13 @@ https://github.com/user-attachments/assets/d171b3b7-4e39-4a7e-8ed2-088020a57247
 
 Higher quality: [docs/media/motionboard-overview.mp4](docs/media/motionboard-overview.mp4)
 
-Motionboard is an open source video production tool that runs entirely on your Mac. You bring an idea and, if you have one, a song. Motionboard takes it through the stages a real crew would: a story and the feeling under it, the music, a director's treatment and a storyboard timed to the beat, an image for every shot, locally rendered clips and lip sync, review of every take, and a finished cut with lyrics, grade, end card and cover.
+Motionboard is an open source video production tool that runs entirely on your Mac. You bring an idea and, if you have one, a song. Motionboard takes it through the stages a real crew would: a story and the feeling under it, the music, a director's treatment, the film's art direction, a storyboard timed to the beat, an image for every shot, locally rendered clips and lip sync, review of every take, and a finished cut with lyrics, grade, end card and cover.
 
 It is a tool first: a command line engine (`mb`), a local web app (the Storyboard Studio) and a local database. A Claude plugin is available for it too, with one skill per crew role, so you can direct the whole production in plain language from Claude Code or the Claude app.
 
 A song is one way in. The same steps make full music videos, vertical reels, lyric videos and promos.
 
-> **Status:** early (v0.5.0). The engine, Studio, crew skills and five mode packs work end to end on the reference Mac (M3 Max, 36 GB). Three real productions are shown under [Proof](#proof-the-first-real-productions).
+> **Status:** early (v0.6.1). The engine, Studio, crew skills and five mode packs work end to end on the reference Mac (M3 Max, 36 GB). Three real productions are shown under [Proof](#proof-the-first-real-productions).
 
 ---
 
@@ -78,22 +78,22 @@ Motionboard works like a small film crew. Each role is a skill in the plugin and
 
 ```text
   idea, song (optional)
-        │
-        ▼
-  ┌───────────┐   ┌────────────┐   ┌────────────┐   ┌──────────────────┐   ┌──────────┐
-  │  Writer   │ → │  Composer  │ → │  Director  │ → │  Cinematographer │ → │  Editor  │
-  │ concepts  │   │ song or    │   │ treatment  │   │ image plates     │   │ takes    │
-  │ story     │   │ music bed  │   │ storyboard │   │ clips, lip sync  │   │ cut      │
-  │ lyrics or │   │ tempo,     │   │ cast and   │   │ memory guard     │   │ finish   │
-  │ script    │   │ sung lines │   │ looks      │   │ take checks      │   │ deliver  │
-  └─────┬─────┘   └────────────┘   └─────┬──────┘   └─────────┬────────┘   └────┬─────┘
-        │ emotion.md                     │                    │ you approve     │ you approve
-        ▼                                │                    ▼                 ▼
-  ┌──────────────────┐                   │            plates, clips         final video,
-  │ Emotional editor │ ◄─ reviews board ─┤                                  cover, metadata
-  │ subtext, arc     │                   │ READY, then you approve
-  └──────────────────┘                   ▼
-                                    storyboard
+           │
+           ▼
+  ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐
+  │ Writer          │ → │ Composer        │ → │ Director        │ → │ Designer        │ → │ Cinematographer │ → │ Editor          │
+  │ concepts        │   │ song or         │   │ vision          │   │ world, Art      │   │ plates with all │   │ takes           │
+  │ story           │   │ music bed       │   │ treatment       │   │ Direction Bible │   │ references      │   │ cut, motifs     │
+  │ lyrics or       │   │ tempo,          │   │ storyboard      │   │ motifs,         │   │ clips, lip sync │   │ finish          │
+  │ script          │   │ sung lines      │   │ cast            │   │ motion rules    │   │ memory guard    │   │ deliver         │
+  └────────┬────────┘   └─────────────────┘   └────────┬────────┘   └────────┬────────┘   └────────┬────────┘   └────────┬────────┘
+           │ emotion.md                                │ you approve         │ you approve         │ you approve         │ you approve
+           ▼                                           ▼                     ▼                     ▼                     ▼
+                                                  storyboard             the Bible           plates, clips          final video
+  ┌──────────────────┐
+  │ Emotional editor │ ◄─ reviews the board, the Bible and the cut
+  │ subtext, arc     │
+  └──────────────────┘
 ```
 
 | Role | Skill | What it does | Tools it uses |
@@ -101,11 +101,12 @@ Motionboard works like a small film crew. Each role is a skill in the plugin and
 | Writer | `mb-writer` | Three distinct concepts, a one page story with a turn, lyrics a singer can sing or a script timed per line | Claude; the optional `lyrics-room` plugin |
 | Emotional editor | `mb-emotion-editor` | An independent reading of the song's subtext, emotional arc and visual cliches to avoid; reviews whether the final board creates the intended feeling | Claude |
 | Composer | `mb-composer` | Your song untouched, or a song or instrumental bed made free on your Mac; finds tempo, beats, sections and every sung line | ACE-Step 1.5 (optional, local), librosa, mlx-whisper (local), demucs (vocal isolation) |
-| Director | `mb-director` | One page treatment, mode and look, a storyboard timed to the music, a cast with consistent looks, each shot's action and camera | `mb draft`, `mb character`, the Storyboard Studio |
-| Cinematographer | `mb-cinematographer` | One image plate per shot from any source, clips and lip sync rendered locally, bad takes diagnosed and rendered again | LTX-2.3 and LTX-2.5 (MLX, local), any image source, the memory guard |
-| Editor | `mb-editor` | Watches every take, picks the take in use, rough cut, finish with lyrics, signature animation, grade, end card, cover, delivery | ffmpeg, HyperFrames (animation packs), the Storyboard Studio |
+| Director | `mb-director` | Owns the vision: defends the concept, one page treatment, briefs the designer and reviews the Bible, a storyboard timed to the music, each shot's action, camera and intent, rejects beautiful shots that do not serve the film | `mb draft`, `mb character`, `mb critique`, the Storyboard Studio |
+| Production designer | `mb-production-designer` | The film's world as an Art Direction Bible: physical rules, characters as physical constructions, materials and symbolic objects, palette and light, camera language, motifs and how they change, motion grammar, what never changes | `mb art`, the Studio's Art view |
+| Cinematographer | `mb-cinematographer` | Reads the approved Bible first; one image plate per shot from any source with every character's references, clips and lip sync rendered locally under the motion grammar, bad takes diagnosed and rendered again | LTX-2.3 and LTX-2.5 (MLX, local), any image source, the memory guard |
+| Editor | `mb-editor` | Watches every take, picks the take in use, checks the whole film's progression, motifs and payoff, rough cut, finish with lyrics, signature animation, grade, end card, cover, delivery | ffmpeg, HyperFrames (animation packs), the Storyboard Studio |
 
-Four gates keep you in charge: you approve the **storyboard**, the **plates** and the **clips** before the next stage starts, and the **final** video before delivery. Every take is kept; the take a shot uses only changes when you pick one.
+Gates keep you in charge: you approve the **storyboard**, the **plates** and the **clips** before the next stage starts, and the **final** video before delivery. A narrative film also has an **Art Direction Bible** you approve before plates; a simple travel or mood video can skip it. Every take is kept; the take a shot uses only changes when you pick one.
 
 ### Checks the tool runs for you
 
@@ -114,13 +115,35 @@ Four gates keep you in charge: you approve the **storyboard**, the **plates** an
 - **Literal shots:** a shot that repeats its lyric word for word is flagged, so the director rethinks it.
 - **Fit:** before anything queues, the fit check says whether the render will fit in memory now.
 - **Backing echoes:** `mb clips --sing-until` silences a backing voice after the lead line, so the singer does not mouth a word twice.
+- **Forbidden movement:** a shot whose action asks for movement the look's motion grammar forbids (a paper figure that breathes) is flagged.
+- **References:** a shot with two characters sends both characters' references; an image source that cannot take them all stops with a clear message instead of dropping some.
+- **Direction changes:** a revised Bible lists the shots whose plates and clips were made under the earlier direction. Nothing is regenerated until you choose.
+
+### Art direction: one film, one world
+
+A **mode** is the story pattern, a **look** is a reusable rendering style, and the **Art Direction Bible** is this film's own world. Two films can share the origami look; the Museum of Almosts (midnight galleries, brass and smoked glass, a ruby thread that never quite joins two paper figures) is not interchangeable with a paper harbour at noon.
+
+The production designer writes the Bible; the director reviews it; you approve it. It is stored in the project database with every version, and a readable `art-direction.md` is regenerated in the project folder. Once approved, every shot's prompts are composed in three parts from it: the **plate** (the first frame: the cast's designs, the motif's state in that shot, the world, colour and light), the **motion** (what moves and how, from the look's motion grammar: paper pivots at its folds and never breathes or blinks) and **continuity** (what must never change).
+
+A material or an object from the Bible reaches only the shots it belongs to, so a prop from one scene is in no other image. A prompt you write yourself is never rewritten, by an approval or anything else; Motionboard keeps its generated prompt beside yours and tells you when yours contradicts the direction. `mb plates` stops on such a conflict before any image is made, until you fix it, keep it or accept it.
+
+```bash
+mb art draft -p <id> --file art-direction.json --profile full   # the designer saves a version
+mb art approve -p <id>                                          # after you say yes
+mb art motifs -p <id>                                           # each motif's state shot by shot
+mb shot prompts -p <id> --shot 7                                # plate, motion, continuity, negative
+mb shot override list -p <id>                                   # prompts you wrote, and any conflict
+mb character ref add -p <id> --name HER --file her-face.png --purpose face
+```
+
+Full guide: [docs/art-direction.md](docs/art-direction.md).
 
 ### The Storyboard Studio
 
 | | |
 |---|---|
 | ![New project and song analysis](docs/images/01-cli-new-and-analyze.jpg) | **1. Listen.** `mb analyze` finds the tempo, the beats and every sung line on your machine. |
-| ![Story view of the board](docs/images/13-studio-story-clips.jpg) | **2. Storyboard.** A one page treatment first: what the song means, not what it names. Then one shot per beat of the story. Nothing renders until you approve it. |
+| ![Story view of the board](docs/images/13-studio-story-clips.jpg) | **2. Storyboard.** A one page treatment first: what the song means, not what it names. Then one shot per beat of the story. Nothing renders until you approve it. The Art view shows the film's Bible: palette, characters and their references, the motif across shots, motion rules, and any pending revision with the shots it affects. |
 | ![Plates on the board](docs/images/08-studio-board-plates.jpg) | **3. Images.** One plate per shot from your own files, a local model, an HTTP API or an MCP image tool. Characters keep the same face. |
 | ![Shot panel with takes](docs/images/14-studio-shot-takes.jpg) | **4. Takes.** Each shot is animated locally. Every take is kept; the take in use only changes when you pick one. |
 | ![The whole video on one board](docs/images/12-studio-board-clips.jpg) | **5. The cut.** Play the board against the song, move a cut to a beat, redo any shot. |
@@ -205,7 +228,7 @@ A **mode** is a story pattern with its own signature animation, applied in finis
 | Lyric Story | one scene per sung line | one big word per beat, handwriting |
 | Mood Loop | slow ambient shots | light leaks, drifting motes, breathing lyrics |
 
-Looks: after dark, origami, exotic, vintage film, neon night, cosmic. You can save any board as your own mode with `mb template`.
+Looks: after dark, origami, exotic, vintage film, neon night, cosmic. A look can carry a **motion grammar** (how its subjects move and what never moves); origami has one, the others use natural human movement. You can save any board as your own mode with `mb template`. A film's own world lives in its Art Direction Bible, not in the look.
 
 ---
 
@@ -232,6 +255,7 @@ Looks: after dark, origami, exotic, vintage film, neon night, cosmic. You can sa
 - **No bundled weights.** You download models yourself and accept their licences.
 - **Runs on localhost only.** No account, no hosted site.
 - **You pick the take.** A new take never replaces the one in use without your choice.
+- **One film, one world.** The approved art direction reaches every prompt; a revision never overwrites it silently.
 
 Full rules: [.specify/memory/constitution.md](.specify/memory/constitution.md).
 
@@ -243,6 +267,7 @@ Full rules: [.specify/memory/constitution.md](.specify/memory/constitution.md).
 |---|---|
 | [Install](docs/install.md) | Requirements, installer steps, models and licences, update and uninstall |
 | [First video](docs/first-video.md) | The whole production as `mb` commands, role by role |
+| [Art direction](docs/art-direction.md) | The Art Direction Bible, versions and approval, references, motion grammar, prompt composition, reviews |
 | [Plate adapters](docs/adapters.md) | Connect any image source: your files, a local model, an HTTP API, an MCP tool |
 | [Memory guard](docs/guard.md) | Presets, limits and what happens when a render is stopped |
 | [Licences](docs/licenses.md) | Code, animation packs, fonts and model licences |
@@ -266,6 +291,7 @@ specs/            Spec Kit specs, plans and tasks
 
 - `mb compose`: drive ACE-Step from the engine, under the memory guard.
 - Each shot's prompt carries how its line is sung (painful, joyful, still).
+- A visual continuity check that compares plates against the approved Bible and each character's references (today it is a review by eye).
 - Several shots in one LTX-2.5 pass, and its add-ons (detail refine, slow motion, cinemagraph).
 - A drift check that compares a clip's first and last frames, beside the scene-jump check.
 - A CUDA backend so video renders on Linux and Windows with NVIDIA GPUs.

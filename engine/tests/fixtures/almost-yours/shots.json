@@ -1,0 +1,71 @@
+{
+  "shots": [
+    {
+      "visual": "the empty midnight gallery seen down its central aisle, display cases on both sides",
+      "action": "the camera drifts slowly forward down the aisle",
+      "camera": "slow dolly in along the aisle",
+      "has_figure": false,
+      "creative": {
+        "intent": "Enter the museum as a late visitor before we know whose story this is",
+        "audience": "quiet curiosity, the sense of a place that keeps secrets",
+        "motifs": [
+          {
+            "name": "ruby thread",
+            "state": "slack across the dark floor between two cases"
+          }
+        ]
+      }
+    },
+    {
+      "visual": "HER standing alone inside her glass case, turned toward the next case",
+      "action": "she turns slowly at the waist fold toward the thread",
+      "camera": "gentle push in toward the glass",
+      "has_figure": true,
+      "creative": {
+        "intent": "She has noticed the connection",
+        "metaphor": "a figure leaning against her own glass",
+        "objects": ["display case"],
+        "motifs": [
+          {
+            "name": "ruby thread",
+            "state": "taut, leading out of frame toward HIM"
+          }
+        ]
+      }
+    },
+    {
+      "visual": "HER and HIM in neighbouring cases, the gap between the cases in the centre of the frame",
+      "action": "both lift one arm toward the gap and stop",
+      "camera": "locked off wide two shot, long lens",
+      "has_figure": true,
+      "creative": {
+        "intent": "The almost: everything the song promises, one fold away",
+        "audience": "held breath",
+        "continuity": "HIM stays turned slightly away even while reaching",
+        "motifs": [
+          {
+            "name": "ruby thread",
+            "state": "the two ends almost touching between the cases"
+          }
+        ]
+      }
+    },
+    {
+      "visual": "HER and HIM in their cases, the thread between them",
+      "action": "the thread snaps and the two ends fall apart",
+      "camera": "locked off macro on the thread, then still",
+      "has_figure": true,
+      "creative": {
+        "intent": "The turn: the request to hold it is the moment it breaks",
+        "audience": "a small shock, then acceptance",
+        "metaphor": "a promise breaking at the exact word that asks for it",
+        "motifs": [
+          {
+            "name": "ruby thread",
+            "state": "snapped, the two ends falling apart"
+          }
+        ]
+      }
+    }
+  ]
+}
