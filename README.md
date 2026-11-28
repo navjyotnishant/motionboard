@@ -33,8 +33,8 @@ A song is one way in. The same steps make full music videos, vertical reels, lyr
 | Working **without Claude** | Use `mb` and the Studio directly. Every command takes `--json` and prints one report. See [docs/first-video.md](docs/first-video.md). |
 
 ```bash
-git clone https://github.com/navjyotnishant/motionboard ~/motionboard
-cd ~/motionboard && ./install.sh
+git clone https://github.com/navjyotnishant/motionboard   # in the folder where you keep code
+cd motionboard && ./install.sh
 mb setup          # ready_for_clips: True means you can render
 mb studio start   # opens the Storyboard Studio on localhost
 ```
@@ -176,13 +176,13 @@ The video models run on your Mac, so a take costs nothing. Render, redo and try 
 ## Install
 
 ```bash
-git clone https://github.com/navjyotnishant/motionboard ~/motionboard
-cd ~/motionboard
+git clone https://github.com/navjyotnishant/motionboard   # in the folder where you keep code
+cd motionboard
 ./install.sh --check     # optional: see what it would do, changes nothing
 ./install.sh
 ```
 
-The installer checks your Mac and tools, installs the engine, the `mb` command, the Studio and the Claude Code plugin, and asks before downloading anything large. Model weights are never bundled: you download them yourself and accept their licences. Full guide, update and uninstall: [docs/install.md](docs/install.md).
+The installer checks your Mac and tools, installs the engine, the `mb` command, the Studio and the Claude Code plugin, and asks before downloading anything large. Model weights are never bundled: you download them yourself and accept their licences. Clone it wherever you keep code; the installer points `mb` and the Claude Code plugin at that folder. If you move the folder later, run `./install.sh` again from the new place. Full guide, update and uninstall: [docs/install.md](docs/install.md).
 
 ### Requirements
 

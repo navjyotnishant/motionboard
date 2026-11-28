@@ -23,8 +23,8 @@ tools for you.
 ## 2. Install
 
 ```bash
-git clone https://github.com/navjyotnishant/motionboard ~/motionboard
-cd ~/motionboard
+git clone https://github.com/navjyotnishant/motionboard   # in the folder where you keep code
+cd motionboard
 ./install.sh --check     # optional: see what it would do, changes nothing
 ./install.sh
 ```
@@ -61,14 +61,18 @@ Restart Claude Code, then say "make a music video for <song>" or "write a promo 
 ## 4. Update
 
 ```bash
-cd ~/motionboard && git pull && ./install.sh
+cd <your motionboard folder> && git pull && ./install.sh
 claude plugin marketplace update motionboard
 ```
+
+### Moved the folder?
+
+Run `./install.sh` again from the new folder. It notices that the engine environment was built somewhere else and reinstalls its scripts, rewrites the `mb` launcher, and points the Claude Code plugin at the new folder. Your projects, database and model weights live outside the repo and are not touched. Do not keep a second clone around for the plugin: one folder is the source for the engine, the Studio and the plugin.
 
 ## 5. Uninstall
 
 ```bash
-cd ~/motionboard && ./uninstall.sh              # mb command, plugin, Studio build, engine environment
+cd <your motionboard folder> && ./uninstall.sh  # mb command, plugin, Studio build, engine environment
 ./uninstall.sh --all-data                       # also ~/.motionboard (asks first)
 ```
 
@@ -84,6 +88,7 @@ scripts.
 | `~/.motionboard/ltx-2-mlx` | video model runtime, if the installer added it | `MB_LTX_BIN` |
 | `~/.cache/huggingface/hub` | model weights | `HF_HOME` |
 | `~/.local/bin/mb` | the `mb` command | `MB_BIN_DIR` at install time |
+| the folder you cloned | engine (`engine/.venv`), Studio, skills; the plugin is installed from here | run `./install.sh` again after a move |
 
 Set `MB_BACKEND=stub` to run the whole pipeline without a GPU (solid colour clips); tests and CI use it.
 

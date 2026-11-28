@@ -71,6 +71,11 @@ if [ "$EXTRAS" = 1 ]; then
   [ "$MAC" = 1 ] && EXTRA_ARGS+=(--extra align)
   note "with optional extras: demucs (vocal isolation for lip-sync)$([ "$MAC" = 1 ] && echo ', mlx-whisper (sung line timing)')"
 fi
+# A moved repo leaves the environment's scripts pointing at the old folder: reinstall them.
+if [ -f "$ENGINE/.venv/bin/mb" ] && ! head -1 "$ENGINE/.venv/bin/mb" | grep -qF "$ENGINE/.venv/"; then
+  note "engine environment was made in another folder; reinstalling its scripts here"
+  EXTRA_ARGS+=(--reinstall)
+fi
 run uv sync --project "$ENGINE" "${EXTRA_ARGS[@]}" --quiet && [ "$CHECK" = 0 ] && ok "engine installed"
 run env MB_HOME="$MB_HOME" "$ENGINE/.venv/bin/mb" db migrate --json >/dev/null && [ "$CHECK" = 0 ] && ok "database ready at $MB_HOME/motionboard.db"
 
@@ -164,7 +169,14 @@ if [ "$PLUGIN" = 1 ]; then
   if ! command -v claude >/dev/null 2>&1; then
     miss "Claude Code not found. Install it (https://docs.claude.com/en/docs/claude-code), then run ./install.sh again"
   elif claude plugin list 2>/dev/null | grep -q "motionboard"; then
-    ok "plugin already installed (update: claude plugin marketplace update motionboard)"
+    SRC=$(claude plugin marketplace list 2>/dev/null | grep -A1 -E 'motionboard$' | sed -n 's/.*Directory (\(.*\))$/\1/p' | head -1)
+    if [ -n "$SRC" ] && [ "$SRC" != "$REPO" ]; then
+      note "plugin was installed from $SRC; pointing it at $REPO"
+      run claude plugin marketplace remove motionboard >/dev/null && run claude plugin marketplace add "$REPO" >/dev/null && \
+        run claude plugin install motionboard@motionboard >/dev/null && [ "$CHECK" = 0 ] && ok "plugin now installed from $REPO; restart Claude Code"
+    else
+      ok "plugin already installed (update: claude plugin marketplace update motionboard)"
+    fi
   else
     run claude plugin marketplace add "$REPO" && run claude plugin install motionboard@motionboard && [ "$CHECK" = 0 ] && ok "plugin installed; restart Claude Code to load its skills"
   fi
