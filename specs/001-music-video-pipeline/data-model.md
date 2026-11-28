@@ -1,5 +1,7 @@
 # Data Model (shared by 001 engine and 002 Studio)
 
+Feature 003 adds `art_direction`, `character_reference`, `critique`, `shot.creative` and `plate_request.refs`: see [specs/003-creative-direction-system/data-model.md](../003-creative-direction-system/data-model.md).
+
 One SQLite file. IDs are text ULIDs. Times are ISO 8601 UTC text. Paths are absolute. The engine owns migrations; feature 002 adds no tables of its own beyond those marked (002).
 
 ## workspace_setting

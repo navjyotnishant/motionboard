@@ -56,7 +56,7 @@ Model licences: LTX-2.3 is free to use under its licence for organisations under
 mb setup                 # ready_for_clips: True means clips can render
 ```
 
-Restart Claude Code, then say "make a music video for <song>" or "write a promo for <product>"; the crew skills (writer, emotional editor, composer, director, cinematographer, editor) take it from there. Or open the Studio with `mb studio start`.
+Restart Claude Code, then say "make a music video for <song>" or "write a promo for <product>"; the crew skills (writer, emotional editor, composer, director, production designer, cinematographer, editor) take it from there. Or open the Studio with `mb studio start`.
 
 ## 4. Update
 
