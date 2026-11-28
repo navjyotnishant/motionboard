@@ -57,7 +57,18 @@ const ACTIONS = {
     swap: z.number().int(), poll: z.number().optional() }),
   adapter_add: z.object({ name: z.string().max(40), kind: z.enum(["manual", "command", "http", "handoff"]),
     config: z.record(z.string(), z.unknown()), cost: z.number().min(0).optional() }),
-  shot_set: z.object({ project: id, shot: ord, field: z.enum(["lyric", "visual", "action", "camera", "plate_prompt", "motion_prompt", "has_figure", "lip_sync"]), value: text }),
+  shot_set: z.object({ project: id, shot: ord, field: z.enum(["lyric", "visual", "action", "camera", "plate_prompt", "motion_prompt",
+    "has_figure", "lip_sync", "intent", "audience", "metaphor", "motifs", "continuity"]), value: text }),
+  art_submit: z.object({ project: id }),
+  art_approve: z.object({ project: id }),
+  art_reject: z.object({ project: id, note: z.string().min(1).max(2000) }),
+  art_impact: z.object({ project: id }),
+  ref_add: z.object({ project: id, name: z.string().regex(/^[A-Za-z0-9_-]{1,40}$/), file,
+    purpose: z.enum(["face", "silhouette", "costume", "material", "detail", "turnaround", "other"]).optional(),
+    description: z.string().max(400).optional(), primary: z.boolean().optional() }),
+  ref_remove: z.object({ project: id, id: z.string().regex(/^[0-9A-Za-z]{10,40}$/) }),
+  ref_primary: z.object({ project: id, id: z.string().regex(/^[0-9A-Za-z]{10,40}$/) }),
+  critique_resolve: z.object({ project: id, id: z.string().regex(/^[0-9A-Za-z]{10,40}$/) }),
   shot_move: z.object({ project: id, shot: ord, end: z.number() }),
   character_set: z.object({ project: id, name: z.string().max(40), field: z.enum(["style_line", "reference_image", "name"]),
     value: text }),
@@ -119,6 +130,16 @@ function argv(action: Action, a: any): string[] {
     case "sheet": return ["sheet", ...p, ...(a.kind ? ["--kind", a.kind] : [])];
     case "finish": return ["finish", ...p];
     case "theme_set": return ["theme", ...p, ...a.pairs.flatMap((x: string) => ["--set", x])];
+    case "art_submit": return ["art", "submit", ...p];
+    case "art_approve": return ["art", "approve", ...p, "--via", "studio"];
+    case "art_reject": return ["art", "reject", ...p, "--note", a.note];
+    case "art_impact": return ["art", "impact", ...p];
+    case "ref_add": return ["character", "ref", "add", ...p, "--name", a.name, "--file", a.file,
+      ...(a.purpose ? ["--purpose", a.purpose] : []), ...(a.description ? ["--description", a.description] : []),
+      ...(a.primary ? ["--primary"] : [])];
+    case "ref_remove": return ["character", "ref", "remove", ...p, "--id", a.id];
+    case "ref_primary": return ["character", "ref", "primary", ...p, "--id", a.id];
+    case "critique_resolve": return ["critique", "resolve", ...p, "--id", a.id];
   }
 }
 

@@ -3,6 +3,7 @@
 // Hovering a clip plays it muted; a guard stop shows its reason and suggestion on the card.
 import { useEffect, useRef } from "react";
 import { media, STATE_COLOR, STATE_LABEL, tc } from "@/lib/client";
+import { directionChanged } from "@/lib/art";
 import { activeAsset, lastJob, type Board, type Shot } from "./types";
 
 export function ShotCard({ board, shot, selected, onSelect, onOpen, playing, audioOn = false, offset = 0, solo = false, onPlay }: {
@@ -27,6 +28,7 @@ export function ShotCard({ board, shot, selected, onSelect, onOpen, playing, aud
     }
   }, [synced, offset]);
   const failed = job && (job.state === "failed" || job.state === "stopped") && shot.state !== "clip_approved";
+  const stale = directionChanged(board).has(shot.id);
   return (
     <div
       data-shot={shot.ord}
@@ -73,6 +75,10 @@ export function ShotCard({ board, shot, selected, onSelect, onOpen, playing, aud
         )}
         {shot.dirty && (
           <span className="absolute right-1.5 top-1.5 rounded bg-bad/80 px-1.5 py-0.5 text-[10px] text-white">REDO</span>
+        )}
+        {!shot.dirty && stale && (
+          <span data-direction-changed title="Made under an earlier art direction; redo when you choose"
+            className="absolute right-1.5 top-1.5 rounded bg-warn/80 px-1.5 py-0.5 text-[10px] text-black">DIRECTION</span>
         )}
         {failed && (
           <div className="absolute inset-x-0 bottom-0 bg-black/75 p-2 text-[11px] leading-snug">

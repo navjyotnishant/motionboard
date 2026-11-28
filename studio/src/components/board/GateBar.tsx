@@ -14,9 +14,10 @@ function reasons(b: Board): Record<Stage, string | null> {
   const plates = b.shots.filter((s) => ["plate_approved", "clip_queued", "clip_rendering", "clip_ready", "clip_approved",
     "clip_failed"].includes(s.state)).length;
   const clips = b.shots.filter((s) => s.state === "clip_approved").length;
+  const art = b.artDirection?.required ? "approve the art direction first (Art view)" : null;
   return {
     storyboard: n ? null : "draft the board first",
-    plates: plates === n && n ? null : `${n - plates} of ${n} plates not approved`,
+    plates: art ?? (plates === n && n ? null : `${n - plates} of ${n} plates not approved`),
     clips: clips === n && n ? null : `${n - clips} of ${n} clips not approved`,
     final: null,
   };
@@ -66,7 +67,10 @@ export function GateBar({ board, reload }: { board: Board; reload: () => void })
           </div>
         ))}
       </div>
-      {next === "plates" && (
+      {next === "plates" && board.artDirection?.required && (
+        <span data-art-gate className="text-[12px] text-warn">Plates wait for the art direction</span>
+      )}
+      {next === "plates" && !board.artDirection?.required && (
         <div className="flex items-center gap-2">
           <select value={adapter} onChange={(e) => setAdapter(e.target.value)} className="w-auto py-0.5 text-[12px]">
             {board.adapters.map((a) => (

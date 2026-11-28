@@ -19,6 +19,7 @@ import { FilmStrip } from "./FilmStrip";
 import { GateBar } from "./GateBar";
 import { ExportMenu } from "./ExportMenu";
 import { StoryList } from "./StoryList";
+import { ArtDirection } from "@/components/art/ArtDirection";
 import type { Board } from "./types";
 
 export function BoardView({ id }: { id: string }) {
@@ -30,9 +31,9 @@ export function BoardView({ id }: { id: string }) {
   const [queueOpen, setQueueOpen] = useState(false);
   const [help, setHelp] = useState(false);
   const [animatic, setAnimatic] = useState(false);
-  const [view, setView] = useState<"grid" | "story">("grid");
-  useEffect(() => { try { const v = localStorage.getItem("mb.view"); if (v === "story" || v === "grid") setView(v); } catch {} }, []);
-  const pick = (v: "grid" | "story") => { setView(v); try { localStorage.setItem("mb.view", v); } catch {} };
+  const [view, setView] = useState<"grid" | "story" | "art">("grid");
+  useEffect(() => { try { const v = localStorage.getItem("mb.view"); if (v === "story" || v === "grid" || v === "art") setView(v); } catch {} }, []);
+  const pick = (v: "grid" | "story" | "art") => { setView(v); try { localStorage.setItem("mb.view", v); } catch {} };
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(false);
   const stopAt = useRef<number | null>(null);
@@ -128,9 +129,9 @@ export function BoardView({ id }: { id: string }) {
         <GateBar board={board} reload={load} />
         <span className="mx-1 h-5 w-px bg-line" />
         <span className="flex overflow-hidden rounded border border-line text-[12px]">
-          {(["grid", "story"] as const).map((v) => (
-            <button key={v} onClick={() => pick(v)} className={`px-2 py-1 ${view === v ? "bg-s3 text-fg" : "text-fg3 hover:bg-s2"}`}>
-              {v === "grid" ? "Grid" : "Story"}
+          {(["grid", "story", "art"] as const).map((v) => (
+            <button key={v} data-view={v} onClick={() => pick(v)} className={`px-2 py-1 ${view === v ? "bg-s3 text-fg" : "text-fg3 hover:bg-s2"}`}>
+              {v === "grid" ? "Grid" : v === "story" ? "Story" : "Art"}
             </button>
           ))}
         </span>
@@ -141,12 +142,17 @@ export function BoardView({ id }: { id: string }) {
       </TopBar>
       <div className="flex min-h-0 flex-1">
         <main className="scroll-thin min-w-0 flex-1 overflow-y-auto p-4">
-          {shots.length === 0 && (
+          {view !== "art" && shots.length === 0 && (
             <div className="rounded-md border border-dashed border-line p-10 text-center text-fg2">
               No shots yet. Draft the board from chat or the start page.
             </div>
           )}
-          {view === "story" ? (
+          {view === "art" ? (
+            <ArtDirection board={board} reload={load} onOpenShot={(ord) => {
+              const q = shots.find((x) => x.ord === ord);
+              if (q) { pick("grid"); setSelected(q.id); setPanel(true); seek(q.start); }
+            }} />
+          ) : view === "story" ? (
             <StoryList board={board} selected={selected} playing={playingShot?.id ?? null}
               solo={playing ? soloShot : null} onPlay={playShot}
               onSelect={(sid) => { setSelected(sid); const q = shots.find((x) => x.id === sid); if (q) seek(q.start); }}
