@@ -73,6 +73,6 @@ HTTP adapters:
 ```
 
 - `refs_meta` makes each entry at `refs_field` an object. Each key is your API's field name; each value is one of `image` (the encoded image), `index`, `character`, `purpose`, `primary`, `path`, `description`.
-- `refs_manifest_field` puts the metadata list, without image data, at a second path, for APIs that take images and labels as parallel lists.
+- `refs_manifest_field` puts the metadata list, without image data, at a second path, for APIs that take images and labels as parallel lists. It needs `refs_field`: the list labels those images, entry for entry.
 
 Manual and handoff adapters already list every reference with its character, purpose and primary flag in `mb plate requests`. Whether a model uses the labels is up to that model.

@@ -174,9 +174,17 @@ def _check_reference_config(kind: str, config: dict) -> None:
                           hint="set refs_field too")
         if not isinstance(meta, dict) or not meta or any(v not in sources for v in meta.values()):
             raise MbError("INVALID_INPUT", "refs_meta maps a field name of the API to one of: " + ", ".join(sources))
-    if "refs_manifest_field" in config and kind != "http":
-        raise MbError("INVALID_INPUT", "refs_manifest_field belongs to http adapters; a command takes "
-                                       "{refs_manifest} or {refs_json}")
+    if "refs_manifest_field" in config:
+        if kind != "http":
+            raise MbError("INVALID_INPUT", "refs_manifest_field belongs to http adapters; a command takes "
+                                           "{refs_manifest} or {refs_json}")
+        # The manifest labels the images at refs_field, entry for entry. Alone it would label images never sent.
+        if not config.get("refs_field"):
+            raise MbError("INVALID_INPUT", "refs_manifest_field describes the images an http adapter puts at "
+                                           "refs_field", hint="set refs_field too")
+        if not isinstance(config["refs_manifest_field"], str) or not config["refs_manifest_field"].strip():
+            raise MbError("INVALID_INPUT", "refs_manifest_field is a dotted path in the request body, "
+                                           "for example input.reference_info")
 
 
 def ensure_default_manual(conn: sqlite3.Connection) -> None:

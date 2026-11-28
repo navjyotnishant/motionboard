@@ -89,6 +89,8 @@ Migration: one row per existing non-empty `character.reference_image`, `purpose 
 
 `motifs`, `continuity`, `materials` and `objects` feed prompt composition and, when changed on a shot with a finished plate, mark it for redo like a visual edit. `intent`, `audience` and `metaphor` feed reviews only. `materials` and `objects` name entries of the approved Bible (research R14).
 
+Project export writes `override_kept` as an object and import restores it (only `plate` and `motion` with integer versions; anything else is dropped; a missing key means no decision). Art direction versions keep their numbers through export and import, so a decision still points at its version.
+
 `plate_prompt` and `motion_prompt` remain the effective prompts every reader uses. Migration `0004_prompt_overrides.sql` adds the five columns and changes no existing value (research R16).
 
 Bible body additions: `materials[].scope` and `objects[].scope` (`all` or `shot`, default shot); `exceptions.characters: [{name, reason}]`.

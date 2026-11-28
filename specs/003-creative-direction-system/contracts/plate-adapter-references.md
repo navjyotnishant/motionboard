@@ -41,4 +41,4 @@ Each reference sent has `index` (0-based, in the order sent), `character`, `purp
 | http | `"refs_manifest_field": "input.reference_info"` | the metadata list (no image data) at that path, parallel to `refs_field` |
 | manual, handoff | none needed | `mb plate requests` already lists each reference with character, purpose and primary |
 
-`mb adapter --add` rejects an unknown field, `refs_meta` without `refs_field`, and `refs_format` without a `{refs}` element. Configurations without these settings behave exactly as before.
+`mb adapter --add` rejects an unknown field, `refs_meta` or `refs_manifest_field` without `refs_field`, an empty `refs_manifest_field`, and `refs_format` without a `{refs}` element. Configurations without these settings behave exactly as before.

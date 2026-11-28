@@ -456,3 +456,88 @@ def test_reference_metadata_settings_are_checked_when_the_adapter_is_added(stub)
     assert not add("command", {"cmd": ["x", "{out}", "{refs}"], "refs_format": "{nope}"})["ok"]
     assert not add("command", {"cmd": ["x", "{out}"], "refs_format": "{path}"})["ok"]
     assert add("command", {"cmd": ["x", "{out}", "{refs}"], "refs_format": "--ref={character}/{purpose}:{path}"})["ok"]
+
+
+def test_reference_manifest_field_needs_refs_field(stub):
+    """The manifest labels the images at refs_field, so it is refused without one (review finding, P3)."""
+    made = []
+
+    def add(kind, cfg):
+        made.append(kind)
+        return mb("adapter", "--add", f"a{len(made)}", "--kind", kind, "--config", json.dumps(cfg))
+
+    url = {"url": "http://x", "body": {"prompt": "{prompt}"}}
+    bad = add("http", {**url, "refs_manifest_field": "input.reference_info"})
+    assert not bad["ok"] and bad["error"]["code"] == "INVALID_INPUT" and "refs_field" in bad["error"]["hint"]
+    assert not add("http", {**url, "refs_field": "", "refs_manifest_field": "input.reference_info"})["ok"]
+    assert not add("http", {**url, "refs_field": "input.images", "refs_manifest_field": ""})["ok"]
+    assert not add("command", {"cmd": ["x", "{out}", "{refs}"], "refs_manifest_field": "a.b"})["ok"]
+    # valid: manifest beside refs_field, with or without the object mapping
+    assert add("http", {**url, "refs_field": "input.images", "refs_manifest_field": "input.reference_info"})["ok"]
+    assert add("http", {**url, "refs_field": "input.images", "refs_manifest_field": "input.reference_info",
+                        "refs_meta": {"image": "image", "subject": "character"}})["ok"]
+    # configurations from before reference metadata existed are untouched
+    assert add("http", {**url, "refs_field": "input.images", "refs_encoding": "data_url"})["ok"]
+    assert add("http", {"url": "http://x", "body": {"prompt": "{prompt}", "image": "{ref_b64}"}})["ok"]
+    assert add("http", url)["ok"]
+
+
+# --- export and import keep the creator's decisions ----------------------------------------------------------------
+
+def test_export_import_keeps_an_authored_prompt_and_its_keep_decision(stub, tmp_path):
+    pid = project()
+    approve_bible(pid)
+    motion = "she turns once at the waist fold, slowly, and is breathing"
+    mb("shot", "set", "-p", pid, "--shot", "2", "--field", "motion_prompt", "--value", motion)
+    assert mb("shot", "override", "keep", "-p", pid, "--shot", "2", "--part", "motion")["data"] == {
+        "shot": 2, "kept": ["motion"], "art_direction_version": 1}
+
+    assert mb("export", "-p", pid, "--out", str(tmp_path / "exp"), "--no-media")["ok"]
+    doc = json.loads((tmp_path / "exp" / "project.json").read_text())
+    two = next(s for s in doc["shots"] if s["ord"] == 2)
+    assert two["override_kept"] == {"motion": 1} and two["motion_authored"] and two["motion_prompt"] == motion
+    assert all(s["override_kept"] == {} for s in doc["shots"] if s["ord"] != 2)
+
+    new = mb("import", "--file", str(tmp_path / "exp" / "project.json"))
+    assert new["ok"] and new["project"] != pid
+    npid = new["project"]
+    listed = mb("shot", "override", "list", "-p", npid)["data"]
+    assert listed["art_direction_version"] == 1
+    assert [(o["shot"], o["part"], o["text"], o["kept"]) for o in listed["overrides"]] == [(2, "motion", motion, True)]
+    assert listed["overrides"][0]["conflicts"], "still reported, as a kept conflict"
+    # the decision travels: the kept override does not stop plates in the imported project either
+    mb("approve", "-p", npid, "--stage", "storyboard")
+    go = mb("plates", "-p", npid, "--shots", "2")
+    assert go["ok"] and any("kept by the creator" in v for v in go["not_verified"])
+
+    # a newer art direction version asks again: the decision was for version 1 only
+    assert mb("art", "draft", "-p", npid, "--file", str(AY / "bible-v2.json"), "--note", "garnet")["ok"]
+    out = mb("art", "approve", "-p", npid)
+    assert out["ok"] and out["data"]["version"] == 2
+    over = out["data"]["overrides"]
+    assert [(o["shot"], o["part"], o["text"], o["kept"]) for o in over] == [(2, "motion", motion, False)]
+    assert mb("plates", "-p", npid, "--shots", "2")["error"]["code"] == "DIRECTION_CONFLICT"
+    # the stored decision is still the old one; a second round trip carries it unchanged and still not in force
+    assert mb("export", "-p", npid, "--out", str(tmp_path / "exp2"), "--no-media")["ok"]
+    two = next(s for s in json.loads((tmp_path / "exp2" / "project.json").read_text())["shots"] if s["ord"] == 2)
+    assert two["override_kept"] == {"motion": 1}
+    again = mb("import", "--file", str(tmp_path / "exp2" / "project.json"))["project"]
+    assert mb("shot", "override", "list", "-p", again)["data"]["overrides"][0]["kept"] is False
+
+
+def test_import_tolerates_exports_without_or_with_bad_keep_decisions(stub, tmp_path):
+    pid = project()
+    mb("export", "-p", pid, "--out", str(tmp_path / "exp"), "--no-media")
+    f = tmp_path / "exp" / "project.json"
+    doc = json.loads(f.read_text())
+    doc["shots"][0].pop("override_kept")  # an export from before the field existed
+    doc["shots"][1]["override_kept"] = {"motion": "yes", "plate": 3, "other": 1}
+    doc["shots"][2]["override_kept"] = "not json"
+    f.write_text(json.dumps(doc))
+    new = mb("import", "--file", str(f))
+    assert new["ok"], new
+    conn = connect()
+    kept = [json.loads(r["override_kept"]) for r in conn.execute(
+        "SELECT override_kept FROM shot WHERE project_id = ? ORDER BY ord", (new["project"],))]
+    conn.close()
+    assert kept == [{}, {"plate": 3}, {}, {}]

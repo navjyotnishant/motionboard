@@ -183,7 +183,7 @@ The Studio gains an Art view beside Grid and Story: status (draft, awaiting revi
 **Compatibility and portability**
 
 - **FR-025**: Existing projects, modes, looks and animation packs MUST keep working; existing CLI commands and JSON report shapes MUST stay compatible (new keys only).
-- **FR-026**: Project JSON export and import MUST carry Bible versions, references, creative fields and critiques; older exports MUST import unchanged.
+- **FR-026**: Project JSON export and import MUST carry Bible versions, references, creative fields and critiques; older exports MUST import unchanged. They MUST also carry each shot's generated baselines, authored flags and keep decisions (`override_kept`). A keep decision stays tied to the art direction version it was made for, so it does not apply to a newer version after import.
 
 **Corrective pass (review of the first implementation)**
 

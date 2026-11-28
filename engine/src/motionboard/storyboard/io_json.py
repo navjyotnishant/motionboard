@@ -19,7 +19,22 @@ FORMAT = "motionboard.project.v1"
 PROJECT_KEYS = ("title", "lyrics", "idea", "aspect", "look", "mode", "visual_look", "synthetic_people")
 SHOT_KEYS = ("ord", "start", "end", "frames", "lyric", "visual", "action", "camera", "has_figure", "lip_sync",
              "plate_prompt", "motion_prompt", "state", "plate_base", "motion_base", "plate_authored",
-             "motion_authored")
+             "motion_authored", "override_kept")
+
+
+def _kept(value) -> dict:
+    """A shot's keep decisions, {part: art direction version}, from a stored JSON string or an export's object.
+    Art direction versions keep their numbers through export and import, so a decision still points at the version
+    it was made for; anything malformed is dropped."""
+    if isinstance(value, str):
+        try:
+            value = json.loads(value or "{}")
+        except json.JSONDecodeError:
+            return {}
+    if not isinstance(value, dict):
+        return {}
+    return {k: v for k, v in value.items()
+            if k in ("plate", "motion") and isinstance(v, int) and not isinstance(v, bool)}
 
 
 def _copy(src: str | None, folder: Path, rel: str) -> str | None:
@@ -84,7 +99,8 @@ def export(conn: sqlite3.Connection, project: dict, out: Path, with_media: bool 
     for s in conn.execute("SELECT * FROM shot WHERE project_id = ? ORDER BY ord", (pid,)):
         s = dict(s)
         entry = {k: s[k] for k in SHOT_KEYS} | {"has_figure": bool(s["has_figure"]), "lip_sync": bool(s["lip_sync"]),
-                                                "creative": json.loads(s.get("creative") or "{}")}
+                                                "creative": json.loads(s.get("creative") or "{}"),
+                                                "override_kept": _kept(s.get("override_kept"))}
         entry["characters"] = [r["name"] for r in conn.execute(
             "SELECT c.name FROM shot_character sc JOIN character c ON c.id = sc.character_id WHERE sc.shot_id = ?",
             (s["id"],))]
@@ -161,6 +177,7 @@ def import_(conn: sqlite3.Connection, src: Path, actor: Actor = "chat") -> dict:
                     "ord": r.get("ord", i), "meta": r.get("meta") or {}, "created_at": ts}, actor)
         for s in doc["shots"]:
             sid = repo.insert(conn, "shot", {**{k: s.get(k) for k in SHOT_KEYS if k in s}, "project_id": pid,
+                                             "override_kept": _kept(s.get("override_kept")),
                                              "frames": s.get("frames", 0), "state": s.get("state", "draft"),
                                              "creative": s.get("creative") or {}, "updated_at": ts}, actor)
             for name in s.get("characters", []):
