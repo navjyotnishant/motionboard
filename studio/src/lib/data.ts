@@ -14,6 +14,7 @@ export type ShotRow = {
   id: string; ord: number; start: number; end: number; frames: number; lyric: string; visual: string;
   action: string; camera: string; has_figure: number; lip_sync: number; plate_prompt: string; motion_prompt: string;
   state: string; dirty: number; updated_at: string; creative: string;
+  plate_base: string | null; motion_base: string | null; plate_authored: number; motion_authored: number;
 };
 
 export function listProjects() {
@@ -90,6 +91,7 @@ export function board(projectId: string) {
     shots: shots.map((s) => ({
       ...s,
       has_figure: !!s.has_figure, lip_sync: !!s.lip_sync, dirty: !!s.dirty,
+      plate_authored: !!s.plate_authored, motion_authored: !!s.motion_authored,
       cast: cast.filter((c) => c.shot_id === s.id).map((c) => c.character_id),
       creative: parseJson<Record<string, unknown>>(s.creative, {}),
     })),

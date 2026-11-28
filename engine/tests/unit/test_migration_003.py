@@ -40,7 +40,8 @@ def test_old_database_keeps_references_and_work(mb_home, fixtures_dir, tmp_path,
 
     conn = connect()
     applied = migrate(conn)
-    assert applied == ["0003_creative_direction.sql"] and current_version(conn) == latest_version()
+    assert applied == ["0003_creative_direction.sql", "0004_prompt_overrides.sql"]
+    assert current_version(conn) == latest_version()
     refs = [dict(r) for r in conn.execute("SELECT * FROM character_reference")]
     assert len(refs) == 1
     assert refs[0]["character_id"] == "C1HER" and refs[0]["path"] == str(ref)

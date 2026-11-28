@@ -51,7 +51,7 @@ mb art show -p <id> [--pending] [--version N] [--markdown]
 mb art impact -p <id>
 ```
 
-Before you approve a revision, the impact lists the shots that have plates or clips made under the current direction, and why: a changed character reaches the shots that character is in; world, colour, light, materials, objects and constraints reach every shot with a plate; camera reaches plates and clips; film-wide motion reaches clips; a motif reaches the shots that carry it. Identity prose is listed for review but affects no asset.
+Before you approve a revision, the impact lists the shots that have plates or clips made under the current direction, and why: a changed character reaches the shots that character is in; world, colour, light and constraints reach every shot with a plate; a changed material or object reaches only the shots it belongs to (see below), or every shot when it is scoped to all; camera reaches plates and clips; film-wide motion reaches clips; a motif reaches the shots that carry it. Identity prose is listed for review but affects no asset.
 
 Approving recomposes every shot's prompts from the new direction. It never regenerates or changes the state of a plate or clip. In the Studio, those shots show a **DIRECTION** marker until you redo them:
 
@@ -60,7 +60,19 @@ mb plates -p <id> --shots 2,3,4 --adapter <adapter>
 mb clips -p <id> --shots 2,3,4 --redo
 ```
 
-A prompt you edited by hand is replaced when the direction is approved, as it is today when a character's style line changes; the report lists the shots it recomposed.
+### Prompts you wrote yourself
+
+A plate or motion prompt you write (in a shots file, with `mb shot set --field plate_prompt|motion_prompt`, or in the Studio) is yours. Motionboard keeps the prompt it would generate beside it and never rewrites yours: not when the direction is approved, not when a character or the shot changes. The approval report lists every such prompt, says whether the generated prompt under it changed, and says whether yours now contradicts the Bible.
+
+```bash
+mb shot override list -p <id>                       # yours, the generated one, conflicts
+mb shot override keep -p <id> --shot 3              # keep it as written for this Bible version
+mb shot set -p <id> --shot 3 --field plate_prompt --value "..."   # revise it
+mb shot override clear -p <id> --shot 3             # go back to the generated prompt
+mb shot prompts -p <id> --shot 3                    # generated text, stored text, which is in use
+```
+
+A kept prompt is asked about again when a later Bible version is approved. Clearing marks a finished plate or clip made from it for redo.
 
 ## Prompts in three parts
 
@@ -96,6 +108,18 @@ Looks without a `motion` block use natural human movement (breathing, blinking, 
 
 Forbidden movement is never written into a prompt, not even as "no breathing": video models tend to produce what they are told about. LTX-2.3 and LTX-2.5 take no negative prompt, so the engine warns instead: `mb sheet` and `mb approve --stage storyboard` list shots whose action asks for something the grammar forbids.
 
+### Characters a full Bible must design
+
+A full Bible designs every character that appears in the storyboard. A missing one is an error on `mb art check`, `submit` and `approve` (not a warning), listed under `missing_designs`. When the gap is deliberate, record it:
+
+```json
+"exceptions": {"characters": [{"name": "HIM", "reason": "seen only as a shadow; no design wanted"}]}
+```
+
+A compact Bible only warns. A character added to a shot after approval is caught before plates.
+
+A character can have its own motion rules: `motion.forbidden`, `motion.materials` and `motion.invariants` join the film's grammar in the shots that character is in.
+
 ## Shot creative context
 
 Optional on any shot:
@@ -110,6 +134,27 @@ mb art motifs -p <id>
 ```
 
 Motifs and continuity go into the prompts (and changing them on a shot with a finished plate marks it for redo, like a visual edit). Intent, audience and metaphor are for the crew and the reviews. Shots files for `mb draft --shots-file` accept the same keys under `creative`.
+
+### Materials and objects, shot by shot
+
+A material or an object from the Bible goes into a plate prompt only when it belongs to that shot:
+
+1. its Bible entry says `"scope": "all"` (the world's own surface);
+2. the shot lists it: `mb shot set -p <id> --shot 4 --field objects --value "paper boat"` (or `materials`), or `creative.objects` in the shots file;
+3. its name is in the shot's visual ("display cases on both sides" names the object "display case");
+4. for a material, a character in the shot is made of it (the character's `materials` text names it).
+
+A material adds its prompt line; an object adds its prompt line, or its name and appearance. A prop designed for one scene is in no other image. `mb shot prompts` lists which belong to the shot and why. A name the Bible does not define is reported.
+
+### When a shot contradicts the direction
+
+Motionboard never rewrites what you wrote; it tells you. A conflict is an action or motion prompt that asks for movement the grammar forbids (the look, the Bible and the rules of the characters in that shot), a plate prompt of yours that adds something the Bible forbids or excludes, or a character with no design under a full Bible. You see it when you write it, on `mb sheet`, when you approve the storyboard and when you queue clips.
+
+`mb plates` stops before any image is requested or paid for and names each conflict. Fix the shot, keep your prompt on purpose (`mb shot override keep`), or go ahead knowingly:
+
+```bash
+mb plates -p <id> --adapter <adapter> --accept-conflicts
+```
 
 ## Character references
 
@@ -147,3 +192,10 @@ There is no automatic visual continuity check. Continuity, motif progression and
 - The Studio needs schema 3; if it says the database is older, run `mb db migrate`.
 - Behaviour that changes on purpose: the origami look no longer asks figures to breathe or blink; an HTTP image adapter now stops on shots with character references unless its config says how to send them (`{ref_b64}`, `refs_field`) or sets `reference_strategy` (before, it dropped them without saying so).
 - Exports from older versions import unchanged; new exports carry Bible versions, references, creative context and reviews.
+
+Migration 0004 separates generated prompts from prompts you wrote:
+
+- Existing prompts are not changed. The first time a project is used after the upgrade, each shot gets a generated baseline, and a stored prompt that differs from it is kept as yours.
+- Motionboard cannot tell a hand edit from a prompt written by an older version, so on older projects many motion prompts are kept this way and stop following the direction. `mb shot override list -p <id>` shows them; `mb shot override clear -p <id> --all --part motion` hands them back to the engine.
+- The Studio needs schema 4.
+- Behaviour that changes on purpose: a full Bible is not approved while a storyboard character has no design (add it, or record why under `exceptions.characters`); `mb plates` stops on conflicts with the direction until they are fixed, kept or accepted.

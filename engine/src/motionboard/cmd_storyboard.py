@@ -188,6 +188,12 @@ def draft(
         r.verified.append("shots tile the segment with no gaps or overlaps")
         r.verified.append(f"frames rounded up to the {b.name} frame rule")
         r.not_verified += board.sung_line_warnings(conn, p) + board.literal_warnings(conn, p)
+        authored = [f"shot {s['ord']} {part}" for s in shots for part in ("plate", "motion") if s[f"{part}_authored"]]
+        if authored:
+            r.data["authored_prompts"] = authored
+            r.verified.append(f"{len(authored)} prompt(s) from the shots file kept as authored overrides: "
+                              + ", ".join(authored))
+        r.not_verified += board.grammar_warnings(conn, p, lk)
         if ideas and len(ideas) != len(shots):
             r.not_verified.append(f"{len(ideas)} shot ideas for {len(shots)} timed shots; extra shots use the "
                                   "mode pattern")
@@ -213,10 +219,25 @@ def shot_set(
     def go(conn, r):
         p = projects.get(conn, project)
         r.project = p["id"]
-        s = board.shot_by_ord(conn, p["id"], shot)
+        from motionboard.direction import conflicts
+
+        before = board.shot_by_ord(conn, p["id"], shot)
         lk = templates.get_look(p["visual_look"], conn) if p.get("visual_look") else None
-        s = board.set_field(conn, s["id"], field, value, ACTOR(), lk)
-        r.data = {"shot": _shot_summary(s), "plate_prompt": s["plate_prompt"], "motion_prompt": s["motion_prompt"]}
+        s = board.set_field(conn, before["id"], field, value, ACTOR(), lk)
+        r.data = {"shot": _shot_summary(s), "plate_prompt": s["plate_prompt"], "motion_prompt": s["motion_prompt"],
+                  "authored": {"plate": bool(s["plate_authored"]), "motion": bool(s["motion_authored"])}}
+        if field in board.PROMPT_FIELDS:
+            part = board.PROMPT_FIELDS[field]
+            r.verified.append(f"{part} prompt saved as the creator's override; the engine will not rewrite it"
+                              if s[f"{part}_authored"] else f"{part} override cleared; the generated prompt is in use")
+        else:
+            for part in ("plate", "motion"):
+                if s[f"{part}_authored"] and s[f"{part}_base"] != before[f"{part}_base"]:
+                    r.not_verified.append(f"the {part} prompt is authored and was kept as written; the generated "
+                                          f"prompt under it changed (mb shot prompts --shot {shot} shows both)")
+        found = conflicts.for_shot(conn, p, s, lk)
+        r.data["conflicts"] = found
+        r.not_verified += [c["message"] for c in found]
 
     run("mb shot set", as_json, go)
 
@@ -239,13 +260,99 @@ def shot_prompts(project: str = ProjectOpt, shot: int = typer.Option(..., "--sho
         r.data = {"shot": shot, "plate": pr.plate, "motion": pr.motion,
                   "continuity": {"plate": pr.continuity_plate, "motion": pr.continuity_motion},
                   "negative": pr.negative, "grammar": pr.grammar, "creative": compose.creative_of(s),
+                  "materials": pr.materials, "objects": pr.objects,
+                  "rules": {"forbidden": list(pr.rules.forbidden), "materials": list(pr.rules.materials),
+                            "invariants": list(pr.rules.invariants)},
+                  "stored": {"plate": s["plate_prompt"], "motion": s["motion_prompt"]},
+                  "authored": {"plate": bool(s["plate_authored"]), "motion": bool(s["motion_authored"])},
                   "stored_matches": {"plate": pr.plate == s["plate_prompt"], "motion": pr.motion == s["motion_prompt"]},
                   "words": {"motion": len(pr.motion.split())}}
-        r.not_verified += pr.warnings
-        if not all(r.data["stored_matches"].values()):
-            r.not_verified.append("the stored prompt differs (edited by hand, or written before the last change)")
+        from motionboard.direction import conflicts
+
+        found = conflicts.for_shot(conn, p, s, lk)
+        r.data["conflicts"] = found
+        r.not_verified += [w for w in pr.warnings if "motion grammar" not in w] + [c["message"] for c in found]
+        for part in ("plate", "motion"):
+            if s[f"{part}_authored"]:
+                r.not_verified.append(f"the stored {part} prompt is the creator's authored override; 'plate' and "
+                                      "'motion' here are what the engine would generate")
+            elif not r.data["stored_matches"][part]:
+                r.not_verified.append(f"the stored {part} prompt differs from the generated one (written before the "
+                                      "last change to the direction)")
 
     run("mb shot prompts", as_json, go)
+
+
+override_app = typer.Typer(no_args_is_help=True, help="Creator-authored prompt overrides: list, keep, clear")
+shot_app.add_typer(override_app, name="override")
+PartOpt = typer.Option("both", "--part", help="plate, motion or both")
+
+
+@override_app.command("list")
+def override_list(project: str = ProjectOpt, as_json: bool = JsonOpt) -> None:
+    """Authored plate and motion prompts, the generated prompt under each, and any conflict with the direction."""
+
+    def go(conn, r):
+        from motionboard.direction import conflicts
+        from motionboard.storyboard import compose
+
+        p = projects.get(conn, project)
+        r.project = p["id"]
+        lk = _look(conn, p)
+        compose.settle(conn, p, lk, ACTOR())
+        rows = conflicts.overrides(conn, p, lk)
+        r.data = {"overrides": rows, "art_direction_version": conflicts.version_of(conn, p["id"])}
+        r.not_verified += [m for o in rows if not o["kept"] for m in o["conflicts"]]
+        r.next = ("keep: mb shot override keep --shot N; revise: mb shot set --shot N --field motion_prompt; "
+                  "clear: mb shot override clear --shot N") if rows else None
+
+    run("mb shot override list", as_json, go)
+
+
+@override_app.command("keep")
+def override_keep(project: str = ProjectOpt, shot: int = typer.Option(..., "--shot"), part: str = PartOpt,
+                  as_json: bool = JsonOpt) -> None:
+    """The creator reviewed an authored prompt against the approved direction and keeps it as written."""
+
+    def go(conn, r):
+        from motionboard.direction import conflicts
+
+        p = projects.get(conn, project)
+        r.project = p["id"]
+        s = board.shot_by_ord(conn, p["id"], shot)
+        version = conflicts.version_of(conn, p["id"])
+        parts = board.keep_override(conn, s["id"], part, version, ACTOR())
+        r.data = {"shot": shot, "kept": parts, "art_direction_version": version}
+        r.verified.append(f"shot {shot} {' and '.join(parts)} override kept for art direction version {version}")
+        r.not_verified.append("a later art direction version asks again")
+
+    run("mb shot override keep", as_json, go)
+
+
+@override_app.command("clear")
+def override_clear(project: str = ProjectOpt, shot: int = typer.Option(None, "--shot"),
+                   every: bool = typer.Option(False, "--all", help="Every shot"), part: str = PartOpt,
+                   as_json: bool = JsonOpt) -> None:
+    """Drop an authored prompt and go back to the generated one. Finished work from it is marked for redo."""
+
+    def go(conn, r):
+        p = projects.get(conn, project)
+        r.project = p["id"]
+        if (shot is None) == (not every):
+            raise MbError("INVALID_INPUT", "give --shot N or --all")
+        lk = _look(conn, p)
+        rows = draft_mod.shots(conn, p["id"]) if every else [board.shot_by_ord(conn, p["id"], shot)]
+        cleared = []
+        with repo.tx(conn):
+            for s in rows:
+                cleared += [f"shot {s['ord']} {x}" for x in board.clear_override(conn, s["id"], part, ACTOR(), lk)]
+        r.data = {"cleared": cleared}
+        if cleared:
+            r.verified.append(f"{len(cleared)} override(s) cleared; the generated prompts are in use")
+        else:
+            r.not_verified.append("no authored prompt there to clear")
+
+    run("mb shot override clear", as_json, go)
 
 
 @shot_app.command("move")

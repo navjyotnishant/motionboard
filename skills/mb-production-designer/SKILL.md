@@ -66,7 +66,7 @@ Write `art-direction.json` (or `.yaml`) in the project folder, then save it into
 
 **C. characters** (one per character in the project, by the same name, HER, HIM, SINGER): `silhouette`, `construction` (how the body is built: folded from one sheet, carved, sewn, a real person), `materials`, `costume`, `color`, `details`, `constraints` (what must never change), `references_note`, `prompt_line`, and `motion` when this character moves differently from the rest (`allowed`, `forbidden`, or a `description`).
 
-**D. materials and objects**: each material with `properties`, `light_response`, `motion_response`, `prompt_line`; each object with `role` (`prop` or `symbol`), `meaning`, `appearance`, `prompt_line`.
+**D. materials and objects**: each material with `properties`, `light_response`, `motion_response`, `prompt_line`; each object with `role` (`prop` or `symbol`), `meaning`, `appearance`, `prompt_line`. These reach a plate only in the shots they belong to: a shot that names the thing in its visual, a shot that lists it (`mb shot set --field objects|materials`), a shot with a character made of the material, or every shot when you set `"scope": "all"` (use that for the world's own surface, not for props). Tell the director which shots should list each symbolic object.
 
 **E. color and lighting**: `palette` (named colours with hex and role: primary, secondary, accent), `relationships` (which colour belongs to whom or what), `contrast`, `prompt_line`; light `sources`, `quality`, `shadows`, `atmosphere`, `prompt_line`.
 
@@ -87,7 +87,7 @@ mb art draft -p <id> --file art-direction.json --profile full --note "<what this
 mb art check -p <id> --json
 ```
 
-Fix every error. Read every warning: a character in the board without a design, a vague word, a Bible character missing from the project. `art-direction.md` in the project folder is the readable view; it is regenerated from the database, so never edit it by hand.
+Fix every error. In a full Bible a storyboard character without a design is an error (`missing_designs`): design the character, or, only when the creator wants the gap, record it under `exceptions.characters` with the reason. Read every warning: a vague word, a Bible character missing from the project, a motion line that names forbidden movement. `art-direction.md` in the project folder is the readable view; it is regenerated from the database, so never edit it by hand.
 
 ## 5. Shot-level design with the director
 
@@ -121,7 +121,7 @@ mb art draft -p <id> --file art-direction.json --note "HER deeper garnet so the 
 mb art impact -p <id> --json
 ```
 
-Read the impact before asking for approval: which shots, which plates and clips, and why. Tell the creator what a yes will cost in redone shots. Prefer revisions that strengthen the story over ones that only change taste.
+Read the impact before asking for approval: which shots, which plates and clips, and why. A changed material or object touches only its own shots. After approval the report lists prompts the creator wrote by hand: they are never rewritten. Relay each one, whether the generated prompt under it changed and whether it now conflicts, and let the creator keep, revise or clear it (`mb shot override list|keep|clear`). Never clear one yourself. Tell the creator what a yes will cost in redone shots. Prefer revisions that strengthen the story over ones that only change taste.
 
 ## 8. Reviewing design (creative review)
 

@@ -12,4 +12,4 @@ export const REPO_ROOT = path.resolve(process.env.MB_REPO || path.join(process.c
 export const ENGINE_ROOT = path.join(REPO_ROOT, "engine");
 export const PORT = Number(process.env.PORT || 4317);
 export const ORIGINS = [`http://127.0.0.1:${PORT}`, `http://localhost:${PORT}`];
-export const MIN_SCHEMA = 3; // 0003: art direction, character references, shot creative context, critiques
+export const MIN_SCHEMA = 4; // 0003: art direction, references, creative context, critiques; 0004: prompt overrides

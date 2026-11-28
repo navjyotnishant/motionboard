@@ -2,9 +2,14 @@ export type Shot = {
   id: string; ord: number; start: number; end: number; frames: number; lyric: string; visual: string;
   action: string; camera: string; has_figure: boolean; lip_sync: boolean; plate_prompt: string;
   motion_prompt: string; state: string; dirty: boolean; updated_at: string; cast: string[]; creative: Creative;
+  // 0004: a prompt the creator wrote is an override the engine never rewrites; *_base is the generated prompt
+  plate_authored: boolean; motion_authored: boolean; plate_base: string | null; motion_base: string | null;
 };
 export type Motif = { name: string; state?: string };
-export type Creative = { intent?: string; audience?: string; metaphor?: string; motifs?: Motif[]; continuity?: string };
+export type Creative = {
+  intent?: string; audience?: string; metaphor?: string; motifs?: Motif[]; continuity?: string;
+  materials?: string[]; objects?: string[]; // names of Bible materials and objects this shot shows
+};
 export type Note = { id: string; asset_version_id: string; decision: string; text: string; at: string };
 export type Asset = {
   id: string; shot_id: string; kind: "plate" | "clip" | "prompt"; path: string | null; text: string | null;
@@ -16,7 +21,8 @@ export type Character = {
   id: string; name: string; reference_image: string | null; style_line: string; references: Reference[];
 };
 export type Impact = {
-  changed?: string[]; characters?: string[]; motifs?: string[]; review_only?: string[];
+  changed?: string[]; characters?: string[]; motifs?: string[]; materials?: string[]; objects?: string[];
+  review_only?: string[];
   shots?: { shot: number; reasons: string[]; assets: { id: string; kind: string; created_at: string }[] }[];
 };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

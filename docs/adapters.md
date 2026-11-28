@@ -48,3 +48,31 @@ mb plates -p <id> --adapter text-only --reference-strategy none    # send none
 ```
 
 Whatever is not sent (including files missing on disk) is stored on the request and listed in the report with the reason. A report never claims a reference the image source did not receive. Whether a particular image model honours several references is up to that model; Motionboard passes them and reports what it passed.
+
+### Telling the image source which reference is which
+
+A list of four paths does not say which is HER's face and which is HIM's silhouette. Add any of these to the adapter config; without them nothing changes.
+
+Command adapters:
+
+```json
+{"cmd": ["python", "gen.py", "--out", "{out}", "--manifest", "{refs_manifest}", "--refs", "{refs}"],
+ "refs_format": "{character}:{purpose}={path}"}
+```
+
+- `refs_format` shapes each argument `{refs}` expands to. Fields: `index`, `character`, `purpose`, `primary`, `path`, `description`.
+- `{refs_manifest}` is the path of a JSON file written for the request: `{"request", "shot", "references": [{index, character, purpose, primary, path, description}]}`.
+- `{refs_json}` is the same reference list inline.
+
+HTTP adapters:
+
+```json
+{"url": "...", "body": {"prompt": "{prompt}"}, "refs_field": "input.references",
+ "refs_meta": {"image": "image", "subject": "character", "role": "purpose", "main": "primary"},
+ "refs_manifest_field": "input.reference_info"}
+```
+
+- `refs_meta` makes each entry at `refs_field` an object. Each key is your API's field name; each value is one of `image` (the encoded image), `index`, `character`, `purpose`, `primary`, `path`, `description`.
+- `refs_manifest_field` puts the metadata list, without image data, at a second path, for APIs that take images and labels as parallel lists.
+
+Manual and handoff adapters already list every reference with its character, purpose and primary flag in `mb plate requests`. Whether a model uses the labels is up to that model.

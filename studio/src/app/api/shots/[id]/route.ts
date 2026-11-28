@@ -22,6 +22,8 @@ const Body = z.object({
     metaphor: z.string().max(2000).optional(),
     motifs: z.string().max(4000).optional(),
     continuity: z.string().max(2000).optional(),
+    materials: z.string().max(2000).optional(),
+    objects: z.string().max(2000).optional(),
     end: z.number().optional(),
   }).refine((f) => Object.keys(f).length > 0, "no fields"),
 });

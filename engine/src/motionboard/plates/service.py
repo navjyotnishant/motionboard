@@ -7,7 +7,7 @@ from pathlib import Path
 from motionboard import assets
 from motionboard.db import repo
 from motionboard.db.events import Actor
-from motionboard.direction import store
+from motionboard.direction import conflicts, store
 from motionboard.plates import adapter as adapters
 from motionboard.plates.adapter import Pending, PlateRequest, Reference
 from motionboard.report import MbError
@@ -35,7 +35,8 @@ def _references(conn: sqlite3.Connection, shot_id: str) -> list[Reference]:
 
 
 def request_plates(conn: sqlite3.Connection, project: dict, adapter_name: str, ords: list[int] | None,
-                   confirm_cost: bool, actor: Actor, reference_strategy: str | None = None) -> dict:
+                   confirm_cost: bool, actor: Actor, reference_strategy: str | None = None,
+                   accept_conflicts: bool = False) -> dict:
     board.require_gates(conn, project["id"], "storyboard")
     art = store.gate_problem(conn, project["id"])
     if art:
@@ -43,13 +44,26 @@ def request_plates(conn: sqlite3.Connection, project: dict, adapter_name: str, o
     adapters.ensure_default_manual(conn)
     row = adapters.get_row(conn, adapter_name)
     ad = adapters.build(row, project)
+    look = templates.get_look(project["visual_look"], conn) if project.get("visual_look") else None
+    compose.settle(conn, project, look, actor)
     shots = shots_needing_plates(conn, project["id"], ords)
+    # Contradictions with the direction are shown before any image is made or paid for (FR-030). The creator fixes
+    # them, keeps an authored prompt on purpose, or says to go ahead.
+    found = conflicts.for_project(conn, project, look, [s["ord"] for s in shots])
+    stopping = conflicts.blocking(found)
+    if stopping and not accept_conflicts:
+        raise MbError("DIRECTION_CONFLICT",
+                      f"{len(stopping)} conflict(s) with the direction in the shots to generate; no image was "
+                      "requested",
+                      hint="; ".join(c["message"] for c in stopping[:6]) + ". Fix the shot (mb shot set), clear or "
+                      "keep an authored prompt (mb shot override clear | keep), or re-run with --accept-conflicts "
+                      "when the creator says to go ahead",
+                      data={"conflicts": stopping, "shots": sorted({c["shot"] for c in stopping})})
     est = round(len(shots) * float(row["cost_per_image_usd"]), 4)
     if est > 0 and not confirm_cost:
         raise MbError("COST_NOT_CONFIRMED", f"{len(shots)} plates with '{row['name']}' cost about ${est:.2f}",
                       hint="re-run with --confirm-cost after the creator says yes",
                       data={"est_cost_usd": est, "shots": [s["ord"] for s in shots], "adapter": row["name"]})
-    look = templates.get_look(project["visual_look"], conn) if project.get("visual_look") else None
     negative = compose.negative_text(look, store.approved_body(conn, project["id"])) if look else ""
     strategy = reference_strategy or json.loads(row["config"] or "{}").get("reference_strategy") or "strict"
     capacity = ad.reference_capacity()
@@ -91,7 +105,8 @@ def request_plates(conn: sqlite3.Connection, project: dict, adapter_name: str, o
         done.append({"shot": s["ord"], "path": a["path"], **ref_info})
     return {"adapter": row["name"], "kind": row["kind"], "done": done, "pending": pending, "failed": failed,
             "spent_usd": round(spent, 4), "est_cost_usd": est, "size": f"{w}x{h}",
-            "reference_capacity": "unlimited" if capacity is None else capacity, "reference_strategy": strategy}
+            "reference_capacity": "unlimited" if capacity is None else capacity, "reference_strategy": strategy,
+            "conflicts": found}
 
 
 def pending_requests(conn: sqlite3.Connection, project_id: str) -> list[dict]:

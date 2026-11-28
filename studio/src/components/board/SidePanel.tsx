@@ -7,7 +7,7 @@ import { useToast } from "@/components/ui/Toast";
 import { VersionStrip } from "@/components/review/VersionStrip";
 import { ApproveBar } from "@/components/review/ApproveBar";
 import type { Board, Shot } from "./types";
-import { CREATIVE_FIELDS, creativeCount, findingsFor, motifsToText, ROLE_LABEL } from "@/lib/art";
+import { CREATIVE_FIELDS, creativeCount, creativeText, findingsFor, ROLE_LABEL } from "@/lib/art";
 
 const FIELDS: { key: keyof Shot; label: string; rows: number }[] = [
   { key: "lyric", label: "Lyric", rows: 2 },
@@ -69,11 +69,15 @@ export function SidePanel({ board, shot, onClose, reload, rejectSignal }: {
               <span className="mb-1 block text-[11px] uppercase tracking-wider text-fg3">{f.label}</span>
               <textarea
                 rows={f.rows}
+                data-field={f.key}
                 value={val}
                 disabled={busy}
                 onChange={(e) => setDraft({ ...draft, [f.key]: e.target.value })}
                 onBlur={() => { if (draft[f.key as string] !== undefined && draft[f.key as string] !== shot[f.key]) save({ [f.key]: draft[f.key as string] }); }}
               />
+              {(f.key === "plate_prompt" || f.key === "motion_prompt") && (
+                <Authored project={project} shot={shot} part={f.key === "plate_prompt" ? "plate" : "motion"} reload={reload} />
+              )}
             </label>
           );
         })}
@@ -124,6 +128,30 @@ export function SidePanel({ board, shot, onClose, reload, rejectSignal }: {
   );
 }
 
+// A prompt the creator wrote stays as written: the engine keeps its own generated prompt beside it and never
+// overwrites this one (an art direction approval included). The creator can go back to the generated prompt.
+function Authored({ project, shot, part, reload }: {
+  project: string; shot: Shot; part: "plate" | "motion"; reload: () => void;
+}) {
+  const toast = useToast();
+  if (!shot[`${part}_authored`]) return null;
+  return (
+    <span data-authored={part} className="mt-1 flex items-center gap-2 text-[11px] text-fg3">
+      <span className="text-warn">Written by you</span>
+      <span>the engine will not rewrite it</span>
+      <button type="button" data-use-generated={part} className="ml-auto underline hover:text-fg"
+        title={shot[`${part}_base`] ?? ""}
+        onClick={async (e) => {
+          e.preventDefault();
+          const r = await mb("override_clear", { project, shot: shot.ord, part });
+          toast(r); reload();
+        }}>
+        Use generated
+      </button>
+    </span>
+  );
+}
+
 function CharacterLine({ project, name, value, reload }: { project: string; name: string; value: string; reload: () => void }) {
   const toast = useToast();
   const [v, setV] = useState(value);
@@ -140,7 +168,8 @@ function CharacterLine({ project, name, value, reload }: { project: string; name
 }
 
 // The shot's creative intent, collapsed by default so the main fields stay on top. Empty fields cost nothing;
-// motifs and continuity reach the prompts (the engine decides), the rest guide the crew and the reviews.
+// motifs, continuity, objects and materials reach the prompts (the engine decides), the rest guide the crew
+// and the reviews.
 function CreativeContext({ board, shot, busy, save }: {
   board: Board; shot: Shot; busy: boolean; save: (f: Record<string, unknown>) => Promise<void>;
 }) {
@@ -150,7 +179,7 @@ function CreativeContext({ board, shot, busy, save }: {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Record<string, string>>({});
   useEffect(() => { setDraft({}); }, [shot.id]);
-  const value = (k: string) => draft[k] ?? (k === "motifs" ? motifsToText(c.motifs) : String(c[k as keyof typeof c] ?? ""));
+  const value = (k: string) => draft[k] ?? creativeText(c, k);
   return (
     <div data-creative className="border-t border-line px-4 py-2">
       <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-2 text-[11px] uppercase tracking-wider text-fg3">
@@ -167,7 +196,7 @@ function CreativeContext({ board, shot, busy, save }: {
                 onChange={(e) => setDraft({ ...draft, [f.key]: e.target.value })}
                 onBlur={() => {
                   const now = draft[f.key];
-                  const was = f.key === "motifs" ? motifsToText(c.motifs) : String(c[f.key as keyof typeof c] ?? "");
+                  const was = creativeText(c, f.key);
                   if (now !== undefined && now !== was) save({ [f.key]: now });
                 }} />
             </label>

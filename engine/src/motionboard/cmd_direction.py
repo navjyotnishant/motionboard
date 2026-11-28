@@ -109,6 +109,15 @@ def approve_art(conn, r, project: str, via: str | None) -> None:
         r.verified.append(f"prompts of {len(res['recomposed'])} shots now follow this direction")
     r.not_verified += _impact_lines(res["impact"])
     r.not_verified += [f"warning: {w}" for w in res["warnings"]]
+    for o in res["overrides"]:
+        r.not_verified.append(
+            f"shot {o['shot']} {o['part']} prompt is authored by the creator and was not rewritten"
+            + ("; the generated prompt under it changed with this version" if o["baseline_changed"] else "")
+            + ("; it now conflicts: " + "; ".join(o["conflicts"]) if o["conflicts"] else ""))
+    if res["overrides"]:
+        r.not_verified.append(f"for each authored prompt the creator keeps it (mb shot override keep), revises it "
+                              f"(mb shot set) or clears it (mb shot override clear); see mb shot override list "
+                              f"-p {p['id']}")
     r.not_verified += critique.open_for_gate(conn, p["id"], "art_direction")
     r.not_verified.append("no plate or clip was regenerated; redo the shots above with mb plates --shots or "
                           "mb clips --shots --redo when the creator chooses")

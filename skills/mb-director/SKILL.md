@@ -185,7 +185,7 @@ mb shot set --project <id> --shot 3 --field action --value "<new action>" --json
 mb shot move --project <id> --shot 3 --end 7.9 --json     # the cut snaps to a beat within 0.12 s
 ```
 
-Fields: lyric, visual, action, camera, plate_prompt, motion_prompt, has_figure, lip_sync, and the creative context: intent, audience, metaphor, motifs (`"name: state"`), continuity. The report also warns when an action asks for movement the motion grammar forbids.
+Fields: lyric, visual, action, camera, plate_prompt, motion_prompt, has_figure, lip_sync, and the creative context: intent, audience, metaphor, motifs (`"name: state"`), continuity, objects and materials (names from the Bible this shot shows, comma separated). A `plate_prompt` or `motion_prompt` you write is kept as an authored override: the engine never rewrites it, including on an art direction approval, and reports it. The report names every conflict with the direction: an action or motion prompt that asks for forbidden movement (the look, the Bible and each present character's rules), or an authored plate prompt that adds something the Bible forbids. Fix the conflict or tell the creator; `mb plates` stops on it until it is fixed, kept by the creator (`mb shot override keep`) or accepted (`--accept-conflicts`, only on the creator's word).
 
 ### Is it still one film?
 

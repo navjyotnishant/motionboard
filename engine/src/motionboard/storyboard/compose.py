@@ -16,9 +16,9 @@ from dataclasses import dataclass, field
 
 from motionboard.db import repo
 from motionboard.db.events import Actor
+from motionboard.direction import assoc, store
 from motionboard.direction import bible as bible_mod
 from motionboard.direction import grammar as grammar_mod
-from motionboard.direction import store
 from motionboard.direction.grammar import Grammar
 
 MAX_WORDS = 200  # LTX guidance: one flowing paragraph, under about 200 words
@@ -29,7 +29,8 @@ SINGING = ("singing the words with clear, precise lip movement exactly in sync w
            "the mouth opening and closing on each syllable, natural jaw and throat movement, "
            "stable face, the head moving gently with the melody")
 
-CREATIVE_KEYS = ("intent", "audience", "metaphor", "motifs", "continuity")
+CREATIVE_KEYS = ("intent", "audience", "metaphor", "motifs", "continuity", "materials", "objects")
+PARTS = ("plate", "motion")
 
 
 @dataclass
@@ -41,6 +42,9 @@ class Prompts:
     negative: str = ""
     grammar: str = ""
     warnings: list[str] = field(default_factory=list)
+    rules: Grammar | None = None  # the effective grammar for this shot (look + Bible + its characters)
+    materials: list[dict] = field(default_factory=list)  # [{name, why}] the Bible materials of this shot
+    objects: list[dict] = field(default_factory=list)
 
 
 def _sentence(text: str) -> str:
@@ -55,13 +59,27 @@ def _for_motion(style: str) -> str:
 
 # --- the three parts -----------------------------------------------------------------------------------------
 
+def _fresh(lines: list[str] | None, parts: list[str], style: str) -> list[str]:
+    """Lines that say something the prompt does not say yet (a material line equal to part of the look is skipped)."""
+    out: list[str] = []
+    for line in lines or []:
+        low = (line or "").strip().lower()
+        if low and not any(low in p.lower() for p in [*parts, *out, style or ""]):
+            out.append(line.strip())
+    return out
+
+
 def plate_text(visual: str, has_figure: bool, look, cast_lines: list[str], *, motif_lines: list[str] | None = None,
+               object_lines: list[str] | None = None, material_lines: list[str] | None = None,
                world_lines: list[str] | None = None, continuity: list[str] | None = None) -> str:
-    """The first frame: the shot, who is in it, the motifs' state, the film's world, the look, what stays fixed."""
+    """The first frame: the shot, who is in it, the motifs' state, this shot's objects and materials, the film's
+    world, the look, what stays fixed."""
     parts = [visual.rstrip(". ")]
     if has_figure:
         parts += [c for c in cast_lines if c]
     parts += [m for m in motif_lines or [] if m]
+    parts += _fresh(object_lines, parts, look.style_line)
+    parts += _fresh(material_lines, parts, look.style_line)
     parts += [w for w in world_lines or [] if w]
     parts.append(look.style_line)
     if not has_figure:
@@ -177,18 +195,26 @@ def effective_grammar(look, body: dict | None) -> Grammar:
 def compose(look, body: dict | None, *, visual: str, action: str, camera: str, has_figure: bool, lip_sync: bool,
             cast: list[dict], creative: dict) -> Prompts:
     """All parts for one shot from plain values (used while drafting, before the shot row exists)."""
-    g = effective_grammar(look, body)
+    names = [c["name"] for c in cast] if has_figure else []
+    bible_chars = (body or {}).get("characters") or []
+    mats = assoc.materials(body, visual=visual, creative=creative, cast=names)
+    objs = assoc.objects(body, visual=visual, creative=creative)
+    g = grammar_mod.with_characters(effective_grammar(look, body), bible_chars, names)
+    g = grammar_mod.with_materials(g, [m.get("motion_response") for m, _ in mats])
     c_plate, c_motion = continuity_items(body, creative, g)
-    names = [c["name"] for c in cast]
     lines = cast_lines(cast, body) if has_figure else []
-    char_motion = grammar_mod.character_lines((body or {}).get("characters") or [], names) if has_figure else []
+    char_motion = grammar_mod.character_lines(bible_chars, names)
     plate = plate_text(visual, has_figure, look, lines, motif_lines=motif_lines(creative, body),
+                       object_lines=[assoc.object_line(o) for o, _ in objs],
+                       material_lines=[assoc.material_line(m) for m, _ in mats],
                        world_lines=world_lines(body), continuity=c_plate)
     motion = motion_text(action, camera, has_figure, look, lip_sync, visual, lines, grammar=g,
                          character_motion=char_motion, continuity=c_motion)
     warnings = [f"the action asks for '{t}', which the motion grammar ({g.source}) forbids"
-                for t in grammar_mod.forbidden_hits(action, g)]
-    return Prompts(plate, motion, c_plate, c_motion, negative_text(look, body), g.source, warnings)
+                for t in grammar_mod.forbidden_hits(action, g)] + assoc.unknown(body, creative)
+    return Prompts(plate, motion, c_plate, c_motion, negative_text(look, body), g.source, warnings, g,
+                   [{"name": m["name"], "why": why} for m, why in mats],
+                   [{"name": o["name"], "why": why} for o, why in objs])
 
 
 def cast_rows(conn: sqlite3.Connection, shot_id: str) -> list[dict]:
@@ -208,11 +234,47 @@ def for_shot(conn: sqlite3.Connection, project: dict, shot: dict, look, body: di
                    creative=creative_of(s))
 
 
+def settle(conn: sqlite3.Connection, project: dict, look, actor: Actor,
+           shot_ids: list[str] | None = None) -> list[dict]:
+    """Give shots made before prompt baselines existed (`plate_base` is NULL) a baseline, before anything changes.
+
+    The baseline is what the engine generates from the direction as it stands now. A stored prompt that differs
+    from it is kept as the creator's override, never assumed to be stale: a hand edit and a prompt written by an
+    older engine look the same, and losing a hand edit is the worse mistake. Returns the overrides adopted."""
+    if look is None:
+        return []
+    rows = [dict(r) for r in conn.execute(
+        "SELECT * FROM shot WHERE project_id = ? AND (plate_base IS NULL OR motion_base IS NULL) ORDER BY ord",
+        (project["id"],))]
+    if shot_ids is not None:
+        rows = [r for r in rows if r["id"] in set(shot_ids)]
+    if not rows:
+        return []
+    body = store.approved_body(conn, project["id"])
+    adopted = []
+    for s in rows:
+        p = for_shot(conn, project, s, look, body)
+        fields: dict = {}
+        for part, new in (("plate", p.plate), ("motion", p.motion)):
+            if s[f"{part}_base"] is not None:
+                continue
+            stored = (s[f"{part}_prompt"] or "").strip()
+            authored = bool(stored) and stored != new
+            fields[f"{part}_base"] = new
+            fields[f"{part}_authored"] = authored
+            if authored:
+                adopted.append({"shot": s["ord"], "part": part})
+        repo.update(conn, "shot", s["id"], fields, actor)
+    return adopted
+
+
 def recompose(conn: sqlite3.Connection, project: dict, shot_ids: list[str] | None, look, actor: Actor,
-              mark_redo: bool) -> list[int]:
-    """Rewrite plate and motion prompts from the current direction. With `mark_redo`, a finished plate whose prompt
-    changed is marked for redo (a cast or reference edit). Without it nothing but the prompts changes: an art
-    direction approval reports affected shots instead (research R4, R5). Returns the shot numbers rewritten."""
+              mark_redo: bool, report: dict | None = None) -> list[int]:
+    """Regenerate prompt baselines from the current direction. A generated prompt follows its baseline; an authored
+    override is never rewritten (FR-031) and is listed in `report["overrides"]` with whether the baseline under it
+    moved. With `mark_redo`, a finished plate whose prompt changed is marked for redo (a cast or reference edit).
+    Without it nothing but prompts changes: an art direction approval reports affected shots instead (research R4,
+    R5). Returns the shot numbers whose effective prompt was rewritten."""
     from motionboard.storyboard.board import PLATE_DONE
 
     if look is None:
@@ -227,16 +289,25 @@ def recompose(conn: sqlite3.Connection, project: dict, shot_ids: list[str] | Non
         if not s:
             continue
         p = for_shot(conn, project, s, look, body)
-        fields = {}
-        if p.plate != s["plate_prompt"]:
-            fields["plate_prompt"] = p.plate
-        if p.motion != s["motion_prompt"]:
-            fields["motion_prompt"] = p.motion
+        fields: dict = {}
+        for part, new in (("plate", p.plate), ("motion", p.motion)):
+            moved = s[f"{part}_base"] != new
+            if moved:
+                fields[f"{part}_base"] = new
+            if s[f"{part}_authored"]:
+                if report is not None:
+                    report.setdefault("overrides", []).append({
+                        "shot": s["ord"], "part": part, "baseline_changed": moved and s[f"{part}_base"] is not None})
+                continue
+            if s[f"{part}_prompt"] != new:
+                fields[f"{part}_prompt"] = new
         if not fields:
             continue
+        rewritten = "plate_prompt" in fields or "motion_prompt" in fields
         if mark_redo and "plate_prompt" in fields and s["state"] in PLATE_DONE:
             fields.update(state="needs_redo", dirty=True)
-        fields["updated_at"] = repo.now()
+        if rewritten:
+            fields["updated_at"] = repo.now()
+            changed.append(s["ord"])
         repo.update(conn, "shot", sid, fields, actor)
-        changed.append(s["ord"])
     return changed

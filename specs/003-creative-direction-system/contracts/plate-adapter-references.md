@@ -27,3 +27,18 @@ Every adapter exposes `reference_capacity() -> int | None` (`None` means unlimit
 | `none` | Send none. |
 
 Missing files are never sent and are reported with reason `file missing`, whatever the strategy. Everything not sent is stored in `plate_request.refs_dropped` with a reason and returned in the report. An adapter never claims a reference it did not use.
+
+## Reference identity (optional)
+
+Each reference sent has `index` (0-based, in the order sent), `character`, `purpose`, `primary`, `path`, `description`.
+
+| Kind | Setting | Effect |
+|---|---|---|
+| command | `"refs_format": "{character}:{purpose}={path}"` | shapes each argument that `{refs}` expands to (default `{path}`) |
+| command | `{refs_manifest}` inside an element | path of `<out>.refs.json`: `{"request", "shot", "references": [...]}`; takes every reference |
+| command | `{refs_json}` inside an element | the reference list as inline JSON; takes every reference |
+| http | `"refs_meta": {"image": "image", "subject": "character", "role": "purpose"}` | each `refs_field` entry becomes an object; keys are the API's field names, values one of `image`, `index`, `character`, `purpose`, `primary`, `path`, `description` |
+| http | `"refs_manifest_field": "input.reference_info"` | the metadata list (no image data) at that path, parallel to `refs_field` |
+| manual, handoff | none needed | `mb plate requests` already lists each reference with character, purpose and primary |
+
+`mb adapter --add` rejects an unknown field, `refs_meta` without `refs_field`, and `refs_format` without a `{refs}` element. Configurations without these settings behave exactly as before.

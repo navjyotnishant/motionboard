@@ -119,11 +119,14 @@ engine/tests/fixtures/almost-yours/{bible.json,bible-v2.json,shots.json,critique
 5. Studio: schema mirror, read model, Art view, shot context, references, gate rule, tests.
 6. Almost Yours acceptance test, docs, full test runs, diff review, draft PR.
 
+7. Corrective pass after review (FR-027 to FR-036): shot associations for materials and objects (`direction/assoc.py`) in composition and impact; conflict detection (`direction/conflicts.py`) with character rules merged into the grammar and a plate-time stop; migration 0004 with generated baselines apart from authored overrides, settle for older shots, `mb shot override`; blocking character designs for full Bibles with recorded exceptions; reference metadata for command and HTTP adapters; Studio marker and clear action; regression tests `engine/tests/unit/test_corrections_003.py`.
+
 Commits stay grouped by phase.
 
 ## Risks
 
-- **Prompt churn**: recomposition on approval replaces hand-edited prompts. Mitigation: report recomposed shots; documented.
+- **Prompt churn**: resolved in phase 7. Recomposition regenerates baselines and never rewrites an authored override; overrides are reported with conflicts. New risk: on databases from older engines most motion prompts are adopted as authored when first settled and stop following the direction until cleared (research R16); reported, one command to clear.
+- **A new stop before plates** (`DIRECTION_CONFLICT`): projects whose actions already ask for forbidden movement must fix them or pass `--accept-conflicts`.
 - **HTTP adapter now errors** for shots with references: a deliberate change from silent drops; the hint names `reference_strategy: none` to keep the old behaviour knowingly.
 - **Word limits**: continuity clause competes with the 200-word video limit. Mitigation: continuity sits before scene and style; the style tail is trimmed first; tested.
 

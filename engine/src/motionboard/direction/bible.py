@@ -16,7 +16,7 @@ from motionboard.report import MbError
 
 PROFILES = ("compact", "full")
 SECTIONS = ("identity", "world", "characters", "materials", "objects", "color", "lighting", "camera", "motifs",
-            "motion", "constraints")
+            "motion", "constraints", "exceptions")
 
 # Words that say nothing about a particular film on their own ("make it cinematic").
 VAGUE = {"cinematic", "beautiful", "consistent", "stunning", "epic", "nice", "good", "moody", "aesthetic", "pretty",
@@ -174,15 +174,42 @@ def vague_warnings(body: dict) -> list[str]:
     return out
 
 
-def cast_warnings(body: dict, project_characters: dict[str, list[int]]) -> list[str]:
-    """project_characters: name -> shot numbers the character appears in."""
+def excused_characters(body: dict | None) -> dict[str, str]:
+    """Characters the creator chose to leave without a design: NAME -> the recorded reason."""
+    out = {}
+    for e in ((body or {}).get("exceptions") or {}).get("characters") or []:
+        if isinstance(e, dict) and str(e.get("name", "")).strip() and str(e.get("reason", "")).strip():
+            out[str(e["name"]).strip().upper()] = str(e["reason"]).strip()
+    return out
+
+
+def missing_designs(body: dict, project_characters: dict[str, list[int]]) -> list[dict]:
+    """Characters that appear in the storyboard with no entry here and no recorded exception."""
+    named = {str(c.get("name", "")).strip().upper() for c in body.get("characters") or [] if isinstance(c, dict)}
+    excused = excused_characters(body)
+    return [{"name": name, "shots": shots} for name, shots in sorted(project_characters.items())
+            if shots and name.upper() not in named and name.upper() not in excused]
+
+
+def cast_warnings(body: dict, project_characters: dict[str, list[int]], blocking: bool = False) -> list[str]:
+    """project_characters: name -> shot numbers the character appears in. With `blocking` (a full Bible) the
+    undesigned characters are reported as errors elsewhere and are left out here."""
     named = {str(c.get("name", "")).strip().upper() for c in body.get("characters") or []}
+    excused = excused_characters(body)
     out = []
     for name, shots in sorted(project_characters.items()):
-        if shots and name not in named:
-            out.append(f"characters: {name} appears in shots {', '.join(map(str, shots))} but has no design here")
+        if not shots or name in named:
+            continue
+        where = ", ".join(map(str, shots))
+        if name.upper() in excused:
+            out.append(f"characters: {name} appears in shots {where} without a design, as recorded: "
+                       f"{excused[name.upper()]}")
+        elif not blocking:
+            out.append(f"characters: {name} appears in shots {where} but has no design here")
     for name in sorted(named - set(project_characters)):
         out.append(f"characters: {name} is designed here but is not a character in the project")
+    for name in sorted(set(excused) & named):
+        out.append(f"exceptions.characters: {name} has a design here, so the exception does nothing")
     return out
 
 
@@ -261,11 +288,13 @@ def render_markdown(body: dict, header: dict) -> str:
         for m in mats:
             lines += [f"### {m.get('name')}", ""]
             for key, label in (("properties", "Properties"), ("light_response", "With light"),
-                               ("motion_response", "In motion"), ("prompt_line", "Prompt line")):
+                               ("motion_response", "In motion"), ("prompt_line", "Prompt line"),
+                               ("scope", "Scope")):
                 lines += _para(label, m.get(key))
         for o in objs:
             lines += [f"### {o.get('name')} ({o.get('role', 'prop')})", ""]
-            for key, label in (("meaning", "Meaning"), ("appearance", "Appearance"), ("prompt_line", "Prompt line")):
+            for key, label in (("meaning", "Meaning"), ("appearance", "Appearance"), ("prompt_line", "Prompt line"),
+                               ("scope", "Scope")):
                 lines += _para(label, o.get(key))
     color, light = body.get("color") or {}, body.get("lighting") or {}
     if color or light:
@@ -303,4 +332,8 @@ def render_markdown(body: dict, header: dict) -> str:
     lines += _section("I. Visual constraints", body.get("constraints"), [
         ("required", "Required"), ("forbidden", "Forbidden"), ("negative", "Negative prompt"),
         ("never_change", "Never changes between shots"), ("may_evolve", "May evolve on purpose")])
+    excused = excused_characters(body)
+    if excused:
+        lines += ["## J. Recorded exceptions", "", "Characters left without a design on purpose:", ""]
+        lines += [f"- **{name}**: {reason}" for name, reason in sorted(excused.items())] + [""]
     return "\n".join(lines).rstrip() + "\n"

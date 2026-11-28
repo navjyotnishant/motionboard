@@ -95,6 +95,52 @@ def character_lines(bible_characters: list[dict], names: list[str]) -> list[str]
     return out
 
 
+def _merged(a: tuple[str, ...], b) -> tuple[str, ...]:
+    return tuple(dict.fromkeys([*a, *[str(x).strip().rstrip(".") for x in b or [] if str(x).strip()]]))
+
+
+def with_characters(g: Grammar, bible_characters: list[dict], names: list[str]) -> Grammar:
+    """The grammar for one shot: each present character's own forbidden movement, material behaviour and
+    invariants join the film's (FR-029). A character can only add rules; it never lifts one."""
+    wanted = {n.upper() for n in names}
+    forbidden, materials, invariants, who = g.forbidden, g.materials, g.invariants, []
+    for c in bible_characters or []:
+        name = str(c.get("name", "")).strip().upper()
+        m = c.get("motion") or {}
+        if name not in wanted or not any(m.get(k) for k in ("forbidden", "materials", "invariants")):
+            continue
+        forbidden = _merged(forbidden, m.get("forbidden"))
+        materials = _merged(materials, m.get("materials"))
+        invariants = _merged(invariants, m.get("invariants"))
+        who.append(name)
+    if not who:
+        return g
+    return replace(g, source=f"{g.source} + {', '.join(who)}", forbidden=forbidden, materials=materials,
+                   invariants=invariants)
+
+
+def with_materials(g: Grammar, responses: list[str]) -> Grammar:
+    """How the shot's own materials behave in motion (the Bible materials' `motion_response`)."""
+    merged = _merged(g.materials, responses)
+    return g if merged == g.materials else replace(g, materials=merged)
+
+
+def written_forbidden(block: dict | None, where: str = "motion") -> list[str]:
+    """Lines of a motion block that are written into prompts (figure, ambient, identity, allowed, invariants) and
+    name movement the same block forbids."""
+    block = block or {}
+    g = replace(DEFAULT, forbidden=tuple(block.get("forbidden") or ()))
+    lines = [(k, str(block[k])) for k in ("figure", "ambient", "identity", "description") if block.get(k)]
+    lines += [(k, str(x)) for k in ("allowed", "invariants") for x in block.get(k) or []]
+    out = []
+    for label, text in lines:
+        hits = forbidden_hits(text, g)
+        if hits:
+            out.append(f"{where}.{label}: '{text}' names {', '.join(hits)}, which this grammar forbids; the line is "
+                       "written into prompts, so rephrase it")
+    return out
+
+
 def _join(items) -> str:
     items = [str(i).strip() for i in items if str(i).strip()]
     return items[0] if len(items) == 1 else ", ".join(items[:-1]) + " and " + items[-1] if items else ""

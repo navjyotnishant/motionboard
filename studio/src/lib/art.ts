@@ -66,12 +66,26 @@ export const CREATIVE_FIELDS = [
   { key: "metaphor", label: "Visual metaphor", rows: 1 },
   { key: "motifs", label: "Motifs (one per line, name: state)", rows: 2 },
   { key: "continuity", label: "Continuity", rows: 2 },
+  { key: "objects", label: "Objects from the art direction (comma separated)", rows: 1 },
+  { key: "materials", label: "Materials from the art direction (comma separated)", rows: 1 },
 ] as const;
+
+/** A creative field as the text the panel edits: motifs as lines, materials and objects as a comma list. */
+export function creativeText(c: Creative | undefined, key: string): string {
+  if (key === "motifs") return motifsToText(c?.motifs);
+  const v = c?.[key as keyof Creative];
+  return Array.isArray(v) ? (v as string[]).join(", ") : String(v ?? "");
+}
+
+/** Which prompts of a shot are the creator's own, for the panel's marker. */
+export function authoredParts(s: { plate_authored?: boolean; motion_authored?: boolean }): ("plate" | "motion")[] {
+  return (["plate", "motion"] as const).filter((p) => !!s[`${p}_authored`]);
+}
 
 export function creativeCount(c: Creative | undefined): number {
   if (!c) return 0;
   return ["intent", "audience", "metaphor", "continuity"].filter((k) => !!c[k as keyof Creative]).length +
-    (c.motifs?.length ? 1 : 0);
+    (c.motifs?.length ? 1 : 0) + (c.materials?.length ? 1 : 0) + (c.objects?.length ? 1 : 0);
 }
 
 /** Open findings about one shot, newest review first, with the role and verdict of the review they come from. */

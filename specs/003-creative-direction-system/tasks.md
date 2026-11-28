@@ -63,3 +63,20 @@ description: "Task list for Creative Direction and Visual Intelligence"
 - [x] T032 Docs: README (crew, Art Direction), `docs/art-direction.md` (guide and migration notes), `docs/first-video.md`, 001 data-model pointer
 - [x] T033 Full runs: pytest, ruff, vitest, tsc, Playwright; record results (ruff clean on src and tests; pytest 138 passed; acceptance 2 passed; vitest 18; tsc clean; studio build OK; Playwright 8)
 - [x] T034 Diff review, migration on a copy of a real database, secret and media scan; push branch; draft PR (real DB copy: schema 2 to 3, 4 references carried with identical paths, 97 shots get empty creative)
+
+## Phase 7: Corrective pass (review of PR #1)
+
+- [x] T035 Shot associations for Bible materials and objects in `engine/src/motionboard/direction/assoc.py`; `scope` in the Bible schema; `materials` and `objects` in shot creative context (`storyboard/draft.py`, `storyboard/board.py`)
+- [x] T036 Plate composition includes the shot's object and material lines, without repeating the look (`storyboard/compose.py`); `mb shot prompts` reports them with the reason
+- [x] T037 Impact by entry for materials and objects (`direction/impact.py`); research R4 table updated
+- [x] T038 Effective grammar merges character forbidden movement, material behaviour and invariants (`direction/grammar.py`); Bible lines that name forbidden movement are warned
+- [x] T039 Conflict detection `direction/conflicts.py`; reported by `mb draft`, `mb shot set`, `mb shot prompts`, `mb sheet`, storyboard approval, `mb clips`
+- [x] T040 `mb plates` stops with `DIRECTION_CONFLICT` before any request; `--accept-conflicts` (`plates/service.py`, `cmd_clips.py`, `report.py`)
+- [x] T041 Migration `0004_prompt_overrides.sql`; baselines and authored flags in `compose.recompose`, `compose.settle`, `board.set_field`, `draft.draft`; export and import
+- [x] T042 Approval reports overrides and their conflicts (`direction/service.py`, `cmd_direction.py`); `mb shot override list|keep|clear`
+- [x] T043 Full-profile character designs are blocking, with `exceptions.characters` (`direction/bible.py`, `direction/service.py`, schema, Markdown view)
+- [x] T044 Reference metadata for command and HTTP adapters (`plates/adapter.py`, `plates/command.py`, `plates/http_api.py`), validated on add
+- [x] T045 Studio: schema 4 mirror, read model, bridge actions, authored marker and Use generated, Objects and Materials fields; vitest and Playwright cases
+- [x] T046 Regression tests `engine/tests/unit/test_corrections_003.py` (15 tests) on the Almost Yours Bible; fixtures updated (washi prompt line, shot 2 lists the display case)
+- [x] T047 Spec, plan, research, data model, contracts, docs and skills updated; plugin 0.6.1 rebuilt
+- [x] T048 Full runs recorded: ruff clean on src and tests; pytest 153 passed (2 acceptance); vitest 21; tsc clean; Studio build OK; Playwright 8. Migration 0003 and 0004 on a copy of a real schema-2 database: schema 4, 97 shots keep their prompts; settling one project adopted 73 of 74 motion prompts and 0 plate prompts as authored. No render was run; visual validation is not part of this work.

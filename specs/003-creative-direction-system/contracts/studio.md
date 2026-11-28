@@ -32,3 +32,10 @@
 - Gate bar: plates disabled with "approve the art direction first" when `required` and nothing approved.
 - Shot panel: a collapsed "Creative context" section (intent, audience, metaphor, motifs, continuity) and the shot's open critique findings; nothing shown when empty except the collapsed header.
 - Shot card: small "direction changed" marker when the shot is in the approved version's impact and its active plate predates that approval.
+
+## Corrective pass
+
+- Minimum schema 4. Shots in the read model gain `plate_authored`, `motion_authored` (booleans), `plate_base`, `motion_base`; `creative` may carry `materials` and `objects`.
+- Bridge actions: `override_clear {project, shot, part}`, `override_keep {project, shot, part}`; `shot_set` accepts fields `materials` and `objects`. PATCH `/api/shots/:id` accepts `materials` and `objects`.
+- Shot panel: under a prompt the creator wrote, "Written by you, the engine will not rewrite it" with **Use generated** (clears the override). Creative context gains Objects and Materials as comma lists.
+- Conflicts and the keep decision are shown by the CLI reports; the Studio does not list conflicts yet.

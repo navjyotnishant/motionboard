@@ -29,6 +29,8 @@ The creator is the client: never spend their money, and never put a take in use 
 ## House rules
 
 - The storyboard gate must be approved before plates; the plates gate before clips. A full Art Direction Bible must be approved before plates (the engine refuses until it is). Never approve a gate or the Bible on the creator's behalf.
+- `mb plates` stops with `DIRECTION_CONFLICT` before any image is requested when a shot contradicts the direction: forbidden movement in an action or motion prompt, an authored plate prompt that adds something the Bible forbids, a character with no design. Show the creator each conflict. Fix the shot with the director, or the creator keeps an authored prompt (`mb shot override keep`), or says to go ahead (`--accept-conflicts`). Never pass that flag on your own.
+- A plate or motion prompt the creator or director wrote by hand is an authored override. Do not clear or rewrite it; `mb shot prompts --shot N` shows it beside the generated one.
 - Never spend money without a clear yes to a stated amount. Paid adapters refuse with `COST_NOT_CONFIRMED` and the estimate; show it, wait for the yes, then re-run with `--confirm-cost`.
 - Never print or paste API keys. Adapters reference keys by `key_file` or `key_env` only.
 - Never loosen the memory guard on your own. Show the active preset; change it only when the creator asks.

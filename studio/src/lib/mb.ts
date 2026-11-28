@@ -58,7 +58,10 @@ const ACTIONS = {
   adapter_add: z.object({ name: z.string().max(40), kind: z.enum(["manual", "command", "http", "handoff"]),
     config: z.record(z.string(), z.unknown()), cost: z.number().min(0).optional() }),
   shot_set: z.object({ project: id, shot: ord, field: z.enum(["lyric", "visual", "action", "camera", "plate_prompt", "motion_prompt",
-    "has_figure", "lip_sync", "intent", "audience", "metaphor", "motifs", "continuity"]), value: text }),
+    "has_figure", "lip_sync", "intent", "audience", "metaphor", "motifs", "continuity", "materials", "objects"]),
+    value: text }),
+  override_clear: z.object({ project: id, shot: ord, part: z.enum(["plate", "motion", "both"]) }),
+  override_keep: z.object({ project: id, shot: ord, part: z.enum(["plate", "motion", "both"]) }),
   art_submit: z.object({ project: id }),
   art_approve: z.object({ project: id }),
   art_reject: z.object({ project: id, note: z.string().min(1).max(2000) }),
@@ -140,6 +143,8 @@ function argv(action: Action, a: any): string[] {
     case "ref_remove": return ["character", "ref", "remove", ...p, "--id", a.id];
     case "ref_primary": return ["character", "ref", "primary", ...p, "--id", a.id];
     case "critique_resolve": return ["critique", "resolve", ...p, "--id", a.id];
+    case "override_clear": return ["shot", "override", "clear", ...p, "--shot", String(a.shot), "--part", a.part];
+    case "override_keep": return ["shot", "override", "keep", ...p, "--shot", String(a.shot), "--part", a.part];
   }
 }
 

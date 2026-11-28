@@ -51,6 +51,20 @@ test("art direction: review, approve, references, creative context, revisions", 
     { timeout: 15_000 }).toBe("taut toward HIM");
   expect(mbChat("shot", "prompts", "-p", pid, "--shot", "2").data.plate).toContain("a thin luminous ruby-red thread, taut toward HIM");
 
+  // A prompt the creator writes in the panel is theirs: marked, kept through an approval, cleared only by them.
+  const motion = page.locator("[data-field='motion_prompt']");
+  await motion.fill("she turns once at the waist fold and stops");
+  await motion.blur();
+  await expect(page.locator("[data-authored='motion']")).toBeVisible({ timeout: 15_000 });
+  expect(mbChat("art", "approve", "-p", pid).data.overrides.map((o: { shot: number; part: string }) => `${o.shot} ${o.part}`))
+    .toEqual(["2 motion"]);
+  expect(mbChat("shot", "prompts", "-p", pid, "--shot", "2").data.stored.motion).toBe("she turns once at the waist fold and stops");
+  await expect(page.locator("[data-authored='motion']")).toBeVisible();
+  if (process.env.MB_SHOTS) await page.screenshot({ path: `${process.env.MB_SHOTS}/shot-authored.png` });
+  await page.locator("[data-use-generated='motion']").click();
+  await expect(page.locator("[data-authored='motion']")).toHaveCount(0, { timeout: 15_000 });
+  expect(mbChat("shot", "prompts", "-p", pid, "--shot", "2").data.authored.motion).toBe(false);
+
   // A review from chat about shot 2 shows in its panel.
   expect(mbChat("critique", "add", "-p", pid, "--stage", "plate", "--role", "editor", "--verdict", "revise",
     "--file", `${FIX}/critique-editor.json`).ok).toBe(true);

@@ -107,7 +107,13 @@ export const shot = sqliteTable("shot", {
   state: text("state", { enum: SHOT_STATES }).notNull(),
   dirty: integer("dirty", { mode: "boolean" }).notNull(),
   updatedAt: text("updated_at").notNull(),
-  creative: text("creative").notNull(), // 0003: JSON intent, audience, metaphor, motifs, continuity
+  creative: text("creative").notNull(), // 0003: JSON intent, audience, metaphor, motifs, continuity, materials, objects
+  // 0004: the generated prompt beside a creator-authored override (null base: not settled yet)
+  plateBase: text("plate_base"),
+  motionBase: text("motion_base"),
+  plateAuthored: integer("plate_authored", { mode: "boolean" }).notNull(),
+  motionAuthored: integer("motion_authored", { mode: "boolean" }).notNull(),
+  overrideKept: text("override_kept").notNull(),
 });
 
 export const shotCharacter = sqliteTable(

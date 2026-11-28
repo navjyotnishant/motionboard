@@ -31,9 +31,30 @@ def _cast(conn: sqlite3.Connection, project_id: str) -> dict[str, list[int]]:
     return out
 
 
+MISSING_DESIGN = "missing character design"
+
+
+def design_gaps(conn: sqlite3.Connection, project_id: str, body: dict, profile: str) -> dict:
+    """Undesigned storyboard characters (blocking for a full Bible, FR-034) and the recorded exceptions."""
+    return {"profile_requires_designs": profile == "full",
+            "missing_designs": bible.missing_designs(body, _cast(conn, project_id)),
+            "design_exceptions": [{"name": n, "reason": r} for n, r in sorted(bible.excused_characters(body).items())]}
+
+
 def check_body(conn: sqlite3.Connection, project_id: str, body: dict, profile: str) -> tuple[list[str], list[str]]:
+    from motionboard.direction import grammar as grammar_mod
+
     errors = bible.structure_errors(body) + bible.profile_errors(body, profile)
-    warnings = bible.vague_warnings(body) + bible.cast_warnings(body, _cast(conn, project_id))
+    cast = _cast(conn, project_id)
+    full = profile == "full"
+    if full:  # a lead with no design is not an advisory: it blocks submit and approve until designed or excused
+        errors += [f"{MISSING_DESIGN}: {m['name']} appears in shots {', '.join(map(str, m['shots']))} and has no "
+                   "characters entry; a full Bible designs every character in the storyboard (add the entry, or "
+                   "record why not under exceptions.characters with a reason)"
+                   for m in bible.missing_designs(body, cast)]
+    warnings = bible.vague_warnings(body) + bible.cast_warnings(body, cast, blocking=full)
+    if isinstance(body.get("motion"), dict) and not grammar_mod.validate(body["motion"], "bible"):
+        warnings += grammar_mod.written_forbidden(body["motion"])
     for i, c in enumerate(body.get("characters") or []):
         if isinstance(c, dict) and c.get("motion"):
             from motionboard.direction.grammar import validate
@@ -97,7 +118,8 @@ def save_draft(conn: sqlite3.Connection, project: dict, body: dict, profile: str
     write_markdown(conn, project)
     row = repo.get(conn, "art_direction", rid)
     errs, warns = check_body(conn, pid, body, profile)
-    return {**_summary(row), "errors": errs, "warnings": warns, "impact": preview}
+    return {**_summary(row), "errors": errs, "warnings": warns, **design_gaps(conn, pid, body, profile),
+            "impact": preview}
 
 
 def _open_or_fail(conn: sqlite3.Connection, pid: str) -> dict:
@@ -112,7 +134,8 @@ def check(conn: sqlite3.Connection, project: dict) -> dict:
     if not row:
         raise MbError("NOT_FOUND", "this project has no art direction yet", hint="mb art draft --file bible.json")
     errors, warnings = check_body(conn, project["id"], store.body(row) or {}, row["profile"])
-    return {**_summary(row), "errors": errors, "warnings": warnings}
+    return {**_summary(row), "errors": errors, "warnings": warnings,
+            **design_gaps(conn, project["id"], store.body(row) or {}, row["profile"])}
 
 
 def submit(conn: sqlite3.Connection, project: dict, actor: Actor) -> dict:
@@ -120,7 +143,9 @@ def submit(conn: sqlite3.Connection, project: dict, actor: Actor) -> dict:
     errors, warnings = check_body(conn, project["id"], store.body(row) or {}, row["profile"])
     if errors:
         raise MbError("INVALID_INPUT", f"version {row['version']} is not complete enough to review",
-                      hint="; ".join(errors[:8]), data={"errors": errors, "warnings": warnings})
+                      hint="; ".join(errors[:8]),
+                      data={"errors": errors, "warnings": warnings,
+                            **design_gaps(conn, project["id"], store.body(row) or {}, row["profile"])})
     repo.update(conn, "art_direction", row["id"], {"status": "in_review", "updated_at": repo.now()}, actor)
     write_markdown(conn, project)
     return {**_summary(repo.get(conn, "art_direction", row["id"])), "warnings": warnings}
@@ -146,7 +171,9 @@ def approve(conn: sqlite3.Connection, project: dict, via: str, look, actor: Acto
     errors, warnings = check_body(conn, pid, body, row["profile"])
     if errors:
         raise MbError("GATE_NOT_APPROVED", f"art direction version {row['version']} cannot be approved yet",
-                      hint="; ".join(errors[:8]), data={"errors": errors, "warnings": warnings})
+                      hint="; ".join(errors[:8]),
+                      data={"errors": errors, "warnings": warnings, **design_gaps(conn, pid, body, row["profile"])})
+    compose.settle(conn, project, look, actor)  # under the outgoing direction, so hand-written prompts are recognised
     previous = store.approved(conn, pid)
     result = impact.affected(conn, pid, store.body(previous), body)  # against nothing: plates made before any Bible
     ts = repo.now()
@@ -156,12 +183,20 @@ def approve(conn: sqlite3.Connection, project: dict, via: str, look, actor: Acto
         repo.update(conn, "art_direction", row["id"], {
             "status": "approved", "approved_at": ts, "approved_via": "studio" if via == "studio" else "chat",
             "impact": result, "updated_at": ts}, actor)
-        recomposed = compose.recompose(conn, project, None, look, actor, mark_redo=False)
+        moved: dict = {}
+        recomposed = compose.recompose(conn, project, None, look, actor, mark_redo=False, report=moved)
         repo.update(conn, "project", pid, {"updated_at": ts}, actor)
     write_markdown(conn, project)
+    # Authored overrides are never rewritten by an approval. Each is reported with whether the generated prompt
+    # under it moved and whether it now contradicts this version; the creator keeps, revises or clears it.
+    from motionboard.direction import conflicts
+
+    base_moved = {(o["shot"], o["part"]) for o in moved.get("overrides", []) if o["baseline_changed"]}
+    overrides = [{**o, "baseline_changed": (o["shot"], o["part"]) in base_moved}
+                 for o in conflicts.overrides(conn, project, look)]
     return {**_summary(repo.get(conn, "art_direction", row["id"])),
             "superseded": previous["version"] if previous else None, "impact": result, "recomposed": recomposed,
-            "warnings": warnings}
+            "overrides": overrides, "warnings": warnings}
 
 
 def show(conn: sqlite3.Connection, project: dict, version: int | None, pending: bool, markdown: bool) -> dict:

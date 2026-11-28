@@ -181,6 +181,7 @@ def set_field(conn: sqlite3.Connection, project: dict, name: str, field: str, va
     if field not in FIELDS:
         raise MbError("INVALID_INPUT", f"field '{field}' cannot be set", hint=f"fields: {', '.join(sorted(FIELDS))}")
     c = get(conn, project["id"], name)
+    compose.settle(conn, project, look, actor)  # before the change, so hand-written prompts are recognised
     if field == "reference_image":  # replaces the primary reference (the single reference of older projects)
         with repo.tx(conn):
             old = conn.execute("SELECT id FROM character_reference WHERE character_id = ? AND is_primary = 1",
@@ -209,6 +210,7 @@ def set_field(conn: sqlite3.Connection, project: dict, name: str, field: str, va
 def link(conn: sqlite3.Connection, project: dict, name: str, ords: list[int], on: bool, look: Look | None,
          actor: Actor) -> list[int]:
     c = get(conn, project["id"], name)
+    compose.settle(conn, project, look, actor)
     sids = []
     with repo.tx(conn):
         for o in ords:

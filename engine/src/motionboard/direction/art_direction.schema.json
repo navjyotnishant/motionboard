@@ -86,7 +86,8 @@
           "properties": {"$ref": "#/$defs/text"},
           "light_response": {"$ref": "#/$defs/text"},
           "motion_response": {"$ref": "#/$defs/text"},
-          "prompt_line": {"$ref": "#/$defs/text"}
+          "prompt_line": {"$ref": "#/$defs/text"},
+          "scope": {"enum": ["all", "shot"]}
         }
       }
     },
@@ -101,7 +102,8 @@
           "role": {"enum": ["prop", "symbol"]},
           "meaning": {"$ref": "#/$defs/text"},
           "appearance": {"$ref": "#/$defs/text"},
-          "prompt_line": {"$ref": "#/$defs/text"}
+          "prompt_line": {"$ref": "#/$defs/text"},
+          "scope": {"enum": ["all", "shot"]}
         }
       }
     },
@@ -189,6 +191,24 @@
         "negative": {"$ref": "#/$defs/text"},
         "never_change": {"$ref": "#/$defs/list"},
         "may_evolve": {"$ref": "#/$defs/list"}
+      }
+    },
+    "exceptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "characters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "reason"],
+            "properties": {
+              "name": {"$ref": "#/$defs/text"},
+              "reason": {"$ref": "#/$defs/text"}
+            }
+          }
+        }
       }
     }
   }

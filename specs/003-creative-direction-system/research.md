@@ -33,7 +33,8 @@ Decisions made while reading the code on `main` at f0be7d1. Each has the alterna
 | change | affected |
 |---|---|
 | a character entry (by name) | shots linked to that character |
-| world, color, lighting, materials, objects, constraints | every shot with an active plate |
+| world, color, lighting, constraints | every shot with an active plate |
+| a material or an object (by name) | shots it belongs to before or after the change (R14); every shot when scoped `all` |
 | identity | listed as changed for review; no asset is affected by prose alone |
 | camera | every shot with an active plate or clip |
 | motion (film level) | shots with an active clip |
@@ -114,3 +115,43 @@ Strategy (`reference_strategy` in adapter config or `--reference-strategy` per r
 **Decision**: view-model logic (status labels, palette parsing, motif progression grid, affected-shot lookup) goes in `studio/src/lib/art.ts` with Vitest unit tests in Node; rendered components are covered by Playwright against the stub e2e server.
 
 **Why**: the repo has no DOM test environment or React Testing Library; adding jsdom and RTL for a few components adds weight, while Playwright already exercises the real build against the shared database (which is also the "Studio and CLI read the same state" test).
+
+## R14. Which materials and objects belong to a shot
+
+**Decision**: one rule set in `direction/assoc.py`, used by composition and by impact. An entry belongs to a shot when the entry says `scope: all`, the shot lists its name (`creative.materials`, `creative.objects`), its name appears in the shot's visual as whole words (last word may be plural), or, for materials, the Bible's `materials` text of a character in the shot names it. A material contributes its `prompt_line` (or its name); an object its `prompt_line`, or `name: appearance`. A line already present in the prompt or the look's style line is not repeated.
+
+**Why**: The first pass dropped materials and objects from prompts entirely. Injecting all of them everywhere puts a prop from one scene into every image. Name matching makes the common case free; the explicit list covers shots whose visual does not name the thing; `scope: all` covers the world's own surface.
+
+**Rejected**: injecting every entry in every shot; a join table (the association is shot-level creative data and already has a home in `shot.creative`); matching on appearance text (too loose).
+
+## R15. Custom motion prompts and the grammar
+
+**Decision**: a prompt written by hand is stored as written. `direction/conflicts.py` reports where a shot contradicts the direction: forbidden movement in an action or in a motion prompt, forbidden or excluded things added by an authored plate prompt, an undesigned character under a full Bible. The effective grammar is the look, refined by the Bible, plus the rules of the characters in the shot and the motion behaviour of the shot's materials. `mb plates` refuses with `DIRECTION_CONFLICT` before any request row is written, unless each conflict is an override the creator kept or the run passes `--accept-conflicts`.
+
+**Why**: The first pass checked only the `action` field, so `motion_prompt` in a shots file or from `mb shot set` reached the video model unchecked. Refusing is the only way to show a conflict before an image exists; the flag and the keep decision leave the choice with the creator (Principle IV).
+
+**Rejected**: rewriting or stripping the creator's text; blocking the edit itself; a silent warning after generation.
+
+## R16. Generated baselines and authored overrides
+
+**Decision**: migration 0004 adds `plate_base`, `motion_base` (the generated prompt), `plate_authored`, `motion_authored` and `override_kept` to `shot`. `plate_prompt` and `motion_prompt` stay the effective text every reader uses. Writing a prompt by hand sets the authored flag; recomposition updates the base and rewrites the effective prompt only when the part is not authored. Writing the base text back, or an empty value, clears the override.
+
+A shot made before 0004 has no base. It is settled on first use, before anything changes: the base becomes what the engine generates from the direction at that moment, and a stored prompt that differs is kept as authored.
+
+**Why**: The first pass regenerated prompts on approval and replaced hand edits. Separate columns keep renderers, exports and the Studio reading one field. Settling treats an unknown difference as the creator's work: a hand edit and a prompt written by an older engine look the same, and losing a hand edit is the worse mistake.
+
+**Cost, stated plainly**: on a database from an older engine, most motion prompts differ from today's composition and are adopted as authored. On a copy of a real schema-2 database, 73 of 74 motion prompts and 0 of 74 plate prompts in one project were adopted. They stop following the direction until cleared with `mb shot override clear --all --part motion`.
+
+**Rejected**: assuming legacy prompts are generated (erases hand edits, the reported defect); a diff or merge of prose prompts (not reliable).
+
+## R17. Characters a full Bible must design
+
+**Decision**: under the full profile, a character with at least one shot and no `characters` entry is an error on check, submit and approve, reported also as `missing_designs`. `exceptions.characters: [{name, reason}]` records a deliberate gap, shown as a warning and in the Markdown view. The compact profile keeps the warning. After approval, a newly linked undesigned character is a plate conflict (R15).
+
+**Why**: A warning let a full Bible be approved without its lead. The exception keeps the creator in charge of real cases (a figure seen only as a shadow).
+
+## R18. Reference identity for adapters
+
+**Decision**: every adapter kind can learn which reference is which. Command: `refs_format` shapes each `{refs}` argument; `{refs_manifest}` is a JSON file per request; `{refs_json}` is the list inline. HTTP: `refs_meta` turns each `refs_field` entry into an object with the API's own field names; `refs_manifest_field` puts the metadata list at a second path. Settings are validated when the adapter is added. Manual and handoff already list labelled references.
+
+**Why**: A bare list of paths cannot tell HER's face from HIM's silhouette. Providers differ, so the mapping is configuration, not code.

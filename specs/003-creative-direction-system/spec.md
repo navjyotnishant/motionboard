@@ -185,6 +185,19 @@ The Studio gains an Art view beside Grid and Story: status (draft, awaiting revi
 - **FR-025**: Existing projects, modes, looks and animation packs MUST keep working; existing CLI commands and JSON report shapes MUST stay compatible (new keys only).
 - **FR-026**: Project JSON export and import MUST carry Bible versions, references, creative fields and critiques; older exports MUST import unchanged.
 
+**Corrective pass (review of the first implementation)**
+
+- **FR-027**: A Bible material or object MUST reach a shot's plate prompt only when it belongs to that shot: its entry says `scope: all`, the shot lists it (`creative.materials`, `creative.objects`), its name appears in the shot's visual, or (materials) a character in the shot is made of it. Materials contribute their prompt line; objects their prompt line, or their name and appearance. Nothing else is injected. `mb shot prompts` MUST say which belong to the shot and why.
+- **FR-028**: A motion prompt supplied by hand (a shots file, `mb shot set`, the Studio) MUST be kept as written and MUST be checked against the effective motion grammar. A contradiction is reported on the command that wrote it, on `mb sheet`, on storyboard approval and on `mb clips`.
+- **FR-029**: The effective grammar for a shot MUST merge the look, the approved Bible and, for each character in the shot, that character's forbidden movement, material behaviour and invariants. A character can add rules, never lift one. Material behaviour of the shot's own materials joins the rules. Forbidden terms and material behaviour are never written into prompts; character invariants join the continuity clause.
+- **FR-030**: `mb plates` MUST stop before any image is requested or paid for when the shots to generate contradict the direction, naming each conflict, unless the creator kept the authored prompt on purpose or the run passes `--accept-conflicts`.
+- **FR-031**: The generated prompt of a shot (its baseline) MUST be stored apart from a creator-authored override. An art direction approval, a character edit or a shot edit regenerates baselines and MUST NOT rewrite an authored override.
+- **FR-032**: After an approval, every authored override MUST be reported: whether the generated prompt under it changed and whether it now contradicts the approved Bible (forbidden or excluded things in a plate prompt; forbidden movement in a motion prompt).
+- **FR-033**: The creator MUST be able to keep an override (recorded for the current Bible version; a later version asks again), revise it, or clear it back to the generated prompt, from the CLI and, for clearing, from the Studio.
+- **FR-034**: A full Bible MUST NOT be submitted or approved while a character that appears in the storyboard has no design, unless the Bible records an intentional exception with a reason (`exceptions.characters`). The gap MUST be reported as an error and as structured data (`missing_designs`), distinct from advisory warnings. Compact Bibles keep the advisory. A character added to a shot after approval is caught before plates.
+- **FR-035**: Command and HTTP adapters MUST be able to receive, for every reference, the character, purpose, primary flag, path, description and position: a manifest file or inline JSON and a per-argument format for commands; an object mapping and a parallel metadata list for HTTP. Existing `{ref}`, `{refs}`, `{ref_b64}` and `refs_field` configurations MUST behave as before.
+- **FR-036**: A change to one material or one object MUST be reported as affecting only the shots it belongs to under FR-027 (before or after the change), not every shot.
+
 ### Key Entities
 
 - **Art Direction (version)**: one version of a project's Bible: profile, status, body, change note, based-on version, timestamps, approval surface, stored impact.
@@ -201,6 +214,8 @@ The Studio gains an Art view beside Grid and Story: status (draft, awaiting revi
 - **SC-004**: All existing engine tests pass unchanged except where this spec changes behaviour on purpose (origami motion text, plate request report keys added).
 - **SC-005**: A project created before this feature opens in the Studio and CLI, drafts, requests plates and renders exactly as before.
 - **SC-006**: A compact-profile project reaches plates with no more approval steps than before.
+- **SC-007**: In the Almost Yours fixture the washi paper line is in the plates of HER's shots and not in the empty gallery; the display case is in the two shots that name or list it; the paper boat is in no plate until a shot selects it.
+- **SC-008**: Approving a revised Bible leaves every authored prompt byte for byte unchanged and lists each one.
 
 ## Assumptions
 

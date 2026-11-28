@@ -29,6 +29,20 @@ class Reference:
                 "primary": self.primary, "description": self.description}
 
 
+# What an adapter can be told about each reference, so a provider can tell HER's face from HIM's silhouette.
+REF_FIELDS = ("index", "character", "purpose", "primary", "path", "description")
+
+
+def reference_meta(refs: list[Reference]) -> list[dict]:
+    """One entry per reference sent, in the order sent (`index` counts from 0)."""
+    return [{"index": i, "character": r.character, "purpose": r.purpose, "primary": bool(r.primary),
+             "path": str(r.path), "description": r.description} for i, r in enumerate(refs)]
+
+
+def reference_manifest(req: "PlateRequest") -> dict:
+    return {"request": req.request_id, "shot": req.shot_ord, "references": reference_meta(req.references)}
+
+
 @dataclass
 class PlateRequest:
     request_id: str
@@ -131,6 +145,7 @@ def add(conn: sqlite3.Connection, name: str, kind: str, config: dict, cost: floa
         raise MbError("INVALID_INPUT", "command adapters need a cmd list with {prompt} and {out}")
     if kind == "http" and not config.get("url"):
         raise MbError("INVALID_INPUT", "http adapters need a url")
+    _check_reference_config(kind, config)
     if cost < 0:
         raise MbError("INVALID_INPUT", "cost cannot be negative")
     if repo.find(conn, "plate_adapter", name=name):
@@ -138,6 +153,30 @@ def add(conn: sqlite3.Connection, name: str, kind: str, config: dict, cost: floa
     rid = repo.insert(conn, "plate_adapter", {"name": name, "kind": kind, "config": config,
                                               "cost_per_image_usd": cost, "enabled": True}, actor)
     return repo.get(conn, "plate_adapter", rid)
+
+
+def _check_reference_config(kind: str, config: dict) -> None:
+    """Reference metadata settings (contracts/plate-adapter-references.md) are checked when the adapter is added."""
+    if "refs_format" in config:
+        if kind != "command" or "{refs}" not in config.get("cmd", []):
+            raise MbError("INVALID_INPUT", "refs_format shapes each {refs} argument of a command adapter",
+                          hint='add "{refs}" as its own element of cmd')
+        try:
+            str(config["refs_format"]).format(**dict.fromkeys(REF_FIELDS, ""))
+        except (KeyError, IndexError, ValueError) as e:
+            raise MbError("INVALID_INPUT", f"refs_format can use {', '.join('{' + f + '}' for f in REF_FIELDS)}",
+                          hint=f"not understood: {e}") from e
+    if "refs_meta" in config:
+        meta = config["refs_meta"]
+        sources = ("image", *REF_FIELDS)
+        if kind != "http" or not config.get("refs_field"):
+            raise MbError("INVALID_INPUT", "refs_meta describes the objects an http adapter puts at refs_field",
+                          hint="set refs_field too")
+        if not isinstance(meta, dict) or not meta or any(v not in sources for v in meta.values()):
+            raise MbError("INVALID_INPUT", "refs_meta maps a field name of the API to one of: " + ", ".join(sources))
+    if "refs_manifest_field" in config and kind != "http":
+        raise MbError("INVALID_INPUT", "refs_manifest_field belongs to http adapters; a command takes "
+                                       "{refs_manifest} or {refs_json}")
 
 
 def ensure_default_manual(conn: sqlite3.Connection) -> None:

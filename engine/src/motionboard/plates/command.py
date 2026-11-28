@@ -5,14 +5,20 @@ config: {"cmd": ["python", "gen.py", "--prompt", "{prompt}", "--out", "{out}", "
 
 References: an element that is exactly "{refs}" expands to one argument per reference path (no limit); "{ref}"
 inside an element takes one reference. With neither, the command takes no references.
+
+Which reference is which (optional): "refs_format": "{character}:{purpose}={path}" shapes each {refs} argument
+(fields: index, character, purpose, primary, path, description). "{refs_manifest}" inside an element is the path of
+a JSON file written for the request, {"request", "shot", "references": [{index, character, purpose, primary, path,
+description}]}; "{refs_json}" is the same reference list inline. Both take every reference, in the order sent.
 """
 
+import json
 from pathlib import Path
 
 from motionboard.db.connection import open_db
 from motionboard.guard import presets
 from motionboard.guard.run import run_guarded
-from motionboard.plates.adapter import PlateRequest, PlateResult
+from motionboard.plates.adapter import PlateRequest, PlateResult, reference_manifest, reference_meta
 from motionboard.report import MbError
 
 
@@ -24,7 +30,7 @@ class CommandAdapter:
 
     def reference_capacity(self) -> int | None:
         parts = self.cfg.get("cmd", [])
-        if any(p == "{refs}" for p in parts):
+        if any(p == "{refs}" or "{refs_manifest}" in p or "{refs_json}" in p for p in parts):
             return None
         return 1 if any("{ref}" in p for p in parts) else 0
 
@@ -32,10 +38,16 @@ class CommandAdapter:
         first = str(req.references[0].path) if req.references else ""
         values = {"prompt": req.prompt, "negative": req.negative, "out": str(req.out), "w": str(req.width),
                   "h": str(req.height), "ref": first, "seed": str(req.seed)}
+        meta = reference_meta(req.references)
+        manifest = req.out.with_suffix(".refs.json")
+        if any("{refs_manifest}" in part for part in self.cfg["cmd"]):
+            manifest.write_text(json.dumps(reference_manifest(req), indent=2))
+        values.update(refs_manifest=str(manifest), refs_json=json.dumps(meta))
+        fmt = str(self.cfg.get("refs_format") or "{path}")
         cmd = []
         for part in self.cfg["cmd"]:
             if part == "{refs}":
-                cmd += [str(r.path) for r in req.references]
+                cmd += [fmt.format(**m) for m in meta]
             else:
                 cmd.append(part.format(**values))
         cwd = Path(self.cfg["cwd"]).expanduser() if self.cfg.get("cwd") else None

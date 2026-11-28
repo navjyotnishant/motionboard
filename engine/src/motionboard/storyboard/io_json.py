@@ -18,7 +18,8 @@ from motionboard.report import MbError
 FORMAT = "motionboard.project.v1"
 PROJECT_KEYS = ("title", "lyrics", "idea", "aspect", "look", "mode", "visual_look", "synthetic_people")
 SHOT_KEYS = ("ord", "start", "end", "frames", "lyric", "visual", "action", "camera", "has_figure", "lip_sync",
-             "plate_prompt", "motion_prompt", "state")
+             "plate_prompt", "motion_prompt", "state", "plate_base", "motion_base", "plate_authored",
+             "motion_authored")
 
 
 def _copy(src: str | None, folder: Path, rel: str) -> str | None:

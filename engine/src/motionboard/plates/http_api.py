@@ -10,6 +10,12 @@ config: {"url": "https://api.example.com/v1/images/generations",
 References: "{ref_b64}" (base64) or "{ref}" (path) in the body takes one reference; "refs_field": "input.images"
 puts every reference in a list at that dotted path, encoded per "refs_encoding": base64 (default), data_url or path.
 With none of these the API takes no references, and requests with references fail unless a strategy is set.
+
+Which reference is which (optional, with refs_field): "refs_meta": {"image": "image", "subject": "character",
+"role": "purpose", "main": "primary"} makes each list entry an object; each key is the API's field name and each
+value one of image (the encoded image), index, character, purpose, primary, path, description.
+"refs_manifest_field": "input.reference_info" puts the plain metadata list (no image data) at that dotted path, for
+APIs that take images and their labels as two parallel lists. Without these, refs_field stays a list of images.
 """
 
 import base64
@@ -18,7 +24,7 @@ import os
 import urllib.request
 from pathlib import Path
 
-from motionboard.plates.adapter import PlateRequest, PlateResult
+from motionboard.plates.adapter import PlateRequest, PlateResult, reference_meta
 from motionboard.report import MbError
 
 
@@ -89,8 +95,14 @@ class HttpAdapter:
                   "ref_b64": _encode(first, "base64") if first and "{ref_b64}" in body_tpl else ""}
         payload = _template(self.cfg.get("body", {"prompt": "{prompt}"}), values)
         if self.cfg.get("refs_field") and req.references:
-            _put(payload, self.cfg["refs_field"],
-                 [_encode(r.path, self.cfg.get("refs_encoding", "base64")) for r in req.references])
+            images = [_encode(r.path, self.cfg.get("refs_encoding", "base64")) for r in req.references]
+            meta, shape = reference_meta(req.references), self.cfg.get("refs_meta")
+            if shape:  # one object per reference, with the API's own field names
+                images = [{key: img if src == "image" else m[src] for key, src in shape.items()}
+                          for img, m in zip(images, meta, strict=True)]
+            _put(payload, self.cfg["refs_field"], images)
+            if self.cfg.get("refs_manifest_field"):
+                _put(payload, self.cfg["refs_manifest_field"], meta)
         body = json.dumps(payload).encode()
         headers = {"Content-Type": "application/json", **self.cfg.get("headers", {})}
         key = _key(self.cfg)

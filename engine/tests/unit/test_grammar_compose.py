@@ -76,7 +76,7 @@ def test_forbidden_movement_in_an_action_is_warned(stub, fixtures_dir):
     pid = new_project(fixtures_dir)
     mb("shot", "set", "-p", pid, "--shot", "2", "--field", "action", "--value", "she breathes slowly and blinks")
     sheet = mb("sheet", "-p", pid)
-    warn = [v for v in sheet["not_verified"] if v.startswith("shot 2 asks for")]
+    warn = [v for v in sheet["not_verified"] if v.startswith("shot 2 action asks for")]
     assert warn and "breathing" in warn[0] and "blinking" in warn[0]
     prompts = mb("shot", "prompts", "-p", pid, "--shot", "2")
     assert any("breathing" in w for w in prompts["not_verified"])

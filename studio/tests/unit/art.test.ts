@@ -1,6 +1,9 @@
 // 003: the Art view's helpers and the bridge actions it uses. The helpers only arrange what the engine stored.
 import { describe, expect, it } from "vitest";
-import { affected, creativeCount, directionChanged, findingsFor, motifGrid, motifsToText, palette, statusOf } from "@/lib/art";
+import {
+  affected, authoredParts, creativeCount, creativeText, directionChanged, findingsFor, motifGrid, motifsToText, palette,
+  statusOf,
+} from "@/lib/art";
 import { build, MbBridgeError } from "@/lib/mb";
 import type { ArtVersion, Board } from "@/components/board/types";
 
@@ -17,6 +20,7 @@ const board = (over: Partial<Board> = {}): Board => ({
   shots: [1, 2, 3, 4].map((ord) => ({
     id: `S${ord}`, ord, start: ord - 1, end: ord, frames: 24, lyric: "", visual: "", action: "", camera: "", has_figure: true,
     lip_sync: false, plate_prompt: "", motion_prompt: "", state: "plate_approved", dirty: false, updated_at: "", cast: [],
+    plate_authored: false, motion_authored: ord === 2, plate_base: "", motion_base: "generated",
     creative: ord === 1 ? {} : { motifs: [{ name: ord === 4 ? "Ruby Thread" : "ruby thread", state: `state ${ord}` }] },
   })),
   assets: [],
@@ -95,5 +99,31 @@ describe("bridge actions for art direction", () => {
     expect(() => build("ref_add", { project: "01ABCDEF", name: "HER", file: "/x", purpose: "selfie" })).toThrow(MbBridgeError);
     expect(() => build("art_reject", { project: "01ABCDEF", note: "" })).toThrow(MbBridgeError);
     expect(() => build("shot_set", { project: "01ABCDEF", shot: 2, field: "creative", value: "{}" })).toThrow(MbBridgeError);
+  });
+});
+
+describe("003 corrections: shot associations and authored prompts", () => {
+  it("edits materials and objects as comma lists and counts them", () => {
+    const c = { objects: ["display case", "paper boat"], materials: ["washi paper"], motifs: [{ name: "thread", state: "taut" }] };
+    expect(creativeText(c, "objects")).toBe("display case, paper boat");
+    expect(creativeText(c, "materials")).toBe("washi paper");
+    expect(creativeText(c, "motifs")).toBe("thread: taut");
+    expect(creativeText({}, "intent")).toBe("");
+    expect(creativeCount(c)).toBe(3);
+  });
+  it("marks which prompts the creator wrote", () => {
+    const shots = board().shots;
+    expect(authoredParts(shots[0])).toEqual([]);
+    expect(authoredParts(shots[1])).toEqual(["motion"]);
+    expect(authoredParts({ plate_authored: true, motion_authored: true })).toEqual(["plate", "motion"]);
+  });
+  it("sends override decisions and the new shot fields through the whitelisted bridge", () => {
+    expect(build("override_clear", { project: "P1ABCDEFGH", shot: 2, part: "motion" }))
+      .toEqual(["shot", "override", "clear", "-p", "P1ABCDEFGH", "--shot", "2", "--part", "motion"]);
+    expect(build("override_keep", { project: "P1ABCDEFGH", shot: 3, part: "both" }))
+      .toEqual(["shot", "override", "keep", "-p", "P1ABCDEFGH", "--shot", "3", "--part", "both"]);
+    expect(build("shot_set", { project: "P1ABCDEFGH", shot: 4, field: "objects", value: "paper boat" }).slice(-4))
+      .toEqual(["--field", "objects", "--value", "paper boat"]);
+    expect(() => build("override_clear", { project: "P1ABCDEFGH", shot: 2, part: "all" })).toThrow(MbBridgeError);
   });
 });

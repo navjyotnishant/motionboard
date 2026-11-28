@@ -5,7 +5,7 @@
 [![Licence: Apache 2.0](https://img.shields.io/badge/licence-Apache%202.0-blue)](LICENSE)
 [![Packs: PolyForm Noncommercial](https://img.shields.io/badge/animation%20packs-PolyForm%20NC-purple)](modes/LICENSE)
 ![Platform: Apple Silicon](https://img.shields.io/badge/platform-Apple%20Silicon%20Mac-black)
-![Version 0.6.0](https://img.shields.io/badge/version-0.6.0-orange)
+![Version 0.6.1](https://img.shields.io/badge/version-0.6.1-orange)
 ![Video models: LTX-2.3, LTX-2.5](https://img.shields.io/badge/video%20models-LTX--2.3%20%C2%B7%20LTX--2.5-green)
 
 [Start here](#start-here) · [Why](#why-motionboard) · [How it works](#how-it-works) · [Proof](#proof-the-first-real-productions) · [Free to learn](#free-to-learn) · [Install](#install) · [Docs](#docs)
@@ -20,7 +20,7 @@ It is a tool first: a command line engine (`mb`), a local web app (the Storyboar
 
 A song is one way in. The same steps make full music videos, vertical reels, lyric videos and promos.
 
-> **Status:** early (v0.6.0). The engine, Studio, crew skills and five mode packs work end to end on the reference Mac (M3 Max, 36 GB). Three real productions are shown under [Proof](#proof-the-first-real-productions).
+> **Status:** early (v0.6.1). The engine, Studio, crew skills and five mode packs work end to end on the reference Mac (M3 Max, 36 GB). Three real productions are shown under [Proof](#proof-the-first-real-productions).
 
 ---
 
@@ -125,11 +125,14 @@ A **mode** is the story pattern, a **look** is a reusable rendering style, and t
 
 The production designer writes the Bible; the director reviews it; you approve it. It is stored in the project database with every version, and a readable `art-direction.md` is regenerated in the project folder. Once approved, every shot's prompts are composed in three parts from it: the **plate** (the first frame: the cast's designs, the motif's state in that shot, the world, colour and light), the **motion** (what moves and how, from the look's motion grammar: paper pivots at its folds and never breathes or blinks) and **continuity** (what must never change).
 
+A material or an object from the Bible reaches only the shots it belongs to, so a prop from one scene is in no other image. A prompt you write yourself is never rewritten, by an approval or anything else; Motionboard keeps its generated prompt beside yours and tells you when yours contradicts the direction. `mb plates` stops on such a conflict before any image is made, until you fix it, keep it or accept it.
+
 ```bash
 mb art draft -p <id> --file art-direction.json --profile full   # the designer saves a version
 mb art approve -p <id>                                          # after you say yes
 mb art motifs -p <id>                                           # each motif's state shot by shot
 mb shot prompts -p <id> --shot 7                                # plate, motion, continuity, negative
+mb shot override list -p <id>                                   # prompts you wrote, and any conflict
 mb character ref add -p <id> --name HER --file her-face.png --purpose face
 ```
 

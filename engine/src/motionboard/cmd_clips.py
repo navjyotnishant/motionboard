@@ -16,7 +16,7 @@ from motionboard.jobs import queue, worker
 from motionboard.plates import adapter as adapters
 from motionboard.plates import service as plates
 from motionboard.report import MbError
-from motionboard.storyboard import board
+from motionboard.storyboard import board, templates
 
 plate_app = typer.Typer(no_args_is_help=True, help="Plate requests and uploads")
 queue_app = typer.Typer(help="Render queue")
@@ -79,6 +79,8 @@ def plates_cmd(
     reference_strategy: str = typer.Option(None, "--reference-strategy",
                                            help="When a shot has more references than the adapter takes: strict "
                                                 "(stop), primary, first or none"),
+    accept_conflicts: bool = typer.Option(False, "--accept-conflicts",
+                                          help="The creator saw the conflicts with the direction and said go ahead"),
     as_json: bool = JsonOpt,
 ) -> None:
     """Request plates for shots that need them. Paid adapters refuse until the cost is confirmed."""
@@ -86,8 +88,11 @@ def plates_cmd(
     def go(conn, r):
         p = projects.get(conn, project)
         r.project = p["id"]
-        res = plates.request_plates(conn, p, adapter_name, _ords(shots), confirm_cost, ACTOR(), reference_strategy)
+        res = plates.request_plates(conn, p, adapter_name, _ords(shots), confirm_cost, ACTOR(), reference_strategy,
+                                    accept_conflicts)
         r.data = res
+        r.not_verified += [c["message"] + (" (kept by the creator)" if c["kept"] else " (accepted for this run)")
+                           for c in res["conflicts"]]
         sent = sum(len(x.get("references", [])) for x in res["done"] + res["pending"])
         dropped = [(x["shot"], d) for x in res["done"] + res["pending"] for d in x.get("references_dropped", [])]
         if sent:
@@ -247,6 +252,9 @@ def clips(
                                            for q in res["queued"]) / 60, 1)}
         r.verified.append(f"fit check passed for the longest shot ({worst[0]} frames)")
         r.not_verified.append("render time is an estimate")
+        # Motion prompts that contradict the direction are named again where they are about to be rendered.
+        look = templates.get_look(p["visual_look"], conn) if p.get("visual_look") else None
+        r.not_verified += board.grammar_warnings(conn, p, look)
         r.next = "mb worker --detach"
 
     run("mb clips", as_json, go)

@@ -24,6 +24,7 @@
       "creative": {
         "intent": "She has noticed the connection",
         "metaphor": "a figure leaning against her own glass",
+        "objects": ["display case"],
         "motifs": [
           {
             "name": "ruby thread",

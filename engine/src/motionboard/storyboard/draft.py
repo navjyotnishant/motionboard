@@ -94,9 +94,10 @@ def draft(
                 has_figure = bool(idea.get("has_figure", pat.has_figure))
                 lip = bool(idea.get("lip_sync", False)) and has_figure
                 idea_mp = (idea.get("motion_prompt") or "").strip()
+                idea_pp = (idea.get("plate_prompt") or "").strip()
                 creative = clean_creative(idea.get("creative") or {})
             else:
-                idea_mp, creative = "", {}
+                idea_mp, idea_pp, creative = "", "", {}
                 visual = _fmt(pat.visual, look, sl.lyric)
                 action, camera, has_figure = pat.action, pat.camera, pat.has_figure
                 lip = pat.lip_sync and has_figure and bool(sl.lyric) and (
@@ -113,7 +114,12 @@ def draft(
                     "frames": timing.frames_for(sl.dur, backend.frame_rule),
                     "lyric": sl.lyric, "visual": visual, "action": action, "camera": camera,
                     "has_figure": has_figure, "lip_sync": lip,
-                    "plate_prompt": pr.plate, "motion_prompt": idea_mp or pr.motion, "creative": creative,
+                    # A prompt written in the shots file is the creator's override: kept beside the generated
+                    # baseline, never rewritten by the engine, and checked against the motion grammar (FR-028).
+                    "plate_prompt": idea_pp or pr.plate, "motion_prompt": idea_mp or pr.motion,
+                    "plate_base": pr.plate, "motion_base": pr.motion,
+                    "plate_authored": bool(idea_pp) and idea_pp != pr.plate,
+                    "motion_authored": bool(idea_mp) and idea_mp != pr.motion, "creative": creative,
                     "state": "draft", "dirty": False, "updated_at": ts,
                 },
                 actor,
@@ -162,7 +168,8 @@ def clean_creative(value) -> dict:
     if value in (None, "", {}):
         return {}
     if not isinstance(value, dict):
-        raise MbError("INVALID_INPUT", "creative must be an object with intent, audience, metaphor, motifs, continuity")
+        raise MbError("INVALID_INPUT", "creative must be an object with intent, audience, metaphor, motifs, "
+                      "continuity, materials, objects")
     unknown = set(value) - set(compose.CREATIVE_KEYS)
     if unknown:
         raise MbError("INVALID_INPUT", f"unknown creative field(s): {', '.join(sorted(unknown))}",
@@ -174,7 +181,29 @@ def clean_creative(value) -> dict:
     motifs = parse_motifs(value.get("motifs"))
     if motifs:
         out["motifs"] = motifs
+    for k in ("materials", "objects"):
+        names = parse_names(value.get(k))
+        if names:
+            out[k] = names
     return out
+
+
+def parse_names(value) -> list[str]:
+    """Names of Bible materials or objects this shot shows: a list, or text split on commas and lines."""
+    if value in (None, "", []):
+        return []
+    if isinstance(value, str):
+        v = value.strip()
+        if v.startswith("["):
+            try:
+                value = json.loads(v)
+            except json.JSONDecodeError as e:
+                raise MbError("INVALID_INPUT", f"not valid JSON: {e}") from e
+        else:
+            value = re.split(r"[,\n]", v)
+    if not isinstance(value, list) or not all(isinstance(x, str) for x in value):
+        raise MbError("INVALID_INPUT", "materials and objects are lists of names from the art direction")
+    return list(dict.fromkeys(x.strip() for x in value if x.strip()))
 
 
 def parse_motifs(value) -> list[dict]:

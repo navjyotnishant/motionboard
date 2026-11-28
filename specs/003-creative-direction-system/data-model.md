@@ -82,9 +82,16 @@ Migration: one row per existing non-empty `character.reference_image`, `purpose 
 
 | field | type | notes |
 |---|---|---|
-| creative | text, default `{}` | JSON: `intent`, `audience`, `metaphor`, `motifs` [{name, state}], `continuity`; every key optional |
+| creative | text, default `{}` | JSON: `intent`, `audience`, `metaphor`, `motifs` [{name, state}], `continuity`, `materials` [name], `objects` [name]; every key optional |
+| plate_base, motion_base | text, nullable (0004) | the prompt the engine last generated; NULL on shots made before 0004 until settled |
+| plate_authored, motion_authored | integer, default 0 (0004) | 1 when `plate_prompt` / `motion_prompt` is the creator's override; the engine never rewrites it |
+| override_kept | text, default `{}` (0004) | JSON `{plate: version, motion: version}`: the art direction version at which the creator kept the override |
 
-`motifs` and `continuity` feed prompt composition and, when changed on a shot with a finished plate, mark it for redo like a visual edit. `intent`, `audience` and `metaphor` feed reviews only.
+`motifs`, `continuity`, `materials` and `objects` feed prompt composition and, when changed on a shot with a finished plate, mark it for redo like a visual edit. `intent`, `audience` and `metaphor` feed reviews only. `materials` and `objects` name entries of the approved Bible (research R14).
+
+`plate_prompt` and `motion_prompt` remain the effective prompts every reader uses. Migration `0004_prompt_overrides.sql` adds the five columns and changes no existing value (research R16).
+
+Bible body additions: `materials[].scope` and `objects[].scope` (`all` or `shot`, default shot); `exceptions.characters: [{name, reason}]`.
 
 ## Changed table: plate_request
 

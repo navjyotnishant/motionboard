@@ -37,6 +37,14 @@ Each change marks finished plates of that character's shots for redo (as `mb cha
 - `mb shot set --field intent|audience|metaphor|continuity|motifs --value V`: creative context. `motifs` takes a JSON list `[{"name": "...", "state": "..."}]` or lines `name: state`. Empty value clears the field.
 - `mb shot prompts -p ID --shot N`: `{plate, motion, continuity, negative, grammar, warnings}` composed now from the approved Bible, the look and the shot.
 - Shots file (`mb draft --shots-file`) entries may carry `creative: {...}` with the same keys.
+- `--field materials|objects --value "name, name"`: Bible materials or objects this shot shows.
+- `--field plate_prompt|motion_prompt`: saves the creator's override; data gains `authored: {plate, motion}` and `conflicts`. An empty value, or the generated text, clears the override.
+- `mb shot prompts` data gains `materials` and `objects` (`[{name, why}]`), `rules` (`forbidden`, `materials`, `invariants` of the effective grammar), `stored`, `authored` and `conflicts`. `plate` and `motion` are always the generated text.
+- `mb shot override list -p ID`: `{overrides: [{shot, part, text, generated, kept, conflicts}], art_direction_version}`.
+- `mb shot override keep -p ID --shot N [--part plate|motion|both]`: records the creator's decision for the current art direction version.
+- `mb shot override clear -p ID --shot N | --all [--part ...]`: back to the generated prompt; finished work from the override is marked for redo.
+- Shots file entries may carry `plate_prompt` and `motion_prompt`; `mb draft` data gains `authored_prompts` and reports conflicts.
+- Conflict objects: `{shot, part: action|motion|plate|cast, kind: motion_grammar|plate_direction|undesigned_character, terms, authored, kept, message}`.
 
 ## mb plates and mb adapter
 
@@ -44,6 +52,8 @@ Each change marks finished plates of that character's shots for redo (as `mb cha
 - Per shot results (`done`, `pending`, `failed`) gain `references` and `references_dropped`.
 - `mb plate requests` entries gain `references` (all, labelled); `reference_image` stays (first reference).
 - `mb adapter --list` entries gain `reference_capacity` (number or `"unlimited"`) and `reference_strategy`.
+- `mb plates` refuses with `DIRECTION_CONFLICT` (data: `conflicts`, `shots`) before any request when the shots to generate contradict the direction; `--accept-conflicts` proceeds. A successful run's data gains `conflicts`.
+- `mb art draft|check` data gains `profile_requires_designs`, `missing_designs: [{name, shots}]`, `design_exceptions: [{name, reason}]`; submit and approve refusals carry the same keys. `mb art approve` data gains `overrides: [{shot, part, text, generated, kept, conflicts, baseline_changed}]`. Impact gains `materials` and `objects` (changed names).
 
 ## mb critique
 
