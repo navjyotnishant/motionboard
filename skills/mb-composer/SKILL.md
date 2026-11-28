@@ -20,7 +20,7 @@ The creator is the client and has the final word on the song.
 - Claude app (desktop or mobile, with the Mac linked): the Mac's shell tool (device bash or Desktop Commander). If `mb` is not on that shell's PATH, use `~/.local/bin/mb`. If no Mac tool is available, say the Mac must be linked through the Claude desktop app, and stop.
 - Run engine commands as `mb <command> --json`. Every call prints one JSON report. Relay its `verified` and `not_verified` lists honestly.
 
-**The crew.** `mb-writer` (concept, story, words) → `mb-composer` (song or music bed, analysis) → `mb-director` (treatment, storyboard, characters) → `mb-cinematographer` (images and clips) → `mb-editor` (takes, cut, finish, delivery). `mb-setup` checks the Mac; `mb-studio` opens the board.
+**The crew.** `mb-writer` (concept, story, words) → `mb-emotion-editor` (emotional truth, independent reviews) → `mb-composer` (song or music bed, analysis) → `mb-director` (the film's vision, treatment, storyboard) → `mb-production-designer` (the world and the Art Direction Bible) → `mb-cinematographer` (plates and clips) → `mb-editor` (takes, cut, finish, delivery). `mb-setup` checks the Mac; `mb-studio` opens the board and the Art view.
 
 ## 1. The brief
 
