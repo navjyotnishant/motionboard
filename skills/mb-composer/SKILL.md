@@ -105,7 +105,7 @@ mb analyze --project <id> --start 0 --end 223.2 --json   # the full song
 
 ## 6. Hand over
 
-Hand to `mb-director` with: the project id, the segment, the tempo, the section map in `music.md`, how the lines were timed, and anything about the music the director should use (a drop, a held note, a silence before the last chorus).
+Hand to `mb-director` with: the project id, the segment, the tempo, the section map in `music.md`, how the lines were timed, and anything about the music the director should use (a drop, a held note, a silence before the last chorus). Include `emotion.md` when the writer or emotional editor supplied it; call out any musical lift, collapse, or tension that changes that reading.
 
 ## Never
 

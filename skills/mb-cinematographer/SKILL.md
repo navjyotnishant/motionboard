@@ -41,6 +41,8 @@ Before any image:
 - Mark the hard shots: singing shots (faces must be large and clear), continuations (shot B starts where shot A ended), shots with two people, extreme close-ups of hands or objects, and any shot whose plate must hide or show something specific.
 - Check the cast: `mb character list -p <id> --json`. Every lead needs a style line and ideally a reference image. Without a reference, faces drift between shots.
 
+Read `emotion.md` when present. Preserve the director's intended subtext and motif transformation in light, composition, continuity, and motion; if a practical rendering choice would flatten it, return that shot to the director instead of quietly changing the story.
+
 ## 2. Choose the image source
 
 ```bash

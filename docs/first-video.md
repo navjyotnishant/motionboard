@@ -20,7 +20,13 @@ mb concepts add -p <id> --file concepts.json
 mb concepts choose -p <id> --concept "<title>"
 ```
 
-## 2. Composer: the song and its analysis
+## 2. Emotional editor: the feeling under the words
+
+An independent reader, neither the writer nor the director. Before concepts it writes `emotion.md`: the unspoken truth under the words, what the voice wants and resists, where words and music pull against each other, the arc section by section, the listener journey, motifs, and images to avoid. Every claim cites a lyric, a musical change or a story detail.
+
+After the director drafts the board, it reviews it and returns READY, REVISE (up to five fixes, each with a direction) or BLOCKED. The director resolves every REVISE finding before you approve the storyboard. The editor reads the rough cut against the same arc.
+
+## 3. Composer: the song and its analysis
 
 Use your own recording as it is, or make a song or instrumental bed locally with ACE-Step 1.5 (optional, free, installed only when you say yes). Then:
 
@@ -33,7 +39,7 @@ mb analyze -p <id> --start 0 --end 223.2    # or the full song
 
 `analyze` cuts the segment on a beat and measures tempo, beats, loudness and sung lines. Lines are matched to the voice with local Whisper when it is installed, and only spread on the beat grid when it is not; the report says which. Check the tempo against what you hear (half or double tempo errors happen).
 
-## 3. Director: treatment and storyboard
+## 4. Director: treatment and storyboard
 
 The director writes `treatment.md` first: what the song means, the story on screen, point of view, motifs, the visual arc, where the singer sings, and what we refuse to show. Shots come from what each line means, not what it names.
 
@@ -51,7 +57,7 @@ mb approve -p <id> --stage storyboard
 
 Shots tile the segment exactly. The draft and sheet reports flag sung lines the singer holds only in part and shots that repeat their lyric word for word; fix them before approval. Editing a shot after its plate or clip exists marks it for redo.
 
-## 4. Cinematographer: plates and clips
+## 5. Cinematographer: plates and clips
 
 **Plates** (the first frame of every shot), from any image source:
 
@@ -81,7 +87,7 @@ mb clips -p <id> --shots 46 --redo --backend ltx25 --sing-until 1.9   # mute a b
 
 Lip-sync shots render from the vocal slice for that shot. A new take never replaces the take in use. The worker skips finished shots, so you can stop and resume.
 
-## 5. Editor: takes, cut, finish and delivery
+## 6. Editor: takes, cut, finish and delivery
 
 ```bash
 mb sheet -p <id> --kind clips               # clips in use, with scene jump warnings

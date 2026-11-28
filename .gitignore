@@ -54,3 +54,6 @@ projects/
 !docs/media/*
 !docs/images/
 !docs/images/*
+
+# Continuity plugin session state
+.continuity/

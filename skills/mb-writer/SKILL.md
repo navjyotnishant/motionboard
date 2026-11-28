@@ -51,6 +51,10 @@ Before any concept, write three sentences for yourself:
 
 If you cannot write sentence 2, you do not have the piece yet. Listen to the song again or ask the creator one question.
 
+Before concepts, write an emotional handoff in `emotion.md`. It is not a mood label. Capture the unspoken truth, what the central voice wants and resists, any contradiction between words and music, the section-by-section emotional arc, one listener-facing question, motif opportunities, and obvious literal or generic images to avoid. Use `mb-emotion-editor` when available; otherwise follow its required `emotion.md` shape. The director needs this document to build an interpretation rather than a lyric slideshow.
+
+Before handoff, include `emotion.md` with the chosen concept and the story. The composer should preserve its musical tensions; the director should preserve its subtext and motif opportunities.
+
 ## 4. Three concepts
 
 Write exactly three. A professional pitch gives real alternatives, not three looks of one idea:

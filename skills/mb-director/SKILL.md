@@ -34,6 +34,8 @@ Read before you write anything:
 
 Then listen to the song all the way through once with the lyrics in front of you. Mark where the energy rises, where it drops, where the singer should be seen, and where the picture should rest.
 
+When `emotion.md` is present, use its unspoken truth, contradiction, listener journey, and avoid list as the creative brief. If it is missing, create a compact version before treatment or invoke `mb-emotion-editor`; do not substitute a generic mood word.
+
 ## 2. The treatment
 
 Write `<project folder>/treatment.md` and show it to the creator before any shot. One page:
@@ -45,6 +47,8 @@ Write `<project folder>/treatment.md` and show it to the creator before any shot
 5. **The visual arc.** How light, colour, distance and pace move across the song: verse against chorus, the bridge, the last chorus. Night in the lyric can be noon on screen if noon tells the truth better.
 6. **Where the singer sings.** Which lines are performance and which are story. Performance needs a reason and a place.
 7. **What we refuse to show.** The obvious pictures for this lyric, listed so they stay out.
+
+Add an **emotional-causality** note to the treatment: for each section, state the emotional shift, what remains unsaid, and the action, absence, or transformed motif that makes the audience feel it. A scene that could belong to another song with the same genre and mood must be redesigned.
 
 ### How to turn a line into a shot
 
@@ -152,6 +156,8 @@ Fields: lyric, visual, action, camera, plate_prompt, motion_prompt, has_figure, 
 - No more than two literal shots in the whole song, each one a choice.
 - Every person whose face matters has a style line and, ideally, a reference.
 - Every shot has one action, a clear first frame and one camera move.
+
+Before approval, run `mb-emotion-editor` on the completed board. Resolve every REVISE finding in `emotion.md`; the review must confirm a changing emotional state, deepening subtext, and a transformed motif or spatial relationship by the final chorus or outro.
 
 ## 7. Approval
 

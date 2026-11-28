@@ -5,7 +5,7 @@
 [![Licence: Apache 2.0](https://img.shields.io/badge/licence-Apache%202.0-blue)](LICENSE)
 [![Packs: PolyForm Noncommercial](https://img.shields.io/badge/animation%20packs-PolyForm%20NC-purple)](modes/LICENSE)
 ![Platform: Apple Silicon](https://img.shields.io/badge/platform-Apple%20Silicon%20Mac-black)
-![Version 0.4.0](https://img.shields.io/badge/version-0.4.0-orange)
+![Version 0.5.0](https://img.shields.io/badge/version-0.5.0-orange)
 ![Video models: LTX-2.3, LTX-2.5](https://img.shields.io/badge/video%20models-LTX--2.3%20%C2%B7%20LTX--2.5-green)
 
 [Start here](#start-here) · [Why](#why-motionboard) · [How it works](#how-it-works) · [Proof](#proof-the-first-real-productions) · [Free to learn](#free-to-learn) · [Install](#install) · [Docs](#docs)
@@ -14,13 +14,13 @@ https://github.com/user-attachments/assets/d171b3b7-4e39-4a7e-8ed2-088020a57247
 
 Higher quality: [docs/media/motionboard-overview.mp4](docs/media/motionboard-overview.mp4)
 
-Motionboard is an open source video production tool that runs entirely on your Mac. You bring an idea and, if you have one, a song. Motionboard takes it through the stages a real crew would: a story, the music, a director's treatment and a storyboard timed to the beat, an image for every shot, locally rendered clips and lip sync, review of every take, and a finished cut with lyrics, grade, end card and cover.
+Motionboard is an open source video production tool that runs entirely on your Mac. You bring an idea and, if you have one, a song. Motionboard takes it through the stages a real crew would: a story and the feeling under it, the music, a director's treatment and a storyboard timed to the beat, an image for every shot, locally rendered clips and lip sync, review of every take, and a finished cut with lyrics, grade, end card and cover.
 
 It is a tool first: a command line engine (`mb`), a local web app (the Storyboard Studio) and a local database. A Claude plugin is available for it too, with one skill per crew role, so you can direct the whole production in plain language from Claude Code or the Claude app.
 
 A song is one way in. The same steps make full music videos, vertical reels, lyric videos and promos.
 
-> **Status:** early (v0.4.0). The engine, Studio, crew skills and five mode packs work end to end on the reference Mac (M3 Max, 36 GB). Three real productions are shown under [Proof](#proof-the-first-real-productions).
+> **Status:** early (v0.5.0). The engine, Studio, crew skills and five mode packs work end to end on the reference Mac (M3 Max, 36 GB). Three real productions are shown under [Proof](#proof-the-first-real-productions).
 
 ---
 
@@ -86,16 +86,20 @@ Motionboard works like a small film crew. Each role is a skill in the plugin and
   │ story     │   │ music bed  │   │ storyboard │   │ clips, lip sync  │   │ cut      │
   │ lyrics or │   │ tempo,     │   │ cast and   │   │ memory guard     │   │ finish   │
   │ script    │   │ sung lines │   │ looks      │   │ take checks      │   │ deliver  │
-  └───────────┘   └────────────┘   └─────┬──────┘   └─────────┬────────┘   └────┬─────┘
-                                         │ you approve        │ you approve     │ you approve
-                                         ▼                    ▼                 ▼
-                                    storyboard            plates, clips     final video,
-                                                                            cover, metadata
+  └─────┬─────┘   └────────────┘   └─────┬──────┘   └─────────┬────────┘   └────┬─────┘
+        │ emotion.md                     │                    │ you approve     │ you approve
+        ▼                                │                    ▼                 ▼
+  ┌──────────────────┐                   │            plates, clips         final video,
+  │ Emotional editor │ ◄─ reviews board ─┤                                  cover, metadata
+  │ subtext, arc     │                   │ READY, then you approve
+  └──────────────────┘                   ▼
+                                    storyboard
 ```
 
 | Role | Skill | What it does | Tools it uses |
 |---|---|---|---|
 | Writer | `mb-writer` | Three distinct concepts, a one page story with a turn, lyrics a singer can sing or a script timed per line | Claude; the optional `lyrics-room` plugin |
+| Emotional editor | `mb-emotion-editor` | An independent reading of the song's subtext, emotional arc and visual cliches to avoid; reviews whether the final board creates the intended feeling | Claude |
 | Composer | `mb-composer` | Your song untouched, or a song or instrumental bed made free on your Mac; finds tempo, beats, sections and every sung line | ACE-Step 1.5 (optional, local), librosa, mlx-whisper (local), demucs (vocal isolation) |
 | Director | `mb-director` | One page treatment, mode and look, a storyboard timed to the music, a cast with consistent looks, each shot's action and camera | `mb draft`, `mb character`, the Storyboard Studio |
 | Cinematographer | `mb-cinematographer` | One image plate per shot from any source, clips and lip sync rendered locally, bad takes diagnosed and rendered again | LTX-2.3 and LTX-2.5 (MLX, local), any image source, the memory guard |

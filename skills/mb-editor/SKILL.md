@@ -66,6 +66,8 @@ Read it for:
 - **Story:** the treatment's turn lands; the motifs return; the end is earned.
 - **Repetition:** no two shots that look the same back to back; each chorus looks different.
 - **Continuity:** screen direction, wardrobe and light match across cuts.
+- **Feeling:** read the cut against `emotion.md` when it exists. The arc moves section by section, what stays unsaid stays unsaid, and the motif transforms by the final chorus or outro. If the cut flattens it, ask `mb-emotion-editor` for a rough cut review before finishing.
+- **Feeling:** read the cut against `emotion.md` when it exists. The arc moves section by section, what stays unsaid stays unsaid, and the motif transforms by the final chorus or outro. If the cut flattens it, ask `mb-emotion-editor` for a rough cut review before finishing.
 
 Move a cut with the director if needed (`mb shot move --project <id> --shot N --end <seconds> --json`; the cut snaps to a beat), or ask the cinematographer for a new take.
 
