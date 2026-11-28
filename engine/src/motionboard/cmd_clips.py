@@ -57,9 +57,15 @@ def adapter(
                 raise MbError("INVALID_INPUT", "--add needs --kind")
             adapters.add(conn, add, kind, cfg, cost, ACTOR())
             r.verified.append(f"adapter '{add}' added")
-        r.data = {"adapters": [{"name": a["name"], "kind": a["kind"], "cost_per_image_usd": a["cost_per_image_usd"],
-                                "config": json.loads(a["config"])} for a in repo.find(conn, "plate_adapter",
-                                                                                       order="name")]}
+        out = []
+        for a in repo.find(conn, "plate_adapter", order="name"):
+            cfg = json.loads(a["config"])
+            # manual adapters wait for files the creator drops in; they show every reference and need no build
+            n = None if a["kind"] == "manual" else adapters.build(a, {}).reference_capacity()
+            out.append({"name": a["name"], "kind": a["kind"], "cost_per_image_usd": a["cost_per_image_usd"],
+                        "config": cfg, "reference_capacity": "unlimited" if n is None else n,
+                        "reference_strategy": cfg.get("reference_strategy", "strict")})
+        r.data = {"adapters": out}
 
     run("mb adapter", as_json, go)
 
@@ -70,6 +76,9 @@ def plates_cmd(
     adapter_name: str = typer.Option("manual", "--adapter"),
     shots: str = typer.Option(None, "--shots", help="Only these shot numbers, e.g. 3,7"),
     confirm_cost: bool = typer.Option(False, "--confirm-cost", help="The creator approved the stated cost"),
+    reference_strategy: str = typer.Option(None, "--reference-strategy",
+                                           help="When a shot has more references than the adapter takes: strict "
+                                                "(stop), primary, first or none"),
     as_json: bool = JsonOpt,
 ) -> None:
     """Request plates for shots that need them. Paid adapters refuse until the cost is confirmed."""
@@ -77,8 +86,15 @@ def plates_cmd(
     def go(conn, r):
         p = projects.get(conn, project)
         r.project = p["id"]
-        res = plates.request_plates(conn, p, adapter_name, _ords(shots), confirm_cost, ACTOR())
+        res = plates.request_plates(conn, p, adapter_name, _ords(shots), confirm_cost, ACTOR(), reference_strategy)
         r.data = res
+        sent = sum(len(x.get("references", [])) for x in res["done"] + res["pending"])
+        dropped = [(x["shot"], d) for x in res["done"] + res["pending"] for d in x.get("references_dropped", [])]
+        if sent:
+            r.verified.append(f"{sent} character reference images attached to the requests")
+        r.not_verified += [f"shot {s}: {d['character']} {d['purpose']} reference not sent ({d['reason']})"
+                           for s, d in dropped]
+        r.not_verified += [f"shot {f['shot']}: {f['error']}; {f['hint']}" for f in res["failed"] if f.get("hint")]
         if res["done"]:
             r.verified.append(f"{len(res['done'])} plates stored and set active")
         if res["pending"]:

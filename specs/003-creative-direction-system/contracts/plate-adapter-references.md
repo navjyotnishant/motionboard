@@ -26,4 +26,4 @@ Every adapter exposes `reference_capacity() -> int | None` (`None` means unlimit
 | `first` | Keep the first N in request order. |
 | `none` | Send none. |
 
-Missing files are never sent and are reported with reason `file missing`, whatever the strategy. Everything not sent is stored in `plate_request.references_dropped` with a reason and returned in the report. An adapter never claims a reference it did not use.
+Missing files are never sent and are reported with reason `file missing`, whatever the strategy. Everything not sent is stored in `plate_request.refs_dropped` with a reason and returned in the report. An adapter never claims a reference it did not use.

@@ -33,7 +33,8 @@ Decisions made while reading the code on `main` at f0be7d1. Each has the alterna
 | change | affected |
 |---|---|
 | a character entry (by name) | shots linked to that character |
-| world, color, lighting, materials, objects, constraints, identity | every shot with an active plate |
+| world, color, lighting, materials, objects, constraints | every shot with an active plate |
+| identity | listed as changed for review; no asset is affected by prose alone |
 | camera | every shot with an active plate or clip |
 | motion (film level) | shots with an active clip |
 | a character's motion | that character's shots with an active clip |

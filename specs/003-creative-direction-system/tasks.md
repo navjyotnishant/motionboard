@@ -14,7 +14,7 @@ description: "Task list for Creative Direction and Visual Intelligence"
 
 ## Phase 1: Foundation (US1)
 
-- [ ] T001 [US1] Migration `engine/src/motionboard/db/migrations/0003_creative_direction.sql`: `art_direction`, `character_reference` (with copy of legacy references), `critique`, `shot.creative`, `plate_request.references`, `plate_request.references_dropped`
+- [ ] T001 [US1] Migration `engine/src/motionboard/db/migrations/0003_creative_direction.sql`: `art_direction`, `character_reference` (with copy of legacy references), `critique`, `shot.creative`, `plate_request.refs`, `plate_request.refs_dropped`
 - [ ] T002 [US1] `migrate(conn, target)` in `engine/src/motionboard/db/connection.py` for migration tests
 - [ ] T003 [P] [US1] Bible schema (package copy of `contracts/art-direction.schema.json`), small validator, profiles, vague-word and cast warnings, Markdown renderer in `engine/src/motionboard/direction/bible.py`
 - [ ] T004 [P] [US1] Section diff and affected shots and assets in `engine/src/motionboard/direction/impact.py`

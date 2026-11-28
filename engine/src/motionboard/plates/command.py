@@ -2,6 +2,9 @@
 
 config: {"cmd": ["python", "gen.py", "--prompt", "{prompt}", "--out", "{out}", "--size", "{w}x{h}"],
          "cwd": "~/tools/sd"}  placeholders: {prompt} {negative} {out} {w} {h} {ref} {seed}
+
+References: an element that is exactly "{refs}" expands to one argument per reference path (no limit); "{ref}"
+inside an element takes one reference. With neither, the command takes no references.
 """
 
 from pathlib import Path
@@ -19,10 +22,22 @@ class CommandAdapter:
     def __init__(self, name: str, cfg: dict, cost: float):
         self.name, self.cfg, self.cost_per_image_usd = name, cfg, cost
 
+    def reference_capacity(self) -> int | None:
+        parts = self.cfg.get("cmd", [])
+        if any(p == "{refs}" for p in parts):
+            return None
+        return 1 if any("{ref}" in p for p in parts) else 0
+
     def request(self, req: PlateRequest) -> PlateResult:
+        first = str(req.references[0].path) if req.references else ""
         values = {"prompt": req.prompt, "negative": req.negative, "out": str(req.out), "w": str(req.width),
-                  "h": str(req.height), "ref": str(req.reference_image or ""), "seed": str(req.seed)}
-        cmd = [part.format(**values) for part in self.cfg["cmd"]]
+                  "h": str(req.height), "ref": first, "seed": str(req.seed)}
+        cmd = []
+        for part in self.cfg["cmd"]:
+            if part == "{refs}":
+                cmd += [str(r.path) for r in req.references]
+            else:
+                cmd.append(part.format(**values))
         cwd = Path(self.cfg["cwd"]).expanduser() if self.cfg.get("cwd") else None
         conn = open_db()
         try:

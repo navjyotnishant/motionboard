@@ -9,7 +9,7 @@ from motionboard.cli import JsonOpt, app, run
 from motionboard.config import ACTOR
 from motionboard.storyboard import characters, templates
 
-character_app = typer.Typer(no_args_is_help=True, help="Characters: name, reference image, style line")
+character_app = typer.Typer(no_args_is_help=True, help="Characters: name, style line, reference images")
 app.add_typer(character_app, name="character")
 
 ProjectOpt = typer.Option(..., "--project", "-p", help="Project id (or its last characters)")
@@ -105,3 +105,72 @@ def character_unlink(project: str = ProjectOpt, name: str = NameOpt,
         r.data = {"shots_changed": characters.link(conn, p, name, _ords(shots), False, _look(conn, p), ACTOR())}
 
     run("mb character unlink", as_json, go)
+
+
+ref_app = typer.Typer(no_args_is_help=True, help="Reference images: several per character, one primary")
+character_app.add_typer(ref_app, name="ref")
+
+
+@ref_app.command("add")
+def ref_add(project: str = ProjectOpt, name: str = NameOpt, file: Path = typer.Option(..., "--file"),
+            purpose: str = typer.Option("other", "--purpose",
+                                        help="face, silhouette, costume, material, detail, turnaround or other"),
+            description: str = typer.Option("", "--description"),
+            primary: bool = typer.Option(False, "--primary", help="Make it the primary reference"),
+            as_json: bool = JsonOpt) -> None:
+    """Add a reference image. A character's first reference is its primary."""
+
+    def go(conn, r):
+        p = projects.get(conn, project)
+        r.project = p["id"]
+        ref, changed = characters.add_reference(conn, p, name, file, purpose, description, primary, ACTOR())
+        r.data = {"reference": ref, "shots_changed": changed}
+        r.verified.append(f"reference copied to {ref['path']}")
+        if changed:
+            r.not_verified.append(f"plates of shots {', '.join(map(str, changed))} were made without it; "
+                                  "marked for redo")
+
+    run("mb character ref add", as_json, go)
+
+
+@ref_app.command("list")
+def ref_list(project: str = ProjectOpt, name: str = typer.Option(None, "--name"), as_json: bool = JsonOpt) -> None:
+    """References by character, primary first."""
+
+    def go(conn, r):
+        p = projects.get(conn, project)
+        r.project = p["id"]
+        chars = characters.listing(conn, p["id"])
+        if name:
+            chars = [c for c in chars if c["name"] == name.upper()]
+        r.data = {"characters": [{"name": c["name"], "references": c["references"]} for c in chars]}
+        missing = [f"{c['name']}: {x['path']}" for c in chars for x in c["references"] if not x["exists"]]
+        r.not_verified += [f"reference file missing: {m}" for m in missing]
+
+    run("mb character ref list", as_json, go)
+
+
+@ref_app.command("remove")
+def ref_remove(project: str = ProjectOpt, ref_id: str = typer.Option(..., "--id"), as_json: bool = JsonOpt) -> None:
+    """Remove a reference (the image file stays on disk)."""
+
+    def go(conn, r):
+        p = projects.get(conn, project)
+        r.project = p["id"]
+        out, changed = characters.remove_reference(conn, p, ref_id, ACTOR())
+        r.data = {"removed": out, "shots_changed": changed}
+
+    run("mb character ref remove", as_json, go)
+
+
+@ref_app.command("primary")
+def ref_primary(project: str = ProjectOpt, ref_id: str = typer.Option(..., "--id"), as_json: bool = JsonOpt) -> None:
+    """Make a reference the character's primary."""
+
+    def go(conn, r):
+        p = projects.get(conn, project)
+        r.project = p["id"]
+        ref, changed = characters.set_primary(conn, p, ref_id, ACTOR())
+        r.data = {"reference": ref, "shots_changed": changed}
+
+    run("mb character ref primary", as_json, go)

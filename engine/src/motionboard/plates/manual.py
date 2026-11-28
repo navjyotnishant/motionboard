@@ -23,6 +23,9 @@ class ManualAdapter:
                     return p
         return None
 
+    def reference_capacity(self) -> int | None:
+        return None  # references are shown to the creator; the adapter itself only waits for a file
+
     def request(self, req: PlateRequest) -> PlateResult | Pending:
         p = self.find(req.shot_ord)
         return PlateResult(p) if p else Pending()

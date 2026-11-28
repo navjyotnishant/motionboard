@@ -129,7 +129,15 @@ def fit(
 
 
 # Stage commands register themselves on `app`.
-from motionboard import cmd_characters, cmd_clips, cmd_finish, cmd_setup, cmd_storyboard, cmd_studio  # noqa: E402,F401
+from motionboard import (  # noqa: E402,F401
+    cmd_characters,
+    cmd_clips,
+    cmd_direction,
+    cmd_finish,
+    cmd_setup,
+    cmd_storyboard,
+    cmd_studio,
+)
 
 if __name__ == "__main__":
     app()

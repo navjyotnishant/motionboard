@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "motionboard.art-direction.v1",
+  "title": "Motionboard Art Direction Bible",
+  "description": "Body of one art_direction version. Profile requirements (compact, full) are checked by the engine, see data-model.md. Unknown top-level keys are refused.",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "text": {"type": "string"},
+    "list": {"type": "array", "items": {"type": "string"}},
+    "motion": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "subject": {"$ref": "#/$defs/text"},
+        "identity": {"$ref": "#/$defs/text"},
+        "figure": {"$ref": "#/$defs/text"},
+        "ambient": {"$ref": "#/$defs/text"},
+        "description": {"$ref": "#/$defs/text"},
+        "allowed": {"$ref": "#/$defs/list"},
+        "forbidden": {"$ref": "#/$defs/list"},
+        "materials": {"$ref": "#/$defs/list"},
+        "camera": {"$ref": "#/$defs/list"},
+        "invariants": {"$ref": "#/$defs/list"}
+      }
+    }
+  },
+  "properties": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {"$ref": "#/$defs/text"},
+        "concept": {"$ref": "#/$defs/text"},
+        "premise": {"$ref": "#/$defs/text"},
+        "emotional_intention": {"$ref": "#/$defs/text"},
+        "audience_experience": {"$ref": "#/$defs/text"},
+        "central_metaphor": {"$ref": "#/$defs/text"},
+        "song_relationship": {"$ref": "#/$defs/text"}
+      }
+    },
+    "world": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "description": {"$ref": "#/$defs/text"},
+        "physical_rules": {"$ref": "#/$defs/list"},
+        "architecture": {"$ref": "#/$defs/text"},
+        "environment": {"$ref": "#/$defs/text"},
+        "scale": {"$ref": "#/$defs/text"},
+        "time_and_light": {"$ref": "#/$defs/text"},
+        "belongs": {"$ref": "#/$defs/list"},
+        "excluded": {"$ref": "#/$defs/list"},
+        "prompt_line": {"$ref": "#/$defs/text"}
+      }
+    },
+    "characters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name"],
+        "properties": {
+          "name": {"$ref": "#/$defs/text"},
+          "silhouette": {"$ref": "#/$defs/text"},
+          "construction": {"$ref": "#/$defs/text"},
+          "materials": {"$ref": "#/$defs/text"},
+          "costume": {"$ref": "#/$defs/text"},
+          "color": {"$ref": "#/$defs/text"},
+          "details": {"$ref": "#/$defs/list"},
+          "constraints": {"$ref": "#/$defs/list"},
+          "references_note": {"$ref": "#/$defs/text"},
+          "prompt_line": {"$ref": "#/$defs/text"},
+          "motion": {"$ref": "#/$defs/motion"}
+        }
+      }
+    },
+    "materials": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name"],
+        "properties": {
+          "name": {"$ref": "#/$defs/text"},
+          "properties": {"$ref": "#/$defs/text"},
+          "light_response": {"$ref": "#/$defs/text"},
+          "motion_response": {"$ref": "#/$defs/text"},
+          "prompt_line": {"$ref": "#/$defs/text"}
+        }
+      }
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name"],
+        "properties": {
+          "name": {"$ref": "#/$defs/text"},
+          "role": {"enum": ["prop", "symbol"]},
+          "meaning": {"$ref": "#/$defs/text"},
+          "appearance": {"$ref": "#/$defs/text"},
+          "prompt_line": {"$ref": "#/$defs/text"}
+        }
+      }
+    },
+    "color": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "palette": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "hex"],
+            "properties": {
+              "name": {"$ref": "#/$defs/text"},
+              "hex": {"type": "string", "pattern": "^#[0-9A-Fa-f]{6}$"},
+              "role": {"enum": ["primary", "secondary", "accent"]}
+            }
+          }
+        },
+        "relationships": {"$ref": "#/$defs/text"},
+        "contrast": {"$ref": "#/$defs/text"},
+        "prompt_line": {"$ref": "#/$defs/text"}
+      }
+    },
+    "lighting": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sources": {"$ref": "#/$defs/list"},
+        "quality": {"$ref": "#/$defs/text"},
+        "shadows": {"$ref": "#/$defs/text"},
+        "atmosphere": {"$ref": "#/$defs/text"},
+        "prompt_line": {"$ref": "#/$defs/text"}
+      }
+    },
+    "camera": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "framing": {"$ref": "#/$defs/text"},
+        "distance": {"$ref": "#/$defs/text"},
+        "lens": {"$ref": "#/$defs/text"},
+        "depth_of_field": {"$ref": "#/$defs/text"},
+        "movement": {"$ref": "#/$defs/list"},
+        "negative_space": {"$ref": "#/$defs/text"},
+        "rhythm": {"$ref": "#/$defs/text"},
+        "transitions": {"$ref": "#/$defs/text"}
+      }
+    },
+    "motifs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name"],
+        "properties": {
+          "name": {"$ref": "#/$defs/text"},
+          "meaning": {"$ref": "#/$defs/text"},
+          "first_appearance": {"$ref": "#/$defs/text"},
+          "evolution": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "stage": {"$ref": "#/$defs/text"},
+                "state": {"$ref": "#/$defs/text"},
+                "meaning": {"$ref": "#/$defs/text"}
+              }
+            }
+          },
+          "payoff": {"$ref": "#/$defs/text"},
+          "prompt_line": {"$ref": "#/$defs/text"}
+        }
+      }
+    },
+    "motion": {"$ref": "#/$defs/motion"},
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required": {"$ref": "#/$defs/list"},
+        "forbidden": {"$ref": "#/$defs/list"},
+        "negative": {"$ref": "#/$defs/text"},
+        "never_change": {"$ref": "#/$defs/list"},
+        "may_evolve": {"$ref": "#/$defs/list"}
+      }
+    }
+  }
+}

@@ -90,8 +90,8 @@ Migration: one row per existing non-empty `character.reference_image`, `purpose 
 
 | field | type | notes |
 |---|---|---|
-| references | text, default `[]` | JSON list sent: {character, path, purpose, primary, description} |
-| references_dropped | text, default `[]` | JSON list not sent, each with `reason` (capacity, strategy, file missing) |
+| refs | text, default `[]` | JSON list sent: {character, path, purpose, primary, description} |
+| refs_dropped | text, default `[]` | JSON list not sent, each with `reason` (capacity, strategy, file missing) |
 
 `reference_image` stays: the first sent reference, for older readers.
 

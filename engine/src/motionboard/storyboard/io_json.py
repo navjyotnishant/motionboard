@@ -59,15 +59,31 @@ def export(conn: sqlite3.Connection, project: dict, out: Path, with_media: bool 
         "characters": [
             {"name": c["name"], "style_line": c["style_line"],
              "reference_image": _copy(c["reference_image"], out, f"media/characters/{Path(c['reference_image']).name}")
-             if with_media and c["reference_image"] else None}
+             if with_media and c["reference_image"] else None,
+             "references": [
+                 {"path": _copy(r["path"], out, f"media/characters/{Path(r['path']).name}") if with_media else None,
+                  "purpose": r["purpose"], "description": r["description"], "primary": bool(r["is_primary"]),
+                  "ord": r["ord"], "meta": json.loads(r["meta"] or "{}")}
+                 for r in repo.find(conn, "character_reference", order="ord", character_id=c["id"])]}
             for c in repo.find(conn, "character", project_id=pid)
         ],
         "shots": [],
         "approvals": {r["stage"]: r["approved_at"] for r in repo.find(conn, "stage_approval", project_id=pid)},
+        "art_direction": [
+            {k: v[k] for k in ("version", "profile", "status", "note", "created_at", "approved_at", "approved_via")}
+            | {"body": json.loads(v["body"] or "{}"), "impact": json.loads(v["impact"] or "{}")}
+            for v in repo.find(conn, "art_direction", order="version", project_id=pid)
+        ],
+        "critiques": [
+            {k: c[k] for k in ("stage", "role", "verdict", "summary", "created_at", "resolved_at")}
+            | {k: json.loads(c[k] or "[]") for k in ("findings", "checked", "not_checked")}
+            for c in repo.find(conn, "critique", order="created_at", project_id=pid)
+        ],
     }
     for s in conn.execute("SELECT * FROM shot WHERE project_id = ? ORDER BY ord", (pid,)):
         s = dict(s)
-        entry = {k: s[k] for k in SHOT_KEYS} | {"has_figure": bool(s["has_figure"]), "lip_sync": bool(s["lip_sync"])}
+        entry = {k: s[k] for k in SHOT_KEYS} | {"has_figure": bool(s["has_figure"]), "lip_sync": bool(s["lip_sync"]),
+                                                "creative": json.loads(s.get("creative") or "{}")}
         entry["characters"] = [r["name"] for r in conn.execute(
             "SELECT c.name FROM shot_character sc JOIN character c ON c.id = sc.character_id WHERE sc.shot_id = ?",
             (s["id"],))]
@@ -120,18 +136,32 @@ def import_(conn: sqlite3.Connection, src: Path, actor: Actor = "chat") -> dict:
                                           "chosen": bool(c.get("chosen"))}, actor)
         char_ids = {}
         for c in doc.get("characters", []):
-            ref = None
-            if c.get("reference_image") and (base / c["reference_image"]).exists():
-                ref = str(folder / "plates" / "characters" / Path(c["reference_image"]).name)
-                Path(ref).parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(base / c["reference_image"], ref)
-            char_ids[c["name"]] = repo.insert(conn, "character", {
+            # 003 exports list every reference; older ones carry a single reference_image (made the primary).
+            refs = c.get("references") or ([{"path": c["reference_image"], "purpose": "other", "primary": True}]
+                                           if c.get("reference_image") else [])
+            stored = []
+            for r in refs:
+                if not r.get("path") or not (base / r["path"]).exists():
+                    continue
+                dst = folder / "plates" / "characters" / Path(r["path"]).name
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(base / r["path"], dst)
+                stored.append({**r, "path": str(dst)})
+            if stored and not any(r.get("primary") for r in stored):
+                stored[0]["primary"] = True
+            primary = next((r["path"] for r in stored if r.get("primary")), None)
+            cid = char_ids[c["name"]] = repo.insert(conn, "character", {
                 "project_id": pid, "name": c["name"], "style_line": c.get("style_line", ""),
-                "reference_image": ref}, actor)
+                "reference_image": primary}, actor)
+            for i, r in enumerate(stored):
+                repo.insert(conn, "character_reference", {
+                    "character_id": cid, "path": r["path"], "purpose": r.get("purpose", "other"),
+                    "description": r.get("description", ""), "is_primary": bool(r.get("primary")),
+                    "ord": r.get("ord", i), "meta": r.get("meta") or {}, "created_at": ts}, actor)
         for s in doc["shots"]:
             sid = repo.insert(conn, "shot", {**{k: s.get(k) for k in SHOT_KEYS if k in s}, "project_id": pid,
                                              "frames": s.get("frames", 0), "state": s.get("state", "draft"),
-                                             "updated_at": ts}, actor)
+                                             "creative": s.get("creative") or {}, "updated_at": ts}, actor)
             for name in s.get("characters", []):
                 if name in char_ids:
                     conn.execute("INSERT INTO shot_character(shot_id, character_id) VALUES (?, ?)",
@@ -153,4 +183,26 @@ def import_(conn: sqlite3.Connection, src: Path, actor: Actor = "chat") -> dict:
             if at:
                 conn.execute("INSERT INTO stage_approval(project_id, stage, approved_at, via) VALUES (?, ?, ?, ?)",
                              (pid, stage, at, "chat"))
-    return projects.get(conn, pid)
+        versions: dict[int, str] = {}
+        last_approved = None
+        for v in sorted(doc.get("art_direction") or [], key=lambda x: x["version"]):
+            versions[v["version"]] = repo.insert(conn, "art_direction", {
+                "project_id": pid, "version": v["version"], "profile": v.get("profile", "compact"),
+                "status": v["status"], "body": v.get("body") or {}, "note": v.get("note", ""),
+                "based_on": last_approved, "impact": v.get("impact") or {}, "created_at": v.get("created_at") or ts,
+                "updated_at": ts, "created_via": "chat", "approved_at": v.get("approved_at"),
+                "approved_via": v.get("approved_via")}, actor)
+            if v["status"] in ("approved", "superseded"):
+                last_approved = versions[v["version"]]
+        for c in doc.get("critiques") or []:
+            repo.insert(conn, "critique", {
+                "project_id": pid, **{k: c[k] for k in ("stage", "role", "verdict")}, "summary": c.get("summary", ""),
+                "findings": c.get("findings") or [], "checked": c.get("checked") or [],
+                "not_checked": c.get("not_checked") or [], "created_at": c.get("created_at") or ts,
+                "resolved_at": c.get("resolved_at")}, actor)
+    p = projects.get(conn, pid)
+    if doc.get("art_direction"):
+        from motionboard.direction import service
+
+        service.write_markdown(conn, p)
+    return p

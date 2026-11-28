@@ -196,6 +196,10 @@ def draft(
     run("mb draft", as_json, go)
 
 
+def _look(conn, p):
+    return templates.get_look(p["visual_look"], conn) if p.get("visual_look") else None
+
+
 @shot_app.command("set")
 def shot_set(
     project: str = ProjectOpt,
@@ -215,6 +219,33 @@ def shot_set(
         r.data = {"shot": _shot_summary(s), "plate_prompt": s["plate_prompt"], "motion_prompt": s["motion_prompt"]}
 
     run("mb shot set", as_json, go)
+
+
+@shot_app.command("prompts")
+def shot_prompts(project: str = ProjectOpt, shot: int = typer.Option(..., "--shot", help="Shot number"),
+                 as_json: bool = JsonOpt) -> None:
+    """The shot's plate, motion and continuity text and negative prompt, composed now from the approved direction."""
+
+    def go(conn, r):
+        from motionboard.storyboard import compose
+
+        p = projects.get(conn, project)
+        r.project = p["id"]
+        lk = _look(conn, p)
+        if lk is None:
+            raise MbError("INVALID_INPUT", "the project has no look yet", hint="mb draft --mode ... --look ...")
+        s = board.shot_by_ord(conn, p["id"], shot)
+        pr = compose.for_shot(conn, p, s, lk)
+        r.data = {"shot": shot, "plate": pr.plate, "motion": pr.motion,
+                  "continuity": {"plate": pr.continuity_plate, "motion": pr.continuity_motion},
+                  "negative": pr.negative, "grammar": pr.grammar, "creative": compose.creative_of(s),
+                  "stored_matches": {"plate": pr.plate == s["plate_prompt"], "motion": pr.motion == s["motion_prompt"]},
+                  "words": {"motion": len(pr.motion.split())}}
+        r.not_verified += pr.warnings
+        if not all(r.data["stored_matches"].values()):
+            r.not_verified.append("the stored prompt differs (edited by hand, or written before the last change)")
+
+    run("mb shot prompts", as_json, go)
 
 
 @shot_app.command("move")
@@ -254,6 +285,7 @@ def sheet(project: str = ProjectOpt, kind: str = typer.Option("storyboard", "--k
         r.not_verified.append("visual quality of the board: review the sheet")
         if kind == "storyboard":
             r.not_verified += board.sung_line_warnings(conn, p) + board.literal_warnings(conn, p)
+            r.not_verified += board.grammar_warnings(conn, p, _look(conn, p))
         if kind == "clips":
             r.not_verified += board.clip_warnings(conn, p)
 
@@ -264,17 +296,30 @@ def sheet(project: str = ProjectOpt, kind: str = typer.Option("storyboard", "--k
 def approve(project: str = ProjectOpt, stage: str = typer.Option(..., "--stage"),
             revoke: bool = typer.Option(False, "--revoke"), via: str = typer.Option(None, "--via"),
             as_json: bool = JsonOpt) -> None:
-    """Approve (or revoke) a review gate: storyboard, plates, clips, final."""
+    """Approve (or revoke) a review gate: storyboard, plates, clips, final; art_direction approves the open Bible."""
 
     def go(conn, r):
+        if stage == "art_direction":
+            if revoke:
+                raise MbError("INVALID_INPUT", "an approved art direction is not revoked",
+                              hint="save a revision with mb art draft; the creator approves it to replace this one")
+            from motionboard.cmd_direction import approve_art
+
+            approve_art(conn, r, project, via)
+            return
         p = projects.get(conn, project)
         r.project = p["id"]
         r.data = {"approvals": board.approve(conn, p, stage, via or ACTOR(), revoke)}
         r.verified.append(f"{stage} {'revoked' if revoke else 'approved'}")
         if not revoke and stage == "storyboard":
             r.not_verified += board.sung_line_warnings(conn, p) + board.literal_warnings(conn, p)
+            r.not_verified += board.grammar_warnings(conn, p, _look(conn, p))
         if not revoke and stage == "clips":
             r.not_verified += board.clip_warnings(conn, p)
+        if not revoke:
+            from motionboard.direction import critique
+
+            r.not_verified += critique.open_for_gate(conn, p["id"], stage)
 
     run("mb approve", as_json, go)
 
